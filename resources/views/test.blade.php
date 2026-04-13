@@ -40,8 +40,8 @@
 <body>
 
 <div class="box">
-    <h1>☕ Cafe Job</h1>
-    <p>Ini halaman test untuk memastikan Git push & pull berjalan dengan benar.</p>
+    <h1>Cafe Job</h1>
+    <p>Test Doang Sih</p>
 
     <a href="/" class="btn">Kembali ke Home</a>
 </div>
