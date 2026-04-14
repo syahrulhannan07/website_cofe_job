@@ -6,10 +6,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/auth/login', function () {
+Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
-
-Route::get('/auth/register', function () {
-    return view('auth.register');
-})->name('register');
