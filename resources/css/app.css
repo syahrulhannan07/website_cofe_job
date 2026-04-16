@@ -1,11 +1,12 @@
-@import 'tailwindcss';
-
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+@import "tailwindcss";
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --color-cafe-dark: #4B2E2B;
+  --color-cafe-light: #C69C6D;
+  --color-cafe-white: #F3EDE6;
+  --color-cafe-green: #92E3A9;
+  --color-cafe-brown: #4b3c2b;
+  --radius-xl-hero: 80px;
+  --radius-card: 20px;
 }
