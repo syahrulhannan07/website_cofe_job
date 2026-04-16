@@ -13,7 +13,7 @@ const HeroSection = () => {
         
         {/* Vector 6: Amoeba Blob */}
         {/* Posisi relative: left=580px, top=-132px, W=734, H=864 */}
-        <div className="absolute w-[734px] h-[864px] left-[580px] top-[-132px]">
+        <div className="absolute w-[734px] h-[864px] left-[567px] top-[-91px]">
             <img 
                src={vectorHero} 
                alt="Amoeba Blob" 

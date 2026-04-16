@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
+import FindCafeSection from './components/FindCafeSection';
 import Footer from './components/Footer';
 
 function App() {
@@ -9,10 +10,7 @@ function App() {
       <div>
          <Navbar />
          <HeroSection />
-         <div className="text-center mt-20 min-h-[50vh]">
-            <h1 className="text-3xl font-bold mb-4">Halaman Beranda</h1>
-            <p className="text-lg">Menunggu instruksi lebih lanjut dari Anda...</p>
-         </div>
+         <FindCafeSection />
       </div>
       <Footer />
     </div>
