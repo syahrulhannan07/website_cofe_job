@@ -2,7 +2,7 @@ import React from 'react';
 
 const Footer = () => {
   return (
-    <div className="w-full flex justify-center bg-[#4b2e2b] mt-20">
+    <div className="w-full flex justify-center bg-[#4b2e2b]">
       <footer className="flex flex-col items-center w-full max-w-[1440px] py-12 gap-12 px-6 lg:px-12">
 
         {/* Kolom-kolom Atas */}

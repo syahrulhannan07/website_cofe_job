@@ -17,7 +17,7 @@ const Navbar = () => {
           </div>
 
           {/* Tautan Navigasi — tampil di desktop */}
-          <div className="hidden md:flex items-center gap-[30px] h-[21px] justify-center">
+          <div className="hidden md:flex items-center gap-[50px] h-[21px] justify-center">
             <Link to="/" className="font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity whitespace-nowrap">
               Beranda
             </Link>
@@ -51,7 +51,7 @@ const Navbar = () => {
           {/* Tombol Daftar */}
           <Link
             to="/daftar"
-            className="flex flex-row items-center justify-center bg-[#c69c6d] rounded-[15px] px-4 py-2 hover:bg-opacity-90 transition-opacity shrink-0"
+            className="flex flex-row items-center justify-center bg-[#c69c6d] rounded-[15px] w-[66px] h-[31px] hover:bg-opacity-90 transition-opacity shrink-0"
           >
              <span className="font-poppins font-[700] text-[14px] leading-[21px] text-[#4b2e2b] block">Daftar</span>
           </Link>

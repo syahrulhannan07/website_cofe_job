@@ -7,14 +7,7 @@ const daftarLowongan = [
         perusahaan: 'Indra Coffee Roasters',
         lokasi: 'Karangampel',
         gaji: 'IDR 3.5M - 4.5M',
-        warnaLogo: '#3D2314',
-        ikon: (
-            <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
-                <circle cx="18" cy="18" r="10" fill="#C69C6D" opacity="0.9"/>
-                <path d="M18 10C18 10 13 14 13 18C13 22 18 26 18 26C18 26 23 22 23 18C23 14 18 10Z" fill="#7C4A1E" opacity="0.8"/>
-                <path d="M12 18C14.5 16 17 18 18 18C19 18 21.5 16 24 18" stroke="#C69C6D" strokeWidth="1.2" strokeLinecap="round"/>
-            </svg>
-        ),
+        logoText: 'ICR',
     },
     {
         id: 2,
@@ -22,14 +15,7 @@ const daftarLowongan = [
         perusahaan: 'Mangga Dua Coffee Hub',
         lokasi: 'Jatibarang',
         gaji: 'IDR 5.0M - 7.0M',
-        warnaLogo: '#2A4A3E',
-        ikon: (
-            <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
-                <rect x="8" y="14" width="20" height="14" rx="2" fill="#C69C6D" opacity="0.8"/>
-                <path d="M14 14V12C14 9.79 15.79 8 18 8C20.21 8 22 9.79 22 12V14" stroke="#A0D4B5" strokeWidth="2"/>
-                <circle cx="18" cy="18" r="3" fill="#2A4A3E"/>
-            </svg>
-        ),
+        logoText: 'MDC',
     },
     {
         id: 3,
@@ -37,103 +23,98 @@ const daftarLowongan = [
         perusahaan: 'Cimanuk Brew House',
         lokasi: 'Indramayu Kota',
         gaji: 'IDR 1.8M - 2.2M',
-        warnaLogo: '#2B7A6F',
-        ikon: (
-            <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
-                <rect x="6" y="18" width="24" height="12" rx="1" fill="#F5C842" opacity="0.9"/>
-                <path d="M4 18L18 8L32 18" fill="#E8A020" opacity="0.9"/>
-                <rect x="14" y="22" width="8" height="8" rx="1" fill="#2B7A6F"/>
-                <rect x="9" y="20" width="5" height="5" rx="0.5" fill="#F5E6A3"/>
-                <rect x="22" y="20" width="5" height="5" rx="0.5" fill="#F5E6A3"/>
-            </svg>
-        ),
+        logoText: 'CBH',
     },
 ];
 
 // Ikon Lokasi
 const IkonLokasi = () => (
-    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M7 0C4.24 0 2 2.24 2 5C2 8.75 7 14 7 14C7 14 12 8.75 12 5C12 2.24 9.76 0 7 0ZM7 6.5C6.17 6.5 5.5 5.83 5.5 5C5.5 4.17 6.17 3.5 7 3.5C7.83 3.5 8.5 4.17 8.5 5C8.5 5.83 7.83 6.5 7 6.5Z" fill="#9E8B7C"/>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
     </svg>
 );
 
 // Ikon Gaji
 const IkonGaji = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1" y="3" width="14" height="10" rx="2" stroke="#9E8B7C" strokeWidth="1.3"/>
-        <circle cx="8" cy="8" r="2.5" stroke="#9E8B7C" strokeWidth="1.3"/>
-        <path d="M4 3V13" stroke="#9E8B7C" strokeWidth="1" strokeLinecap="round"/>
-        <path d="M12 3V13" stroke="#9E8B7C" strokeWidth="1" strokeLinecap="round"/>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="1" x2="12" y2="23"></line>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
     </svg>
 );
 
 const BagianLowonganTerbaru = () => {
     return (
-        <div className="flex w-full justify-center pb-12 md:pb-[100px] px-4">
-            {/* Wadah Seksi Utama */}
-            <section className="relative w-full max-w-[1300px] bg-[#C19A6B] rounded-[40px] md:rounded-[80px] p-8 md:p-[80px] lg:pb-[100px]">
-
-                {/* Kepala Seksi */}
-                <div className="mb-8 md:mb-[48px]">
-                    <h2 className="font-poppins font-[700] text-3xl md:text-[48px] leading-tight md:leading-[64px] text-[#4B2E2B] mb-3 md:mb-[12px]">
-                        Lowongan Terbaru
-                    </h2>
-                    <p className="font-['Lato'] font-[500] text-base md:text-[18px] leading-relaxed text-[#4B2E2B] opacity-80 max-w-[600px]">
-                        Jelajahi profil cafe untuk menemukan tempat kerja yang tepat bagi Anda. Pelajari tentang pekerjaan, ulasan, budaya.
-                    </p>
-                </div>
-
-                {/* Kisi Kartu Lowongan */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6">
-                    {daftarLowongan.map((lowongan) => (
-                        <div
-                            key={lowongan.id}
-                            className="bg-[#F5EFE8] rounded-[20px] p-6 md:p-7 flex flex-col justify-between
-                                       transition-transform duration-300 hover:-translate-y-1 hover:shadow-md"
-                        >
-                            {/* Konten Atas */}
-                            <div className="flex flex-col">
-                                {/* Kotak Ikon Perusahaan */}
-                                <div
-                                    className="w-[52px] h-[52px] rounded-[12px] flex items-center justify-center mb-5 shrink-0"
-                                    style={{ backgroundColor: lowongan.warnaLogo }}
-                                >
-                                    {lowongan.ikon}
-                                </div>
-
-                                {/* Judul & Nama Perusahaan */}
-                                <h3 className="font-poppins font-[600] text-[20px] md:text-[22px] leading-[28px] text-[#2D1B0E] mb-1">
-                                    {lowongan.judul}
-                                </h3>
-                                <p className="font-['Lato'] font-[400] text-[14px] text-[#5C4033] mb-5">
-                                    {lowongan.perusahaan}
-                                </p>
-
-                                {/* Baris Info: Lokasi & Gaji berdampingan */}
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-7">
-                                    <div className="flex items-center gap-[6px]">
-                                        <IkonLokasi />
-                                        <span className="font-['Lato'] font-[400] text-[13px] text-[#7A6153]">
-                                            {lowongan.lokasi}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-[6px]">
-                                        <IkonGaji />
-                                        <span className="font-['Lato'] font-[400] text-[13px] text-[#7A6153]">
-                                            {lowongan.gaji}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Tombol Aksi */}
-                            <button className="w-full py-[13px] border border-[#C19A6B] text-[#A07840] bg-transparent
-                                               font-poppins font-[500] text-[15px] rounded-[10px]
-                                               transition-all duration-200 hover:bg-[#C19A6B] hover:text-white">
-                                Lihat Detail Lowongan
-                            </button>
+        <div className="flex w-full justify-center px-4">
+            {/* Wadah Seksi Utama - Radius 50, BG #C69C6D */}
+            <section className="relative w-full max-w-[1300px] bg-[#C69C6D] rounded-[50px] overflow-hidden pt-20 pb-32">
+                <div className="max-w-[1232px] mx-auto px-4 md:px-8">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                        <div className="flex flex-col">
+                            <h2 className="font-poppins font-bold text-[36px] leading-[44px] text-[#4B2E2B] mb-4">
+                                Lowongan Terbaru
+                            </h2>
+                            <p className="font-poppins font-normal text-[16px] leading-[24px] text-[#4B2E2B] max-w-[500px]">
+                                Jelajahi berbagai lowongan pekerjaan yang tersedia dan temukan yang paling cocok untuk Anda.
+                            </p>
                         </div>
-                    ))}
+                        <button className="bg-[#4B2E2B] text-[#C69C6D] font-poppins font-bold text-[18px] h-[54px] px-8 rounded-[12px] hover:bg-[#341F1D] shrink-0 transition-colors">
+                            Lihat Semua
+                        </button>
+                    </div>
+
+                    {/* Grid Lowongan */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]">
+                        {daftarLowongan.map((lowongan) => (
+                            <div 
+                                key={lowongan.id}
+                                className="bg-[#F3EDE6] rounded-[16px] border border-black p-[24px] w-full max-w-[394.67px] h-[300px] flex flex-col justify-between mx-auto shadow-sm"
+                            >
+                                <div className="flex flex-col gap-[20px]">
+                                    {/* Logo Placeholder */}
+                                    <div className="w-[56px] h-[56px] bg-[#F4ECE9] rounded-[12px] flex items-center justify-center shrink-0">
+                                        <span className="font-inter font-bold text-[#82746D] text-lg">
+                                            {lowongan.logoText}
+                                        </span>
+                                    </div>
+
+                                    {/* Titles */}
+                                    <div className="flex flex-col gap-1">
+                                        <h3 className="font-manrope font-normal text-[20px] leading-[28px] text-[#1E1B19]">
+                                            {lowongan.judul}
+                                        </h3>
+                                        <p className="font-inter font-normal text-[14px] leading-[20px] text-[#50453E]">
+                                            {lowongan.perusahaan}
+                                        </p>
+                                    </div>
+
+                                    {/* Metadata Pills */}
+                                    <div className="flex gap-[8px]">
+                                        <div className="bg-[#F4ECE9] rounded-[6px] h-[24px] px-[8px] flex items-center gap-[4px]">
+                                            <IkonLokasi />
+                                            <span className="font-inter font-medium text-[12px] leading-[16px] text-[#82746D]">
+                                                {lowongan.lokasi}
+                                            </span>
+                                        </div>
+                                        <div className="bg-[#F4ECE9] rounded-[6px] h-[24px] px-[8px] flex items-center gap-[4px]">
+                                            <IkonGaji />
+                                            <span className="font-inter font-medium text-[12px] leading-[16px] text-[#82746D]">
+                                                {lowongan.gaji}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Button */}
+                                <button className="w-full h-[54px] border-[3px] border-[#C69C6D] rounded-[12px] 
+                                               font-inter font-normal text-[16px] leading-[24px] text-[#82746D]
+                                               transition-all duration-300 hover:bg-[#C69C6D]/10">
+                                    Lihat Detail Lowongan
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
         </div>

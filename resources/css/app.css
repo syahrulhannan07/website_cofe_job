@@ -1,12 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Lato:wght@400;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-poppins: "Poppins", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --font-manrope: "Manrope", sans-serif;
+  --font-lato: "Lato", sans-serif;
   --color-cafe-dark: #4B2E2B;
   --color-cafe-light: #C69C6D;
   --color-cafe-white: #F3EDE6;
-  --color-cafe-green: #92E3A9;
-  --color-cafe-brown: #4b3c2b;
+  --color-cafe-green: #6B8E23;
+  --color-cafe-brown: #4B3B2B;
   --radius-xl-hero: 80px;
   --radius-card: 20px;
 }

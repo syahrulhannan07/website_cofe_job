@@ -9,18 +9,18 @@ const BagianAjakan = () => {
 
                 {/* Kartu Kiri — Pemasang Lowongan (Node 51:215) */}
                 <div 
-                    className="relative overflow-hidden bg-[#769833] rounded-[40px] md:rounded-[80px] cursor-pointer group"
+                    className="relative overflow-hidden bg-[#6B8E23] rounded-[80px] cursor-pointer group"
                     style={{ height: '435px' }}
                 >
                     {/* Konten Teks — Posisi Deterministik (X: 90px, Y: 70px) */}
                     <div className="absolute left-8 md:left-[90px] top-[70px] z-10 flex flex-col max-w-[500px]">
-                        <h2 className="font-poppins font-bold text-[32px] md:text-[40px] leading-[1.3] md:leading-[60px] text-white md:min-h-[120px]">
+                        <h2 className="font-poppins font-bold text-[32px] md:text-[32px] leading-[48px] text-white">
                             Ingin Pasang Iklan<br/>
                             Lowongan di Cofe Job?
                         </h2>
                         <div className="mt-[61px]">
                             <button 
-                                className="bg-[#F3EDE6] text-[#4B2E2B] font-poppins font-semibold text-[18px] md:text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105"
+                                className="bg-[#F3EDE6] text-[#4B2E2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105"
                                 style={{ width: '254px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             >
                                 Gabung Sekarang
@@ -40,18 +40,18 @@ const BagianAjakan = () => {
 
                 {/* Kartu Kanan — Pencari Kerja (Node 51:223) */}
                 <div 
-                    className="relative overflow-hidden bg-[#4B3C2B] rounded-[40px] md:rounded-[80px] cursor-pointer group"
+                    className="relative overflow-hidden bg-[#4B3B2B] rounded-[80px] cursor-pointer group"
                     style={{ height: '435px' }}
                 >
                     {/* Konten Teks — Posisi Deterministik */}
                     <div className="absolute left-8 md:left-[90px] top-[70px] z-10 flex flex-col max-w-[442px]">
-                        <h2 className="font-poppins font-bold text-[32px] md:text-[40px] leading-[1.3] md:leading-[60px] text-white md:min-h-[120px]">
+                        <h2 className="font-poppins font-bold text-[32px] md:text-[32px] leading-[48px] text-white">
                             Cari Careermu dan<br/>
                             Lamar!
                         </h2>
                         <div className="mt-[61px]">
                             <button 
-                                className="bg-[#F3EDE6] text-[#4B3C2B] font-poppins font-semibold text-[18px] md:text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105"
+                                className="bg-[#F3EDE6] text-[#4B3B2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105"
                                 style={{ width: '201px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             >
                                 Cari Lowongan
