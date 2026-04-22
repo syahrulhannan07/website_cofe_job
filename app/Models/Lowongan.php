@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lowongan extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'lowongan';
+    protected $dates = ['deleted_at'];
     protected $primaryKey = 'id_lowongan';
 
     protected $fillable = [

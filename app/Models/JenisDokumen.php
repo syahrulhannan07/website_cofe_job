@@ -11,5 +11,6 @@ class JenisDokumen extends Model
 
     protected $fillable = [
         'nama_dokumen',
+        'keterangan',
     ];
 }

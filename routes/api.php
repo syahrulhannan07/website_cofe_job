@@ -16,6 +16,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/login', [LoginController::class, 'login']);
     });
 
+    // Jenis Dokumen (Public)
+    Route::get('/jenis-dokumen', [\App\Http\Controllers\Api\V1\JenisDokumenController::class, 'index']);
+
+
     // Fallback login route for authentication failures
     Route::get('/login', function () {
         return response()->json([
@@ -66,10 +70,23 @@ Route::prefix('v1')->group(function () {
         Route::get('/{id}/wawancara', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'detailWawancara']);
     });
 
-    // Profil Perusahaan (Admin Kafe)
-    Route::middleware(['auth:api', 'role:Admin_Perusahaan'])->prefix('admin/profil-perusahaan')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'index']);
-        Route::post('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'update']); // Use POST for multipart/form-data support
+    Route::middleware(['auth:api', 'role:Admin_Perusahaan'])->prefix('admin')->group(function () {
+        // Profil Perusahaan
+        Route::prefix('profil-perusahaan')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'index']);
+            Route::post('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'update']);
+        });
+
+        // Manajemen Lowongan
+        Route::prefix('lowongan')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'index']);
+            Route::post('/', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'store']);
+            Route::get('/{id}', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'show']);
+            Route::put('/{id}', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'update']);
+            Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'destroy']);
+            Route::post('/{id}/publish', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'publish']);
+            Route::post('/{id}/tutup', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'tutup']);
+        });
     });
 });
 
