@@ -15,6 +15,7 @@ class ProfilPerusahaan extends Model
         'nama_perusahaan',
         'alamat_perusahaan',
         'dokumen_izin',
+        'dokumen_legalitas',
         'deskripsi',
         'status_verifikasi',
     ];

@@ -12,6 +12,7 @@ Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('/daftar-pelamar', [RegisterController::class, 'daftarPelamar']);
         Route::post('/daftar-perusahaan', [RegisterController::class, 'daftarPerusahaan']);
+        Route::post('/register/perusahaan', [RegisterController::class, 'registrasiPerusahaan']);
         Route::post('/login', [LoginController::class, 'login']);
     });
 
@@ -24,7 +25,7 @@ Route::prefix('v1')->group(function () {
     })->name('login');
 
     // Profil Pelamar
-    Route::middleware(['auth:api', 'role'])->prefix('pelamar/profil')->group(function () {
+    Route::middleware(['auth:api', 'role:Pelamar'])->prefix('pelamar/profil')->group(function () {
         Route::get('/', [ProfilController::class, 'index']);
         Route::post('/update', [ProfilController::class, 'update']);
         
@@ -50,7 +51,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // Lamaran (Protected)
-    Route::middleware(['auth:api', 'role'])->prefix('lamaran')->group(function () {
+    Route::middleware(['auth:api', 'role:Pelamar'])->prefix('lamaran')->group(function () {
         Route::post('/mulai', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'mulai']);
         Route::post('/{id}/dokumen', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'uploadDokumen']);
         Route::post('/{id}/jawaban', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'simpanJawaban']);
@@ -59,10 +60,16 @@ Route::prefix('v1')->group(function () {
     });
 
     // Tracking Lamaran & Wawancara (Protected)
-    Route::middleware(['auth:api', 'role'])->prefix('pelamar/lamaran')->group(function () {
+    Route::middleware(['auth:api', 'role:Pelamar'])->prefix('pelamar/lamaran')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'index']);
         Route::get('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'show']);
         Route::get('/{id}/wawancara', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'detailWawancara']);
+    });
+
+    // Profil Perusahaan (Admin Kafe)
+    Route::middleware(['auth:api', 'role:Admin_Perusahaan'])->prefix('admin/profil-perusahaan')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'update']); // Use POST for multipart/form-data support
     });
 });
 
