@@ -24,4 +24,19 @@ class ProfilPelamar extends Model
     {
         return $this->belongsTo(Pengguna::class, 'id_pengguna', 'id_pengguna');
     }
+
+    public function skills()
+    {
+        return $this->hasMany(Skill::class, 'id_profil', 'id_profil');
+    }
+
+    public function pendidikan()
+    {
+        return $this->hasMany(Pendidikan::class, 'id_profil', 'id_profil');
+    }
+
+    public function pengalamanKerja()
+    {
+        return $this->hasMany(PengalamanKerja::class, 'id_profil', 'id_profil');
+    }
 }

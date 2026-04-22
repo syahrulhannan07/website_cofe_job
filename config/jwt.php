@@ -1,32 +1,4 @@
-Buatkan endpoint registrasi akun Admin Kafe (perusahaan):
-
-Method: POST
-Endpoint: /api/v1/auth/daftar-perusahaan
-Auth: Tidak perlu (public)
-Content-Type: multipart/form-data (karena ada upload file)
-
-Request Body:
-- nama_pengguna: string, required
-- email: string, required, unique
-- kata_sandi: string, required, min:8
-- nama_perusahaan: string, required
-- alamat_perusahaan: string, required
-- dokumen_izin: file, required, format: pdf/jpg/png, max: 5MB
-
-Logika:
-1. Validasi semua field dan file
-2. Cek email unik
-3. Simpan file dokumen ke storage (return error jika gagal)
-4. Buat record di PENGGUNA dengan peran = 'Admin_Perusahaan'
-5. Buat record di PROFIL_PERUSAHAAN dengan status_verifikasi = 'Pending'
-6. Return 201 dengan pesan sukses
-
-Response sukses:
-{
-  "status": "success",
-  "message": "Pendaftaran berhasil. Akun Anda sedang ditinjau oleh Super Admin. Harap tunggu persetujuan.",
-  "data": { "id_pengguna", "email", "nama_perusahaan", "status_verifikasi": "Pending" }
-}<?php
+<?php
 
 return [
     /*

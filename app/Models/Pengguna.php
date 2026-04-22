@@ -53,4 +53,9 @@ class Pengguna extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(ProfilPerusahaan::class, 'id_pengguna', 'id_pengguna');
     }
+
+    public function profilPelamar()
+    {
+        return $this->hasOne(ProfilPelamar::class, 'id_pengguna', 'id_pengguna');
+    }
 }
