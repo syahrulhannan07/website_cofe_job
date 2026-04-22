@@ -18,6 +18,7 @@ class Pengguna extends Authenticatable implements JWTSubject
         'email',
         'kata_sandi',
         'peran',
+        'status_akun',
     ];
 
     protected $hidden = [

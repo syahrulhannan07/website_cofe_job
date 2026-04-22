@@ -46,6 +46,14 @@ class LoginController extends Controller
             ], 401);
         }
 
+        // 4.5 Cek status akun
+        if ($pengguna->status_akun === 'Diblokir') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akun Anda telah ditangguhkan. Silakan hubungi bantuan.'
+            ], 403);
+        }
+
         // 5. Generate JWT token
         // Token akan otomatis berisi id_pengguna sebagai 'sub' 
         // We can manually add claims if needed, but the requirements say "sertakan payload: id_pengguna, email, peran"

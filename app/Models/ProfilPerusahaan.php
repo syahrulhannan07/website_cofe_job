@@ -18,6 +18,7 @@ class ProfilPerusahaan extends Model
         'dokumen_legalitas',
         'deskripsi',
         'status_verifikasi',
+        'alasan_penolakan',
     ];
 
     public function pengguna()

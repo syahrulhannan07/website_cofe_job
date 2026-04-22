@@ -108,6 +108,27 @@ Route::prefix('v1')->group(function () {
             Route::post('/{id_wawancara}/selesai', [\App\Http\Controllers\Api\V1\Admin\WawancaraController::class, 'selesai']);
         });
     });
+
+    Route::middleware(['auth:api', 'role:Super_Admin'])->prefix('superadmin')->group(function () {
+        // Verifikasi Perusahaan
+        Route::prefix('verifikasi')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'daftarVerifikasi']);
+            Route::get('/{id}', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'detailVerifikasi']);
+            Route::post('/{id}/setujui', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'setujuiVerifikasi']);
+            Route::post('/{id}/tolak', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'tolakVerifikasi']);
+        });
+
+        // Kelola Akun Admin
+        Route::prefix('admin')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'daftarAdmin']);
+            Route::get('/{id}', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'detailAdmin']);
+            Route::post('/{id}/nonaktifkan', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'nonaktifkanAdmin']);
+            Route::post('/{id}/aktifkan', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'aktifkanAdmin']);
+        });
+
+        // Dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'dashboard']);
+    });
 });
 
 Route::get('/user', function (Request $request) {
