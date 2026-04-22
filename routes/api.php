@@ -57,6 +57,13 @@ Route::prefix('v1')->group(function () {
         Route::post('/{id}/kirim', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'kirim']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'batalkan']);
     });
+
+    // Tracking Lamaran & Wawancara (Protected)
+    Route::middleware(['auth:api', 'role'])->prefix('pelamar/lamaran')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'show']);
+        Route::get('/{id}/wawancara', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'detailWawancara']);
+    });
 });
 
 Route::get('/user', function (Request $request) {
