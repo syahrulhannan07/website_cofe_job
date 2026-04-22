@@ -42,6 +42,21 @@ Route::prefix('v1')->group(function () {
         Route::put('/pengalaman/{id}', [ProfilController::class, 'updatePengalaman']);
         Route::delete('/pengalaman/{id}', [ProfilController::class, 'deletePengalaman']);
     });
+
+    // Lowongan (Public/Optional Auth)
+    Route::prefix('lowongan')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\LowonganController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\LowonganController::class, 'show']);
+    });
+
+    // Lamaran (Protected)
+    Route::middleware(['auth:api', 'role'])->prefix('lamaran')->group(function () {
+        Route::post('/mulai', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'mulai']);
+        Route::post('/{id}/dokumen', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'uploadDokumen']);
+        Route::post('/{id}/jawaban', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'simpanJawaban']);
+        Route::post('/{id}/kirim', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'kirim']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'batalkan']);
+    });
 });
 
 Route::get('/user', function (Request $request) {

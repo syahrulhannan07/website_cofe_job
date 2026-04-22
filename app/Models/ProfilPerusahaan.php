@@ -23,4 +23,9 @@ class ProfilPerusahaan extends Model
     {
         return $this->belongsTo(Pengguna::class, 'id_pengguna', 'id_pengguna');
     }
+
+    public function lowongan()
+    {
+        return $this->hasMany(Lowongan::class, 'id_perusahaan', 'id_perusahaan');
+    }
 }
