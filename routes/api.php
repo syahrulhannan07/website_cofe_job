@@ -86,6 +86,15 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'destroy']);
             Route::post('/{id}/publish', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'publish']);
             Route::post('/{id}/tutup', [\App\Http\Controllers\Api\V1\Admin\LowonganController::class, 'tutup']);
+
+            // Seleksi Lamaran: daftar kandidat per lowongan
+            Route::get('/{id_lowongan}/pelamar', [\App\Http\Controllers\Api\V1\Admin\SeleksiLamaranController::class, 'daftarPelamar']);
+        });
+
+        // Seleksi Lamaran: detail & update status kandidat
+        Route::prefix('lamaran')->group(function () {
+            Route::get('/{id_lamaran}', [\App\Http\Controllers\Api\V1\Admin\SeleksiLamaranController::class, 'detailLamaran']);
+            Route::put('/{id_lamaran}/status', [\App\Http\Controllers\Api\V1\Admin\SeleksiLamaranController::class, 'updateStatus']);
         });
     });
 });
