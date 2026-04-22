@@ -17,8 +17,24 @@ class Wawancara extends Model
         'status',
     ];
 
+    protected $casts = [
+        'tanggal_wawancara' => 'datetime',
+    ];
+
     public function lamaran()
     {
         return $this->belongsTo(Lamaran::class, 'id_lamaran', 'id_lamaran');
+    }
+
+    public function profil()
+    {
+        return $this->hasOneThrough(
+            ProfilPelamar::class,
+            Lamaran::class,
+            'id_lamaran',   // FK on lamaran → wawancara
+            'id_profil',    // FK on profil_pelamar → lamaran
+            'id_lamaran',   // local key on wawancara
+            'id_profil'     // local key on lamaran
+        );
     }
 }
