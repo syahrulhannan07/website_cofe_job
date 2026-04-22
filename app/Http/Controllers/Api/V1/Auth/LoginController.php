@@ -8,9 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use App\Traits\ApiResponse;
 
 class LoginController extends Controller
 {
+    use ApiResponse;
+
     public function login(Request $request)
     {
         // 1. Validasi input
@@ -81,6 +84,24 @@ class LoginController extends Controller
             ];
         }
 
-        return response()->json($responseData, 200);
+        return $this->successResponse($responseData['data'], 'Login berhasil');
+    }
+
+    /**
+     * Logout pengguna (Invalidate token).
+     */
+    public function logout()
+    {
+        auth('api')->logout();
+
+        return $this->successResponse(null, 'Berhasil logout');
+    }
+
+    /**
+     * Ambil data pengguna yang sedang login.
+     */
+    public function me()
+    {
+        return $this->successResponse(auth('api')->user());
     }
 }

@@ -14,6 +14,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/daftar-perusahaan', [RegisterController::class, 'daftarPerusahaan']);
         Route::post('/register/perusahaan', [RegisterController::class, 'registrasiPerusahaan']);
         Route::post('/login', [LoginController::class, 'login']);
+
+        Route::middleware('auth:api')->group(function () {
+            Route::post('/logout', [LoginController::class, 'logout']);
+            Route::get('/me', [LoginController::class, 'me']);
+        });
     });
 
     // Jenis Dokumen (Public)

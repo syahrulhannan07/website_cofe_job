@@ -3,33 +3,25 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Notifikasi;
+use App\Repositories\V1\NotifikasiRepository;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
 class NotifikasiController extends Controller
 {
-    /**
-     * Ambil semua notifikasi milik user yang login.
-     *
-     * GET /api/v1/notifikasi
-     */
+    use ApiResponse;
+
+    protected $repository;
+
+    public function __construct(NotifikasiRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     public function index(Request $request)
     {
         $user = auth('api')->user();
-
-        $query = Notifikasi::where('id_pengguna', $user->id_pengguna);
-
-        // Filter belum dibaca
-        if ($request->boolean('belum_dibaca')) {
-            $query->where('dibaca', false);
-        }
-
-        $perPage = (int) $request->get('per_page', 20);
-        $notifikasi = $query->orderBy('created_at', 'desc')->paginate($perPage);
-
-        $unreadCount = Notifikasi::where('id_pengguna', $user->id_pengguna)
-            ->where('dibaca', false)
-            ->count();
+        $notifikasi = $this->repository->getByUser($user->id_pengguna, $request->all());
 
         $items = $notifikasi->getCollection()->map(fn ($n) => [
             'id'          => $n->id_notifikasi,
@@ -39,89 +31,45 @@ class NotifikasiController extends Controller
             'dibuat_pada' => $n->created_at?->toDateTimeString(),
         ]);
 
-        return response()->json([
-            'status'       => 'success',
-            'data'         => $items,
-            'unread_count' => $unreadCount,
+        return $this->successResponse($items, null, 200, [
+            'unread_count' => $this->repository->getUnreadCount($user->id_pengguna),
             'pagination'   => [
                 'current_page' => $notifikasi->currentPage(),
                 'last_page'    => $notifikasi->lastPage(),
-                'per_page'     => $notifikasi->perPage(),
                 'total'        => $notifikasi->total(),
             ],
         ]);
     }
 
-    /**
-     * Tandai satu notifikasi sebagai sudah dibaca.
-     *
-     * PUT /api/v1/notifikasi/{id}/baca
-     */
     public function baca($id)
     {
         $user = auth('api')->user();
-        $notifikasi = Notifikasi::where('id_pengguna', $user->id_pengguna)
-            ->where('id_notifikasi', $id)
-            ->first();
+        $notifikasi = $this->repository->findByIdAndUser($id, $user->id_pengguna);
 
-        if (!$notifikasi) {
-            return response()->json(['status' => 'error', 'message' => 'Notifikasi tidak ditemukan'], 404);
-        }
+        if (!$notifikasi) return $this->errorResponse('Notifikasi tidak ditemukan', 404);
 
-        $notifikasi->update([
-            'dibaca'      => true,
-            'dibaca_pada' => now(),
-        ]);
+        $this->repository->markAsRead($notifikasi);
 
-        return response()->json([
-            'status'  => 'success',
-            'message' => 'Notifikasi ditandai sebagai dibaca',
-        ]);
+        return $this->successResponse(null, 'Notifikasi ditandai sebagai dibaca');
     }
 
-    /**
-     * Tandai semua notifikasi user sebagai sudah dibaca.
-     *
-     * PUT /api/v1/notifikasi/baca-semua
-     */
     public function bacaSemua()
     {
         $user = auth('api')->user();
+        $this->repository->markAllAsRead($user->id_pengguna);
 
-        Notifikasi::where('id_pengguna', $user->id_pengguna)
-            ->where('dibaca', false)
-            ->update([
-                'dibaca'      => true,
-                'dibaca_pada' => now(),
-            ]);
-
-        return response()->json([
-            'status'  => 'success',
-            'message' => 'Semua notifikasi ditandai sebagai dibaca',
-        ]);
+        return $this->successResponse(null, 'Semua notifikasi ditandai sebagai dibaca');
     }
 
-    /**
-     * Hapus satu notifikasi.
-     *
-     * DELETE /api/v1/notifikasi/{id}
-     */
     public function destroy($id)
     {
         $user = auth('api')->user();
-        $notifikasi = Notifikasi::where('id_pengguna', $user->id_pengguna)
-            ->where('id_notifikasi', $id)
-            ->first();
+        $notifikasi = $this->repository->findByIdAndUser($id, $user->id_pengguna);
 
-        if (!$notifikasi) {
-            return response()->json(['status' => 'error', 'message' => 'Notifikasi tidak ditemukan'], 404);
-        }
+        if (!$notifikasi) return $this->errorResponse('Notifikasi tidak ditemukan', 404);
 
-        $notifikasi->delete();
+        $this->repository->delete($notifikasi);
 
-        return response()->json([
-            'status'  => 'success',
-            'message' => 'Notifikasi berhasil dihapus',
-        ]);
+        return $this->successResponse(null, 'Notifikasi berhasil dihapus');
     }
 }
