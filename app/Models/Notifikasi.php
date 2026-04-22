@@ -13,6 +13,13 @@ class Notifikasi extends Model
         'id_pengguna',
         'judul',
         'pesan',
+        'dibaca',
+        'dibaca_pada',
+    ];
+
+    protected $casts = [
+        'dibaca' => 'boolean',
+        'dibaca_pada' => 'datetime',
     ];
 
     public function pengguna()

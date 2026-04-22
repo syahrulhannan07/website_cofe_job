@@ -6,12 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Lamaran;
 use App\Models\Notifikasi;
 use App\Models\Wawancara;
+use App\Services\NotifikasiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class WawancaraController extends Controller
 {
+    protected $notifikasiService;
+
+    public function __construct(NotifikasiService $notifikasiService)
+    {
+        $this->notifikasiService = $notifikasiService;
+    }
+
     /**
      * Buat jadwal wawancara untuk kandidat.
      * Prasyarat: status lamaran harus 'Wawancara'.
@@ -423,11 +431,7 @@ class WawancaraController extends Controller
     {
         if (!$idPengguna) return;
 
-        Notifikasi::create([
-            'id_pengguna' => $idPengguna,
-            'judul'       => $judul,
-            'pesan'       => $pesan,
-        ]);
+        $this->notifikasiService->kirim($idPengguna, $judul, $pesan);
     }
 
     /**

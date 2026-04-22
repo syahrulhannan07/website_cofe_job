@@ -19,6 +19,14 @@ Route::prefix('v1')->group(function () {
     // Jenis Dokumen (Public)
     Route::get('/jenis-dokumen', [\App\Http\Controllers\Api\V1\JenisDokumenController::class, 'index']);
 
+    // Notifikasi (Protected - Semua Peran)
+    Route::middleware(['auth:api'])->prefix('notifikasi')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\NotifikasiController::class, 'index']);
+        Route::put('/baca-semua', [\App\Http\Controllers\Api\V1\NotifikasiController::class, 'bacaSemua']);
+        Route::put('/{id}/baca', [\App\Http\Controllers\Api\V1\NotifikasiController::class, 'baca']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\V1\NotifikasiController::class, 'destroy']);
+    });
+
 
     // Fallback login route for authentication failures
     Route::get('/login', function () {

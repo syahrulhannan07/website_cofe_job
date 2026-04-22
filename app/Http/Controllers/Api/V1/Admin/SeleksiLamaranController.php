@@ -7,12 +7,20 @@ use App\Models\Lamaran;
 use App\Models\LogStatusLamaran;
 use App\Models\Lowongan;
 use App\Models\Notifikasi;
+use App\Services\NotifikasiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class SeleksiLamaranController extends Controller
 {
+    protected $notifikasiService;
+
+    public function __construct(NotifikasiService $notifikasiService)
+    {
+        $this->notifikasiService = $notifikasiService;
+    }
+
     /**
      * Daftar semua kandidat yang melamar ke lowongan tertentu.
      *
@@ -265,11 +273,7 @@ class SeleksiLamaranController extends Controller
             if ($idPengguna) {
                 [$judul, $pesan] = $this->buildNotifikasi($statusBaru, $posisi, $namaKafe);
 
-                Notifikasi::create([
-                    'id_pengguna' => $idPengguna,
-                    'judul'       => $judul,
-                    'pesan'       => $pesan,
-                ]);
+                $this->notifikasiService->kirim($idPengguna, $judul, $pesan);
             }
 
             DB::commit();

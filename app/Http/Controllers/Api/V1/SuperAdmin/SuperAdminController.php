@@ -9,6 +9,7 @@ use App\Models\Notifikasi;
 use App\Models\Pengguna;
 use App\Models\ProfilPelamar;
 use App\Models\ProfilPerusahaan;
+use App\Services\NotifikasiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -16,6 +17,13 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class SuperAdminController extends Controller
 {
+    protected $notifikasiService;
+
+    public function __construct(NotifikasiService $notifikasiService)
+    {
+        $this->notifikasiService = $notifikasiService;
+    }
+
     /**
      * Daftar kafe dengan status_verifikasi = 'Pending'.
      */
@@ -89,11 +97,11 @@ class SuperAdminController extends Controller
         $p->save();
 
         // Notifikasi ke Admin Kafe
-        Notifikasi::create([
-            'id_pengguna' => $p->id_pengguna,
-            'judul'       => 'Akun Terverifikasi ✅',
-            'pesan'       => 'Selamat! Akun kafe Anda telah diverifikasi dan kini Anda dapat memposting lowongan.',
-        ]);
+        $this->notifikasiService->kirim(
+            $p->id_pengguna,
+            'Akun Terverifikasi ✅',
+            'Selamat! Akun kafe Anda telah diverifikasi dan kini Anda dapat memposting lowongan.'
+        );
 
         return response()->json([
             'status'  => 'success',
@@ -125,11 +133,11 @@ class SuperAdminController extends Controller
         $p->save();
 
         // Notifikasi ke Admin Kafe
-        Notifikasi::create([
-            'id_pengguna' => $p->id_pengguna,
-            'judul'       => 'Pendaftaran Ditolak ❌',
-            'pesan'       => "Mohon maaf, pendaftaran kafe Anda ditolak dengan alasan: {$request->alasan}. Silakan perbaiki profil Anda dan ajukan kembali.",
-        ]);
+        $this->notifikasiService->kirim(
+            $p->id_pengguna,
+            'Pendaftaran Ditolak ❌',
+            "Mohon maaf, pendaftaran kafe Anda ditolak dengan alasan: {$request->alasan}. Silakan perbaiki profil Anda dan ajukan kembali."
+        );
 
         return response()->json([
             'status'  => 'success',
