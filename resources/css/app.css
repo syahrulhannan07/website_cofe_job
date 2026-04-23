@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Lato:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Lato:wght@400;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,800&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -7,6 +7,8 @@
   --font-inter: "Inter", sans-serif;
   --font-manrope: "Manrope", sans-serif;
   --font-lato: "Lato", sans-serif;
+  --font-jakarta: "Plus Jakarta Sans", sans-serif;
+
   --color-cafe-dark: #4B2E2B;
   --color-cafe-light: #C69C6D;
   --color-cafe-white: #F3EDE6;
