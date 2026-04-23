@@ -26,8 +26,8 @@ const layananAutentikasi = {
      * Mendaftarkan pengguna baru.
      * @param {{ namaLengkap: string, surel: string, kataSandi: string, peran: string }} dataPengguna
      */
-    daftar: async (dataPengguna) => {
-        const respons = await api.post('/auth/register', dataPengguna);
+    daftar: async (dataPengguna, endpoint = '/auth/register') => {
+        const respons = await api.post(endpoint, dataPengguna);
         return respons.data;
     },
 

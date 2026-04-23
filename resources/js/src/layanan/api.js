@@ -5,7 +5,7 @@ import axios from 'axios';
  * Secara otomatis menyertakan token autentikasi dan menangani error 401.
  */
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: '/api/v1',
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

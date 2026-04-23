@@ -4,7 +4,6 @@ import Navbar from '../../komponen/umum/Navbar';
 import layananAutentikasi from '../../layanan/layananAutentikasi';
 
 const Masuk = () => {
-    const [peran, setPeran] = useState('Pelamar');
     const [surel, setSurel] = useState('');
     const [kataSandi, setKataSandi] = useState('');
     const [sedangMemuat, setSedangMemuat] = useState(false);
@@ -18,24 +17,24 @@ const Masuk = () => {
 
         try {
             const respons = await layananAutentikasi.masuk({
-                surel,
-                kata_sandi: kataSandi,
-                peran: peran // Optional depending on backend requirements
+                email: surel,
+                kata_sandi: kataSandi
             });
 
-            // Simpan token (biasanya di layananAutentikasi sudah ditangani atau perlu manual)
+            // Simpan token dan data pengguna
             if (respons.data && respons.data.token) {
                 localStorage.setItem('token', respons.data.token);
-                localStorage.setItem('peran', respons.data.user.peran);
+                localStorage.setItem('peran', respons.data.pengguna.peran);
+                localStorage.setItem('pengguna', JSON.stringify(respons.data.pengguna));
                 
                 // Redirect based on role
-                const userPeran = respons.data.user.peran;
+                const userPeran = respons.data.pengguna.peran;
                 if (userPeran === 'Pelamar') {
                     navigate('/');
                 } else if (userPeran === 'Admin_Perusahaan') {
-                    navigate('/admin/dashboard');
+                    navigate('/admin');
                 } else if (userPeran === 'Super_Admin') {
-                    navigate('/super-admin/dashboard');
+                    navigate('/super-admin');
                 }
             }
         } catch (error) {
@@ -47,101 +46,85 @@ const Masuk = () => {
     };
 
     return (
-        <div className="min-h-screen bg-cafe-white font-poppins">
+        <div className="min-h-screen bg-[#F3EDE6] font-poppins flex flex-col overflow-x-hidden">
             <Navbar />
             
-            <div className="flex justify-center items-center py-10 px-4">
-                <div className="w-full max-w-[1240px] flex flex-col md:flex-row bg-white rounded-[50px] overflow-hidden shadow-xl min-h-[539px]">
-                    
-                    {/* Sisi Kiri: Sidebar Cokelat */}
-                    <div className="w-full md:w-[413px] bg-cafe-dark p-12 flex flex-col justify-center text-cafe-white">
-                        <div className="space-y-6">
-                            <h2 className="font-jakarta font-[800] text-[36px] leading-[1.2] tracking-[-0.05em]">
-                                Gabung bersama <br />
-                                <span className="text-cafe-light">di cofe job.</span>
-                            </h2>
-                            <p className="text-cafe-white/80 text-lg">
-                                Temukan peluang karir terbaik di industri kopi dan cafe di seluruh Indonesia.
-                            </p>
-                        </div>
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col md:flex-row w-full max-w-[1440px] mx-auto py-8">
+                
+                {/* Sisi Kiri: Sidebar Cokelat (Menempel di kiri) */}
+                <div className="hidden md:flex w-[40%] max-w-[413px] min-h-[600px] bg-[#4B2E2B] rounded-r-[50px] flex-col justify-start pt-[130px] px-10 shadow-lg">
+                    <div className="w-full">
+                        <span className="text-[#C69C6D] text-[32px] lg:text-[36px] font-jakarta font-[800] leading-[1.4] break-words block">
+                            Gabung bersama
+                        </span>
+                        <span className="text-[#F3EDE6] text-[32px] lg:text-[36px] font-jakarta italic font-[800] leading-[1.4] break-words block mt-[-5px]">
+                            di cofe job.
+                        </span>
                     </div>
+                </div>
 
-                    {/* Sisi Kanan: Form Login */}
-                    <div className="flex-1 p-8 md:p-16 bg-white flex flex-col">
-                        <div className="max-w-[543px] mx-auto w-full">
-                            
-                            {/* Tab Seleksi Peran */}
-                            <div className="flex bg-cafe-light/10 rounded-full p-1 mb-8">
-                                {['Pelamar', 'Perusahaan', 'Admin'].map((item) => (
-                                    <button
-                                        key={item}
-                                        onClick={() => setPeran(item === 'Perusahaan' ? 'Admin_Perusahaan' : item === 'Admin' ? 'Super_Admin' : 'Pelamar')}
-                                        className={`flex-1 py-3 px-6 rounded-full text-sm font-bold transition-all ${
-                                            (item === 'Pelamar' && peran === 'Pelamar') || 
-                                            (item === 'Perusahaan' && peran === 'Admin_Perusahaan') || 
-                                            (item === 'Admin' && peran === 'Super_Admin')
-                                            ? 'bg-cafe-light text-cafe-dark shadow-md'
-                                            : 'text-cafe-dark/60 hover:text-cafe-dark'
-                                        }`}
-                                    >
-                                        {item}
-                                    </button>
-                                ))}
-                            </div>
+                {/* Sisi Kanan: Area Tabs & Form */}
+                <div className="w-full md:w-[60%] flex flex-col items-center justify-center p-6 lg:p-10">
+                    <div className="flex flex-col items-center w-full max-w-[500px] mx-auto gap-6">
+                        
+                        {/* Tab Static (Masuk) */}
+                        <div className="w-full h-[60px] bg-[#C69C6D] rounded-[50px] flex items-center justify-center shadow-sm">
+                            <span className="text-[18px] font-bold text-[#4B2E2B]">Masuk</span>
+                        </div>
 
-                            <div className="mb-8">
-                                <h1 className="text-2xl font-bold text-cafe-dark mb-2">Masuk</h1>
-                                <p className="text-cafe-dark/60">Masuk dan temukan Careermu!</p>
+                        {/* Form Login */}
+                        <div className="w-full bg-white rounded-[40px] p-8 md:p-10 shadow-lg">
+                            <div className="mb-6 text-center md:text-left">
+                                <h1 className="text-[22px] font-bold text-[#4B2E2B] mb-1">Masuk dan temukan Careermu!</h1>
                             </div>
 
                             {pesanGalat && (
-                                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+                                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
                                     <p className="text-red-700 text-sm">{pesanGalat}</p>
                                 </div>
                             )}
 
-                            <form onSubmit={menanganiMasuk} className="space-y-6">
+                            <form onSubmit={menanganiMasuk} className="space-y-5">
                                 <div>
-                                    <label className="block text-cafe-dark font-semibold mb-2" htmlFor="email">Email</label>
+                                    <label className="block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="email">Email</label>
                                     <input
                                         id="email"
                                         type="email"
                                         value={surel}
                                         onChange={(e) => setSurel(e.target.value)}
-                                        placeholder="Masukkan email Anda"
-                                        className="w-full px-5 py-3 rounded-xl border border-cafe-dark/20 focus:outline-none focus:ring-2 focus:ring-cafe-light/50 focus:border-cafe-light transition-all"
+                                        className="w-full px-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"
                                         required
                                     />
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-cafe-dark font-semibold mb-2" htmlFor="password">Password</label>
+                                    <label className="block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="password">Password</label>
                                     <input
                                         id="password"
                                         type="password"
                                         value={kataSandi}
                                         onChange={(e) => setKataSandi(e.target.value)}
-                                        placeholder="••••••••"
-                                        className="w-full px-5 py-3 rounded-xl border border-cafe-dark/20 focus:outline-none focus:ring-2 focus:ring-cafe-light/50 focus:border-cafe-light transition-all"
+                                        className="w-full px-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"
                                         required
                                     />
                                 </div>
 
-                                <div className="flex flex-col gap-4 pt-2">
+                                <div className="flex items-center gap-1 mt-1">
+                                    <span className="text-[13px] font-medium text-[#4B2E2B]">Belum punya akun? </span>
+                                    <Link to="/daftar" className="text-[#C69C6D] text-[13px] font-medium hover:underline">
+                                        Daftar disini
+                                    </Link>
+                                </div>
+
+                                <div className="pt-3">
                                     <button
                                         type="submit"
                                         disabled={sedangMemuat}
-                                        className="w-full bg-cafe-light text-cafe-dark font-bold py-4 rounded-full hover:bg-[#b88c5d] transition-all shadow-lg active:scale-[0.98] disabled:opacity-70"
+                                        className="w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-[50px] hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center"
                                     >
                                         {sedangMemuat ? 'Memproses...' : 'Masuk'}
                                     </button>
-                                    
-                                    <p className="text-center text-sm text-cafe-dark/80">
-                                        Belum punya akun?{' '}
-                                        <Link to="/daftar" className="text-cafe-light font-bold hover:underline">
-                                            Daftar disini
-                                        </Link>
-                                    </p>
                                 </div>
                             </form>
                         </div>
@@ -153,4 +136,3 @@ const Masuk = () => {
 };
 
 export default Masuk;
-
