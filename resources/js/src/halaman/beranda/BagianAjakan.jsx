@@ -4,13 +4,12 @@ import gambarCariLowongan from '../../aset/beranda/img-cari-lowongan.png';
 
 const BagianAjakan = () => {
     return (
-        <div className="flex w-full justify-center pb-12 md:pb-[100px] px-4">
+        <div className="flex w-full justify-center pb-12 md:pb-[150px] px-4">
             <section className="w-full max-w-[1300px] grid grid-cols-1 lg:grid-cols-2 gap-[30px]">
 
                 {/* Kartu Kiri — Pemasang Lowongan (Node 51:215) */}
                 <div 
-                    className="relative overflow-hidden bg-[#6B8E23] rounded-[80px] cursor-pointer group"
-                    style={{ height: '435px' }}
+                    className="relative overflow-hidden bg-[#6B8E23] rounded-[80px] cursor-pointer group h-[435px]"
                 >
                     {/* Konten Teks — Posisi Deterministik (X: 90px, Y: 70px) */}
                     <div className="absolute left-8 md:left-[90px] top-[70px] z-10 flex flex-col max-w-[500px]">
@@ -20,8 +19,7 @@ const BagianAjakan = () => {
                         </h2>
                         <div className="mt-[61px]">
                             <button 
-                                className="bg-[#F3EDE6] text-[#4B2E2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105"
-                                style={{ width: '254px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                className="bg-[#F3EDE6] text-[#4B2E2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105 w-[254px] h-[60px] flex items-center justify-center"
                             >
                                 Gabung Sekarang
                             </button>
@@ -40,8 +38,7 @@ const BagianAjakan = () => {
 
                 {/* Kartu Kanan — Pencari Kerja (Node 51:223) */}
                 <div 
-                    className="relative overflow-hidden bg-[#4B3B2B] rounded-[80px] cursor-pointer group"
-                    style={{ height: '435px' }}
+                    className="relative overflow-hidden bg-[#4B3B2B] rounded-[80px] cursor-pointer group h-[435px]"
                 >
                     {/* Konten Teks — Posisi Deterministik */}
                     <div className="absolute left-8 md:left-[90px] top-[70px] z-10 flex flex-col max-w-[442px]">
@@ -51,8 +48,7 @@ const BagianAjakan = () => {
                         </h2>
                         <div className="mt-[61px]">
                             <button 
-                                className="bg-[#F3EDE6] text-[#4B3B2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105"
-                                style={{ width: '201px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                className="bg-[#F3EDE6] text-[#4B3B2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105 w-[258px] h-[60px] flex items-center justify-center"
                             >
                                 Cari Lowongan
                             </button>

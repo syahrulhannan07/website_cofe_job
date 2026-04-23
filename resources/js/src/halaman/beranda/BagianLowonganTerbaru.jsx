@@ -45,23 +45,18 @@ const IkonGaji = () => (
 
 const BagianLowonganTerbaru = () => {
     return (
-        <div className="flex w-full justify-center px-4">
+        <div className="flex w-full justify-center px-4 pb-[150px]">
             {/* Wadah Seksi Utama - Radius 50, BG #C69C6D */}
             <section className="relative w-full max-w-[1300px] bg-[#C69C6D] rounded-[50px] overflow-hidden pt-20 pb-32">
                 <div className="max-w-[1232px] mx-auto px-4 md:px-8">
                     {/* Header */}
-                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-                        <div className="flex flex-col">
-                            <h2 className="font-poppins font-bold text-[36px] leading-[44px] text-[#4B2E2B] mb-4">
-                                Lowongan Terbaru
-                            </h2>
-                            <p className="font-poppins font-normal text-[16px] leading-[24px] text-[#4B2E2B] max-w-[500px]">
-                                Jelajahi berbagai lowongan pekerjaan yang tersedia dan temukan yang paling cocok untuk Anda.
-                            </p>
-                        </div>
-                        <button className="bg-[#4B2E2B] text-[#C69C6D] font-poppins font-bold text-[18px] h-[54px] px-8 rounded-[12px] hover:bg-[#341F1D] shrink-0 transition-colors">
-                            Lihat Semua
-                        </button>
+                    <div className="flex flex-col mb-12">
+                        <h2 className="font-poppins font-bold text-[36px] leading-[44px] text-[#4B2E2B] mb-4">
+                            Lowongan Terbaru
+                        </h2>
+                        <p className="font-poppins font-normal text-[16px] leading-[24px] text-[#4B2E2B] max-w-[500px]">
+                            Jelajahi berbagai lowongan pekerjaan yang tersedia dan temukan yang paling cocok untuk Anda.
+                        </p>
                     </div>
 
                     {/* Grid Lowongan */}
