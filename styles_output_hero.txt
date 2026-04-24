@@ -1,0 +1,14 @@
+Frame 69 (FRAME): W:1383 H:284 Radius:10 
+  Temukan Karir Impian Anda (TEXT): W:523 H:54 Bg:#4B2E2B Font:Poppins 700 36px Color:#4B2E2B 
+  elajahi berbagai lowongan pekerjaan yang tersedia dan temukan yang paling cocok untuk Anda. (TEXT): W:780 H:24 Bg:#4B2E2B Font:Poppins 400 16px Color:#4B2E2B 
+  Frame 80 (FRAME): W:1286 H:110 Border:#4B2E2B (W:3) Radius:50 
+    Group 1 (GROUP): W:1226 H:70 Radius:100 
+      Desktop - 2 (FRAME): W:444 H:70 Bg:#F3EDE6 Border:#818080 (W:1) Radius:100 
+        Search (RECTANGLE): W:50 H:50 
+        Cari Lowongan..... (TEXT): W:179 H:30 Bg:#C69C6D Font:Poppins 600 20px Color:#C69C6D 
+      Desktop - 4 (FRAME): W:300 H:70 Bg:#F3EDE6 Border:#818080 (W:1) Radius:100 
+        Expand Arrow (RECTANGLE): W:40 H:40 
+        Lokasi (TEXT): W:77 H:36 Bg:#C69C6D Font:Poppins 600 24px Color:#C69C6D 
+        Location (RECTANGLE): W:50 H:50 
+      Desktop - 3 (FRAME): W:150 H:70 Bg:#4B2E2B Radius:100 
+        Cari (TEXT): W:52 H:36 Bg:#C69C6D Font:Poppins 700 24px Color:#C69C6D 

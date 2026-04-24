@@ -1,0 +1,68 @@
+{
+  "id": "53:4021",
+  "name": "Lowongan",
+  "type": "TEXT",
+  "scrollBehavior": "SCROLLS",
+  "blendMode": "PASS_THROUGH",
+  "fills": [
+    {
+      "blendMode": "NORMAL",
+      "type": "SOLID",
+      "color": {
+        "r": 0.29411765933036804,
+        "g": 0.18039216101169586,
+        "b": 0.16862745583057404,
+        "a": 1
+      }
+    }
+  ],
+  "strokes": [],
+  "strokeWeight": 1,
+  "strokeAlign": "OUTSIDE",
+  "absoluteBoundingBox": {
+    "x": 12811,
+    "y": 2327,
+    "width": 106,
+    "height": 22
+  },
+  "absoluteRenderBounds": {
+    "x": 12812.8212890625,
+    "y": 2331.0400390625,
+    "width": 102.455078125,
+    "height": 19.419921875
+  },
+  "constraints": {
+    "vertical": "CENTER",
+    "horizontal": "CENTER"
+  },
+  "characters": "Lowongan",
+  "characterStyleOverrides": [],
+  "styleOverrideTable": {},
+  "lineTypes": [
+    "NONE"
+  ],
+  "lineIndentations": [
+    0
+  ],
+  "style": {
+    "fontFamily": "Poppins",
+    "fontPostScriptName": "Poppins-SemiBold",
+    "fontStyle": "SemiBold",
+    "fontWeight": 600,
+    "textAutoResize": "WIDTH_AND_HEIGHT",
+    "fontSize": 20,
+    "textAlignHorizontal": "CENTER",
+    "textAlignVertical": "TOP",
+    "letterSpacing": 0,
+    "lineHeightPx": 22,
+    "lineHeightPercent": 73.33333587646484,
+    "lineHeightPercentFontSize": 110,
+    "lineHeightUnit": "PIXELS"
+  },
+  "layoutVersion": 5,
+  "effects": [],
+  "interactions": [],
+  "complexStrokeProperties": {
+    "strokeType": "BASIC"
+  }
+}

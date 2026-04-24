@@ -1,0 +1,312 @@
+Lowongan (FRAME): W:1440 H:2304 Bg:#F3EDE6 
+  Frame 69 (FRAME): W:1383 H:284 Radius:10 
+    Temukan Karir Impian Anda (TEXT): W:523 H:54 Bg:#4B2E2B Font:Poppins 700 36px Color:#4B2E2B 
+    elajahi berbagai lowongan pekerjaan yang tersedia dan temukan yang paling cocok untuk Anda. (TEXT): W:780 H:24 Bg:#4B2E2B Font:Poppins 400 16px Color:#4B2E2B 
+    Frame 80 (FRAME): W:1286 H:110 Border:#4B2E2B (W:3) Radius:50 
+      Group 1 (GROUP): W:1226 H:70 Radius:100 
+        Desktop - 2 (FRAME): W:444 H:70 Bg:#F3EDE6 Border:#818080 (W:1) Radius:100 
+          Search (RECTANGLE): W:50 H:50 
+          Cari Lowongan..... (TEXT): W:179 H:30 Bg:#C69C6D Font:Poppins 600 20px Color:#C69C6D 
+        Desktop - 4 (FRAME): W:300 H:70 Bg:#F3EDE6 Border:#818080 (W:1) Radius:100 
+          Expand Arrow (RECTANGLE): W:40 H:40 
+          Lokasi (TEXT): W:77 H:36 Bg:#C69C6D Font:Poppins 600 24px Color:#C69C6D 
+          Location (RECTANGLE): W:50 H:50 
+        Desktop - 3 (FRAME): W:150 H:70 Bg:#4B2E2B Radius:100 
+          Cari (TEXT): W:52 H:36 Bg:#C69C6D Font:Poppins 700 24px Color:#C69C6D 
+  Frame 95 (FRAME): W:1440 H:322 
+    Footer Section (Shared Component: Footer) (FRAME): W:1440 H:322 Bg:#4B2E2B Border:#E6DCD3 (W:1) P:48 undefined 48 undefined gap:48 layout:VERTICAL
+      Container (FRAME): W:1280 H:124 
+        Container (FRAME): W:280 H:123.5 
+          Container (FRAME): W:280 H:28 
+            CAFE (TEXT): W:280 H:28 Bg:#C69C6D Font:Inter 400 20px Color:#C69C6D 
+          Container (FRAME): W:280 H:69 
+            Platform rekrutmen khusus untuk ekosistem industri kopi di Kabupaten Indramayu. Brewing careers since 2024. (TEXT): W:280 H:69 Bg:#F3EDE6 Font:Inter 400 14px Color:#F3EDE6 
+        Container (FRAME): W:280 H:124 
+          Heading 4 (FRAME): W:280 H:24 
+            Navigasi (TEXT): W:280 H:24 Bg:#C69C6D Font:Inter 400 16px Color:#C69C6D 
+          List (FRAME): W:280 H:84 
+            Item (FRAME): W:280 H:20 
+              Tentang Kami (TEXT): W:280 H:20 Bg:#F3EDE6 Font:Inter 400 14px Color:#F3EDE6 
+            Item (FRAME): W:280 H:20 
+              Tips Karir (TEXT): W:280 H:20 Bg:#F3EDE6 Font:Inter 400 14px Color:#F3EDE6 
+            Item (FRAME): W:280 H:20 
+              Pasang Lowongan (TEXT): W:280 H:20 Bg:#F3EDE6 Font:Inter 400 14px Color:#F3EDE6 
+        Container (FRAME): W:280 H:124 
+          Heading 4 (FRAME): W:280 H:24 
+            Bantuan (TEXT): W:280 H:24 Bg:#C69C6D Font:Inter 400 16px Color:#C69C6D 
+          List (FRAME): W:280 H:84 
+            Item (FRAME): W:280 H:20 
+              Pusat Bantuan (TEXT): W:280 H:20 Bg:#F3EDE6 Font:Inter 400 14px Color:#F3EDE6 
+            Item (FRAME): W:280 H:20 
+              Kebijakan Privasi (TEXT): W:280 H:20 Bg:#F3EDE6 Font:Inter 400 14px Color:#F3EDE6 
+            Item (FRAME): W:280 H:20 
+              Syarat & Ketentuan (TEXT): W:280 H:20 Bg:#F3EDE6 Font:Inter 400 14px Color:#F3EDE6 
+        Container (FRAME): W:280 H:124 
+          Heading 4 (FRAME): W:280 H:24 
+            Sosial Media (TEXT): W:280 H:24 Bg:#C69C6D Font:Inter 400 16px Color:#C69C6D 
+          Container (FRAME): W:280 H:40 
+            Link (FRAME): W:40 H:40 Bg:#553722 Radius:9999 
+              Container (FRAME): W:12.75 H:12 
+                Icon (VECTOR): W:12.75 H:12 Bg:#C69C6D 
+            Link (FRAME): W:40 H:40 Bg:#553722 Radius:9999 
+              Container (FRAME): W:15 H:15 
+                Icon (VECTOR): W:15 H:15 Bg:#C69C6D 
+      HorizontalBorder (FRAME): W:1280 H:53 Border:#E6DCD3 (W:1) P:32 32 undefined 32 gap:698.1099853515625 layout:HORIZONTAL
+        Container (FRAME): W:323.30999755859375 H:20 
+          Text (TEXT): W:323.30999755859375 H:20 Bg:#F3EDE6 Font:Inter 400 14px Color:#F3EDE6 
+        Container (FRAME): W:194.5800018310547 H:16 
+          Container (FRAME): W:99.80000305175781 H:16 
+            Text (TEXT): W:99.80000305175781 H:16 Bg:#F3EDE6 Font:Inter 400 12px Color:#F3EDE6 
+          Container (FRAME): W:70.77999877929688 H:16 
+            Text (TEXT): W:70.77999877929688 H:16 Bg:#F3EDE6 Font:Inter 400 12px Color:#F3EDE6 
+  Frame 81 (FRAME): W:1440 H:1469 Bg:#4B2E2B 
+    Eksplorasi Karir (TEXT): W:289 H:54 Bg:#F3EDE6 Font:Poppins 700 36px Color:#F3EDE6 
+    Container (FRAME): W:1232 H:1596 
+      Job Card 1 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuBR4Z_lfHNmzEVUNDuYyg_yj__gnTQnUGhqhkYL7ccg2FDFCo6e8WnT6VkpNWYI-qrNhJZirtEbAUhTK-ndxgYLIDgjfmVDjupy306iGnJo94g3ElKCXdCgLGmRTUpjlfDwzbvN6RMLemj9utqCwjsSSxpaEU0QI_Fvyugc29dA6A3SYiV_3-Su1M7o1oK-k28A-g-zMchtSMaUsxS86nc30WC4SB0Kkk0RVzdPI0hJ9RSkuXNoE5CbVGJ_G6qCs0CO57EJEcuVAAOg (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Senior Barista (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Indra Coffee Roasters (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:8 layout:HORIZONTAL
+          Background (FRAME): W:105.42333221435547 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:4 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:76.08999633789062 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:125.80333709716797 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:4 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:92.97000122070312 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 2 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuBPj3_IuG9RkbBWX-fYMBATeSoTjHCuvB7UC9fQLb0Hi6bWCMSwNor4QtAcB10MAV6vFgN6sb7utSFc1-l2v0YtwsdeAeyBp0PP1Jz9YDYkRPdkijlX2-Xqb5Z59dqFEgHmXjMKL-24T7hSP3h-Ghvl33GwdFo7AN3ybEVurmuhtNuI8XEiZUMCCwfVgRsEkKNyc0nPuM-x7HiCdqa73qbzvV9QZ53o5sAEqpKdCZ2YokA-CPpy0A1N0BjGuCUHvgX7ZOl0RyuBWkaE (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Head Roaster (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Mangga Dua Coffee Hub (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:8 layout:HORIZONTAL
+          Background (FRAME): W:90.55332946777344 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Jatibarang (TEXT): W:61.22999954223633 H:16 Bg:#82746D Font:Inter 400 12px Color:#82746D 
+          Background (FRAME): W:123.99333190917969 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            IDR 5.0M - 7.0M (TEXT): W:91.16999816894531 H:16 Bg:#82746D Font:Inter 400 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 3 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuDJxyRjwaExwi13_H0IPjMOBSaqBK2o-PKvSvrmnzSi_tiaCcdbKhAPETKCy9DDnW0fYsTzRUywHDtqteS4MbTW0JJQCCQNBOOpc2aXV7vTwHbe57TEZ9Z8XxO9O4mF-qBWrJwGxJwkV0BiExUoG0PVTMAObWifhoJ-1UVRCXS633YqhfpCMR2CBZmh6TBMg6x39zy7m-HJn_3PeMfKAuAFqePyi0fm22rpo7nIU7A21y3fdu_NlCLHKTeUoF58clhkMbKzJXcEQLOW (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Service Attendant (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Cimanuk Brew House (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:8 layout:HORIZONTAL
+          Background (FRAME): W:119.23333740234375 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:89.91000366210938 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:123.8933334350586 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:4 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:91.05999755859375 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 4 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuDcb-WJdu394ucwjaYkr8hyVMP9dtOPPDMjmdqsyQ0ay2WakxdVnwlBFtvHLLmt3-d39hzrdhpiWPqNghGSxF27974CcS2iaX4QeS5a9fHvhvZsl00ykbVoZDwgo39OltcY-TjEJLmtF8xcc5WGK6d5jqjttiiQWQZFYqB3c_NmjD4oZRrO8FzATNoTG3ktucmGoNQ3zxDGU4_hi4C7aRM4_KSpI3yfYq6UB6SwNeyH5--U6bsRgy4rt4Sis9nhcYyXK86_JN1LDbaZ (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Junior Barista (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Ujung Kulon Cafe (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:8 layout:HORIZONTAL
+          Background (FRAME): W:76.22333526611328 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:4 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:46.88999938964844 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:126.0433349609375 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:93.22000122070312 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 7 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuDcb-WJdu394ucwjaYkr8hyVMP9dtOPPDMjmdqsyQ0ay2WakxdVnwlBFtvHLLmt3-d39hzrdhpiWPqNghGSxF27974CcS2iaX4QeS5a9fHvhvZsl00ykbVoZDwgo39OltcY-TjEJLmtF8xcc5WGK6d5jqjttiiQWQZFYqB3c_NmjD4oZRrO8FzATNoTG3ktucmGoNQ3zxDGU4_hi4C7aRM4_KSpI3yfYq6UB6SwNeyH5--U6bsRgy4rt4Sis9nhcYyXK86_JN1LDbaZ (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Junior Barista (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Ujung Kulon Cafe (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:8 layout:HORIZONTAL
+          Background (FRAME): W:76.22333526611328 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:4 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:46.88999938964844 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:126.0433349609375 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:93.22000122070312 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 10 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuDcb-WJdu394ucwjaYkr8hyVMP9dtOPPDMjmdqsyQ0ay2WakxdVnwlBFtvHLLmt3-d39hzrdhpiWPqNghGSxF27974CcS2iaX4QeS5a9fHvhvZsl00ykbVoZDwgo39OltcY-TjEJLmtF8xcc5WGK6d5jqjttiiQWQZFYqB3c_NmjD4oZRrO8FzATNoTG3ktucmGoNQ3zxDGU4_hi4C7aRM4_KSpI3yfYq6UB6SwNeyH5--U6bsRgy4rt4Sis9nhcYyXK86_JN1LDbaZ (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Junior Barista (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Ujung Kulon Cafe (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:8 layout:HORIZONTAL
+          Background (FRAME): W:76.22333526611328 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:4 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:46.88999938964844 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:126.0433349609375 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:93.22000122070312 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 5 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuA9rTJwvjkO2g8o-QQ1DiqxB_vqW4NZk--4K9oM02a6lbJD9ctuQR7aed0dat8bzCYRw-vDRIyOWaxcAh_RRfHFj3T3BkznI0d0GK-z4wqSlgFfQnWZdSZkH1EuYQBPBsBzHUb2xxQfTY66YarPpCCNW4cnBbY2zvE73Qi6RjvdhSv6-h20Cli9aY3tcj_M2T3JtAHV6c9kI9AG0rvd3-fF44ksKWaWpLIHTRuCXX0mcfZsAUnovurAhRsn_RnbgAhtX_QnWzgqTWsP (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Outlet Manager (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Dermayu Beans & Co. (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:7.989999771118164 layout:HORIZONTAL
+          Background (FRAME): W:83.96333312988281 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:54.63999938964844 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:126.03333282470703 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:4 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:93.19999694824219 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 8 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuA9rTJwvjkO2g8o-QQ1DiqxB_vqW4NZk--4K9oM02a6lbJD9ctuQR7aed0dat8bzCYRw-vDRIyOWaxcAh_RRfHFj3T3BkznI0d0GK-z4wqSlgFfQnWZdSZkH1EuYQBPBsBzHUb2xxQfTY66YarPpCCNW4cnBbY2zvE73Qi6RjvdhSv6-h20Cli9aY3tcj_M2T3JtAHV6c9kI9AG0rvd3-fF44ksKWaWpLIHTRuCXX0mcfZsAUnovurAhRsn_RnbgAhtX_QnWzgqTWsP (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Outlet Manager (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Dermayu Beans & Co. (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:7.989999771118164 layout:HORIZONTAL
+          Background (FRAME): W:83.96333312988281 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:54.63999938964844 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:126.03333282470703 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:4 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:93.19999694824219 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 11 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuA9rTJwvjkO2g8o-QQ1DiqxB_vqW4NZk--4K9oM02a6lbJD9ctuQR7aed0dat8bzCYRw-vDRIyOWaxcAh_RRfHFj3T3BkznI0d0GK-z4wqSlgFfQnWZdSZkH1EuYQBPBsBzHUb2xxQfTY66YarPpCCNW4cnBbY2zvE73Qi6RjvdhSv6-h20Cli9aY3tcj_M2T3JtAHV6c9kI9AG0rvd3-fF44ksKWaWpLIHTRuCXX0mcfZsAUnovurAhRsn_RnbgAhtX_QnWzgqTWsP (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Outlet Manager (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Dermayu Beans & Co. (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:7.989999771118164 layout:HORIZONTAL
+          Background (FRAME): W:83.96333312988281 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:54.63999938964844 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:126.03333282470703 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:4 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:93.19999694824219 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 6 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuCivZOF6Ijr-ABul7BDrR3j8Kjewmf7hecZy2bwoHuFg4jO6SDqg3R58OfDX-Oqo-Q0GP9GvqfDLTV_DqpAgP2FnBTcFHln3PaF75B069ZAJT9vZkouOs8HAf2bgiihp5J794DsTVXdWZn9pNThUEuoCBbYeVW6Vaq8JaGd3KaNWHnrb4HyeU1nt3hOY9Ehi-IkqtKshM_7A-uf5cU09iPiZskemEGtexIClrb_1Ap4n87L4GwjIlBdfveiolw3RYp8IsW8jf5TliFS (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Marketing Intern (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Indra Coffee Roasters (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:8 layout:HORIZONTAL
+          Background (FRAME): W:105.413330078125 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:76.08999633789062 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:121.35333251953125 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:88.52999877929688 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 9 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuCivZOF6Ijr-ABul7BDrR3j8Kjewmf7hecZy2bwoHuFg4jO6SDqg3R58OfDX-Oqo-Q0GP9GvqfDLTV_DqpAgP2FnBTcFHln3PaF75B069ZAJT9vZkouOs8HAf2bgiihp5J794DsTVXdWZn9pNThUEuoCBbYeVW6Vaq8JaGd3KaNWHnrb4HyeU1nt3hOY9Ehi-IkqtKshM_7A-uf5cU09iPiZskemEGtexIClrb_1Ap4n87L4GwjIlBdfveiolw3RYp8IsW8jf5TliFS (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Marketing Intern (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Indra Coffee Roasters (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:8 layout:HORIZONTAL
+          Background (FRAME): W:105.413330078125 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Text (TEXT): W:76.08999633789062 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+          Background (FRAME): W:121.35333251953125 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:88.52999877929688 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+      Job Card 12 (FRAME): W:394.6666564941406 H:300 Bg:#F3EDE6 Border:#000000 (W:1) Radius:16 P:24 24 24 24 gap:4 layout:VERTICAL
+        Container (FRAME): W:344.6666564941406 H:56 
+          Background (FRAME): W:56 H:56 Bg:#F4ECE9 Radius:12 
+            AB6AXuCivZOF6Ijr-ABul7BDrR3j8Kjewmf7hecZy2bwoHuFg4jO6SDqg3R58OfDX-Oqo-Q0GP9GvqfDLTV_DqpAgP2FnBTcFHln3PaF75B069ZAJT9vZkouOs8HAf2bgiihp5J794DsTVXdWZn9pNThUEuoCBbYeVW6Vaq8JaGd3KaNWHnrb4HyeU1nt3hOY9Ehi-IkqtKshM_7A-uf5cU09iPiZskemEGtexIClrb_1Ap4n87L4GwjIlBdfveiolw3RYp8IsW8jf5TliFS (FRAME): W:56 H:56 
+        Heading 3 (FRAME): W:344.6666564941406 H:48 P:20 undefined undefined undefined gap:undefined layout:VERTICAL
+          Marketing Intern (TEXT): W:344.6666564941406 H:28 Bg:#1E1B19 Font:Manrope 400 20px Color:#1E1B19 
+        Container (FRAME): W:344.6666564941406 H:20 
+          Indra Coffee Roasters (TEXT): W:344.6666564941406 H:20 Bg:#50453E Font:Inter 400 14px Color:#50453E 
+        Container (FRAME): W:344.6666564941406 H:56 P:12 undefined 20 undefined gap:8 layout:HORIZONTAL
+          Background (FRAME): W:105.413330078125 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:9.333333015441895 H:11.666666984558105 
+              Icon (VECTOR): W:9.333333015441895 H:11.666666984558105 Bg:#82746D 
+            Karangampel (TEXT): W:76.08999633789062 H:16 Bg:#82746D Font:Inter 400 12px Color:#82746D 
+          Background (FRAME): W:121.35333251953125 H:24 Bg:#F4ECE9 Radius:6 P:4 8 4 8 gap:3.990000009536743 layout:HORIZONTAL
+            Container (FRAME): W:12.833333015441895 H:9.333333015441895 
+              Icon (VECTOR): W:12.833333015441895 H:9.333333015441895 Bg:#82746D 
+            Text (TEXT): W:88.52999877929688 H:16 Bg:#82746D Font:Inter 500 12px Color:#82746D 
+        Button (FRAME): W:344.6666564941406 H:54 Border:#C69C6D (W:3) Radius:12 P:12 undefined 12 undefined gap:undefined layout:HORIZONTAL
+          Lihat Detail Lowongan (TEXT): W:173 H:24 Bg:#82746D Font:Inter 400 16px Color:#82746D 
+    Frame 82 (FRAME): W:312 H:60 P:10 36 10 36 gap:10 layout:HORIZONTAL
+      Frame 83 (FRAME): W:40 H:40 Bg:#F3EDE6 Radius:80 
+        Expand Arrow (RECTANGLE): W:30 H:30 
+      Frame 84 (FRAME): W:40 H:40 Bg:#C69C6D Radius:80 
+        1 (TEXT): W:6 H:21 Bg:#F3EDE6 Font:Poppins 700 14px Color:#F3EDE6 
+      Frame 85 (FRAME): W:40 H:40 Bg:#F3EDE6 Radius:80 
+        2 (TEXT): W:8 H:21 Bg:#C69C6D Font:Poppins 700 14px Color:#C69C6D 
+      Frame 86 (FRAME): W:40 H:40 Bg:#F3EDE6 Radius:80 
+        3 (TEXT): W:9 H:21 Bg:#C69C6D Font:Poppins 700 14px Color:#C69C6D 
+      Frame 87 (FRAME): W:40 H:40 Bg:#F3EDE6 Radius:80 
+        Expand Arrow (RECTANGLE): W:30 H:30 
+  navbar (FRAME): W:908 H:90 Bg:#4B2E2B Radius:100 
+    Frame 14 (FRAME): W:334 H:21 
+      Beranda (TEXT): W:62 H:21 Bg:#F3EDE6 Font:Poppins 700 14px Color:#F3EDE6 
+      Lowoongan (TEXT): W:84 H:21 Bg:#F3EDE6 Font:Poppins 700 14px Color:#F3EDE6 
+      Perusahaan (TEXT): W:88 H:21 Bg:#F3EDE6 Font:Poppins 700 14px Color:#F3EDE6 
+    Frame 64 (FRAME): W:66 H:31 Bg:#C69C6D Radius:15 P:10 10 10 10 gap:10 layout:HORIZONTAL
+      Daftar (TEXT): W:46 H:21 Bg:#4B2E2B Font:Poppins 700 14px Color:#4B2E2B 
+    Masuk (TEXT): W:49 H:21 Bg:#F3EDE6 Font:Poppins 700 14px Color:#F3EDE6 
+    Frame 13 1 (RECTANGLE): W:49 H:60 
