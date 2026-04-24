@@ -1,14 +1,19 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import gambarGabungSekarang from '../../aset/beranda/img-gabung-sekarang.png';
 import gambarCariLowongan from '../../aset/beranda/img-cari-lowongan.png';
 
 const BagianAjakan = () => {
     return (
-        <div className="flex w-full justify-center pb-12 md:pb-[150px] px-4">
+        <div className="flex w-full justify-center pb-12 md:pb-[150px] px-4 overflow-hidden">
             <section className="w-full max-w-[1300px] grid grid-cols-1 lg:grid-cols-2 gap-[30px]">
 
                 {/* Kartu Kiri — Pemasang Lowongan (Node 51:215) */}
-                <div 
+                <motion.div 
+                    initial={{ x: -100, opacity: 0 }}
+                    whileInView={{ x: 0, opacity: 1 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
                     className="relative overflow-hidden bg-[#6B8E23] rounded-[80px] cursor-pointer group h-[435px]"
                 >
                     {/* Konten Teks — Posisi Deterministik (X: 90px, Y: 70px) */}
@@ -34,10 +39,14 @@ const BagianAjakan = () => {
                             className="h-[80%] w-auto object-contain object-bottom"
                         />
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Kartu Kanan — Pencari Kerja (Node 51:223) */}
-                <div 
+                <motion.div 
+                    initial={{ x: 100, opacity: 0 }}
+                    whileInView={{ x: 0, opacity: 1 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                     className="relative overflow-hidden bg-[#4B3B2B] rounded-[80px] cursor-pointer group h-[435px]"
                 >
                     {/* Konten Teks — Posisi Deterministik */}
@@ -63,7 +72,7 @@ const BagianAjakan = () => {
                             className="h-[80%] w-auto object-contain object-bottom"
                         />
                     </div>
-                </div>
+                </motion.div>
 
             </section>
         </div>

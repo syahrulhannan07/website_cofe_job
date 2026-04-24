@@ -1,11 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import HeaderHero from './components/HeaderHero';
 import JobCard from './components/JobCard';
 import Pagination from './components/Pagination';
+import DetailLowongan from './components/DetailLowongan';
 import { daftarLowongan } from './data/dummyJobs';
 
 const Lowongan = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    
     const [currentPage, setCurrentPage] = useState(1);
+    
+    // Initialize state from router location.state if it exists, otherwise null
+    const [selectedJob, setSelectedJob] = useState(location.state?.selectedJob || null); 
+    const [sourcePage, setSourcePage] = useState(location.state?.from || '/lowongan');
+    
+    // Clear location state after reading it so that a page refresh doesn't force us back into detail view unexpectedly,
+    // though keeping it isn't strictly harmful, it's better practice to manage it locally once loaded.
+    useEffect(() => {
+        if (location.state?.selectedJob) {
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location.state, navigate, location.pathname]);
     
     // State untuk input yang sedang diketik/dipilih
     const [searchQuery, setSearchQuery] = useState('');
@@ -54,6 +71,24 @@ const Lowongan = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    console.log("Status Lowongan saat ini. selectedJob:", selectedJob);
+
+    // Render komponen Detail jika ada lowongan yang dipilih
+    if (selectedJob) {
+        return (
+            <DetailLowongan 
+                lowongan={selectedJob} 
+                onBack={() => {
+                    if (sourcePage === '/') {
+                        navigate('/'); // Kembali ke beranda jika asalnya dari beranda
+                    } else {
+                        setSelectedJob(null); // Jika asalnya dari lowongan, cukup hilangkan detail
+                    }
+                }} 
+            />
+        );
+    }
+
     return (
         <div className="w-full min-h-screen bg-[#F3EDE6] flex flex-col font-poppins relative overflow-x-hidden">
             <HeaderHero 
@@ -76,7 +111,15 @@ const Lowongan = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px] w-full min-h-[500px]">
                         {currentJobs.length > 0 ? (
                             currentJobs.map((lowongan) => (
-                                <JobCard key={lowongan.id} lowongan={lowongan} />
+                                <JobCard 
+                                    key={lowongan.id} 
+                                    lowongan={lowongan} 
+                                    onDetail={(job) => {
+                                        setSourcePage('/lowongan'); // Pastikan asalnya diset ke /lowongan
+                                        setSelectedJob(job);
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }} 
+                                />
                             ))
                         ) : (
                             <div className="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center items-center h-[300px]">

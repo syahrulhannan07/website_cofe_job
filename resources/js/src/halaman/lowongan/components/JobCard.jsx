@@ -3,7 +3,7 @@ import starbucksLogo from '../../../aset/beranda/starbucks.png';
 import iconGaji from '../../../aset/lowongan/Icon1.svg';
 import iconLokasiMini from '../../../aset/lowongan/Icon2.svg';
 
-const JobCard = ({ lowongan }) => (
+const JobCard = ({ lowongan, onDetail }) => (
     <div className="bg-[#F3EDE6] border border-[#000000] rounded-[16px] p-[24px] w-full flex flex-col justify-between shadow-sm transition-transform hover:scale-[1.02] duration-300">
         <div className="flex flex-col gap-[20px]">
             {/* Logo Placeholder */}
@@ -39,9 +39,19 @@ const JobCard = ({ lowongan }) => (
         </div>
 
         {/* Button */}
-        <button className="w-full h-[54px] border-[3px] border-[#C69C6D] rounded-[12px] 
+        <button 
+            onClick={() => {
+                console.log("Tombol ditekan untuk:", lowongan.judul);
+                if (onDetail) {
+                    onDetail(lowongan);
+                } else {
+                    console.log("onDetail prop is missing!");
+                }
+            }}
+            className="w-full h-[54px] border-[3px] border-[#C69C6D] rounded-[12px] 
                        font-inter font-normal text-[16px] text-[#82746D]
-                       transition-all duration-300 hover:bg-[#C69C6D] hover:text-[#4B2E2B] active:scale-95">
+                       transition-all duration-300 hover:bg-[#C69C6D] hover:text-[#4B2E2B] active:scale-95"
+        >
             Lihat Detail Lowongan
         </button>
     </div>
