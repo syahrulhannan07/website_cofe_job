@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../../komponen/umum/Navbar';
 import layananAutentikasi from '../../layanan/layananAutentikasi';
 import CloudUploadFill from '../../aset/daftar/CloudUploadFill.svg';
 
 const Daftar = () => {
-    const [peran, setPeran] = useState('Pelamar');
+    const location = useLocation();
+    const [peran, setPeran] = useState(location.state?.activeTab || 'Pelamar');
     
     // State Form Pelamar
     const [namaLengkap, setNamaLengkap] = useState('');

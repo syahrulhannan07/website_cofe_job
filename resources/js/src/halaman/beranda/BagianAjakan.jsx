@@ -1,9 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import gambarGabungSekarang from '../../aset/beranda/img-gabung-sekarang.png';
 import gambarCariLowongan from '../../aset/beranda/img-cari-lowongan.png';
 
 const BagianAjakan = () => {
+    const navigate = useNavigate();
+
     return (
         <div className="flex w-full justify-center pb-12 md:pb-[150px] px-4 overflow-hidden">
             <section className="w-full max-w-[1300px] grid grid-cols-1 lg:grid-cols-2 gap-[30px]">
@@ -24,7 +27,11 @@ const BagianAjakan = () => {
                         </h2>
                         <div className="mt-[61px]">
                             <button 
-                                className="bg-[#F3EDE6] text-[#4B2E2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105 w-[254px] h-[60px] flex items-center justify-center"
+                                onClick={() => {
+                                    navigate('/daftar', { state: { activeTab: 'Admin_Perusahaan' } });
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className="bg-[#F3EDE6] text-[#4B2E2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105 w-[254px] h-[60px] flex items-center justify-center relative z-20"
                             >
                                 Gabung Sekarang
                             </button>
@@ -46,7 +53,7 @@ const BagianAjakan = () => {
                     initial={{ x: 100, opacity: 0 }}
                     whileInView={{ x: 0, opacity: 1 }}
                     viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
                     className="relative overflow-hidden bg-[#4B3B2B] rounded-[80px] cursor-pointer group h-[435px]"
                 >
                     {/* Konten Teks — Posisi Deterministik */}
@@ -57,7 +64,11 @@ const BagianAjakan = () => {
                         </h2>
                         <div className="mt-[61px]">
                             <button 
-                                className="bg-[#F3EDE6] text-[#4B3B2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105 w-[258px] h-[60px] flex items-center justify-center"
+                                onClick={() => {
+                                    navigate('/lowongan');
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className="bg-[#F3EDE6] text-[#4B3B2B] font-poppins font-semibold text-[20px] rounded-[20px] transition-all duration-300 hover:shadow-xl hover:scale-105 w-[258px] h-[60px] flex items-center justify-center relative z-20"
                             >
                                 Cari Lowongan
                             </button>
