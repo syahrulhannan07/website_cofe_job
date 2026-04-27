@@ -1,13 +1,20 @@
 import { createBrowserRouter } from 'react-router-dom';
 import TataLetakUtama from '../tata-letak/TataLetakUtama';
-import TataLetakAdmin from '../tata-letak/TataLetakAdmin';
+import TataLetakAdmin from '../admin-perusahaan/tata-letak/TataLetakAdmin';
 import TataLetakSuperAdmin from '../tata-letak/TataLetakSuperAdmin';
 import Beranda from '../halaman/beranda';
 import Lowongan from '../halaman/lowongan';
 import Perusahaan from '../halaman/perusahaan';
 import Masuk from '../halaman/autentikasi/Masuk';
 import Daftar from '../halaman/autentikasi/Daftar';
-import AdminPerusahaan from '../halaman/admin-perusahaan';
+
+// Fitur Admin Perusahaan
+import DashboardAdmin from '../admin-perusahaan/halaman/dashboard';
+import ProfilAdmin    from '../admin-perusahaan/halaman/profil';
+import PelamarAdmin   from '../admin-perusahaan/halaman/pelamar';
+import LowonganAdmin  from '../admin-perusahaan/halaman/lowongan';
+import WawancaraAdmin from '../admin-perusahaan/halaman/wawancara';
+
 import SuperAdmin from '../halaman/super-admin';
 
 const ruter = createBrowserRouter([
@@ -22,16 +29,20 @@ const ruter = createBrowserRouter([
         ],
     },
 
-    // --- Rute Autentikasi (tanpa layout utama) ---
+    // --- Rute Autentikasi ---
     { path: '/masuk', element: <Masuk /> },
     { path: '/daftar', element: <Daftar /> },
 
-    // --- Rute Admin Perusahaan ---
+    // --- Rute Admin Perusahaan (Struktur Refactored) ---
     {
         path: '/admin',
         element: <TataLetakAdmin />,
         children: [
-            { index: true, element: <AdminPerusahaan /> },
+            { index: true, element: <DashboardAdmin /> },
+            { path: 'profil',    element: <ProfilAdmin /> },
+            { path: 'pelamar',   element: <PelamarAdmin /> },
+            { path: 'lowongan',  element: <LowonganAdmin /> },
+            { path: 'wawancara', element: <WawancaraAdmin /> },
         ],
     },
 
