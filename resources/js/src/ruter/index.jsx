@@ -11,6 +11,7 @@ import Daftar from '../halaman/autentikasi/Daftar';
 // Fitur Admin Perusahaan
 import DashboardAdmin from '../admin-perusahaan/halaman/dashboard';
 import ProfilAdmin    from '../admin-perusahaan/halaman/profil';
+import PelamarAdmin   from '../admin-perusahaan/halaman/pelamar';
 import LowonganAdmin  from '../admin-perusahaan/halaman/lowongan';
 import WawancaraAdmin from '../admin-perusahaan/halaman/wawancara';
 
@@ -39,6 +40,7 @@ const ruter = createBrowserRouter([
         children: [
             { index: true, element: <DashboardAdmin /> },
             { path: 'profil',    element: <ProfilAdmin /> },
+            { path: 'pelamar',   element: <PelamarAdmin /> },
             { path: 'lowongan',  element: <LowonganAdmin /> },
             { path: 'wawancara', element: <WawancaraAdmin /> },
         ],
