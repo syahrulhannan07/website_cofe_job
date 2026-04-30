@@ -1,9 +1,13 @@
-﻿import React from 'react';
+import React from 'react';
+import HeaderPelamar from './komponen/HeaderPelamar';
+import StatistikPelamar from './komponen/StatistikPelamar';
+import TabelPelamar from './komponen/TabelPelamar';
 
 const HalamanPelamar = () => (
-    <div className="p-8">
-        <h1 className="font-poppins font-bold text-3xl text-[#4B2E2B]">Halaman pelamar</h1>
-        <p className="text-[#7A6153] mt-4">Konten halaman pelamar sedang dalam pengembangan.</p>
+    <div className="p-8 bg-[#fcfafa] min-h-screen">
+        <HeaderPelamar />
+        <StatistikPelamar />
+        <TabelPelamar />
     </div>
 );
 

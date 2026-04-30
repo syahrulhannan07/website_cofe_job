@@ -27,7 +27,10 @@ const layananAutentikasi = {
      * @param {{ namaLengkap: string, surel: string, kataSandi: string, peran: string }} dataPengguna
      */
     daftar: async (dataPengguna, endpoint = '/auth/register') => {
-        const respons = await api.post(endpoint, dataPengguna);
+        const config = dataPengguna instanceof FormData 
+            ? { headers: { 'Content-Type': 'multipart/form-data' } } 
+            : {};
+        const respons = await api.post(endpoint, dataPengguna, config);
         return respons.data;
     },
 

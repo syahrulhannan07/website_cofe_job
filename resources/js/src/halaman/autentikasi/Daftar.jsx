@@ -75,7 +75,13 @@ const Daftar = () => {
             
         } catch (error) {
             console.error('Registration error:', error);
-            setPesanGalat(error.response?.data?.message || 'Gagal mendaftar. Silakan coba lagi.');
+            if (error.response?.status === 422 && error.response?.data?.errors) {
+                const errors = error.response.data.errors;
+                const errorMessages = Object.values(errors).map(err => err.join(', ')).join(' | ');
+                setPesanGalat(`Validasi gagal: ${errorMessages}`);
+            } else {
+                setPesanGalat(error.response?.data?.message || 'Gagal mendaftar. Silakan coba lagi.');
+            }
         } finally {
             setSedangMemuat(false);
         }
