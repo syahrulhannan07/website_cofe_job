@@ -15,7 +15,6 @@ const SidebarAdmin = ({ menuAktif, setMenuAktif, menanganiLogout }) => {
     const menuNavigasi = [
         { id: 'profil',    label: 'Profile Cafe', ikon: personCircleSvg, tautan: '/admin/profil'    },
         { id: 'dashboard', label: 'Dashboard',    ikon: frameLogoSvg,    tautan: '/admin'           },
-        { id: 'pelamar',   label: 'Pelamar',      ikon: groupSidebarPng, tautan: '/admin/pelamar'   },
         { id: 'lowongan',  label: 'Lowongan',     ikon: schoolBriefcasePng, tautan: '/admin/lowongan' },
         { id: 'wawancara', label: 'Wawancara',    ikon: schedulePng,     tautan: '/admin/wawancara' },
     ];
