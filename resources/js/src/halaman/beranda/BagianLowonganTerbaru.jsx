@@ -30,7 +30,7 @@ const BagianLowonganTerbaru = () => {
                             Jelajahi berbagai lowongan pekerjaan yang tersedia dan temukan yang paling cocok untuk Anda.
                         </p>
                     </div>
-
+  
                     {/* Grid Lowongan */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]">
                         {lowonganTerbaru.map((lowongan) => (
@@ -38,7 +38,6 @@ const BagianLowonganTerbaru = () => {
                                 key={lowongan.id} 
                                 lowongan={lowongan} 
                                 onDetail={(job) => {
-                                    // Navigate to /lowongan page with selectedJob state and source page
                                     navigate('/lowongan', { state: { selectedJob: job, from: '/' } });
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }}
