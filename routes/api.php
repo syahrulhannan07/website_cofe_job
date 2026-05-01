@@ -84,6 +84,9 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::middleware(['auth:api', 'role:Admin_Perusahaan'])->prefix('admin')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\Api\V1\Admin\DashboardController::class, 'index']);
+
         // Profil Perusahaan
         Route::prefix('profil-perusahaan')->group(function () {
             Route::get('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'index']);

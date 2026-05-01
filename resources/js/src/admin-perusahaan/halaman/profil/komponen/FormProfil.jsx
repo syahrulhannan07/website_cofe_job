@@ -1,21 +1,64 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../../../layanan/api';
 
 // Aset SVG
 import pencilSquareSvg from '../../../aset/profil-perusahaan/PencilSquare.svg';
 
-const FormProfil = ({ variants }) => {
+const FormProfil = ({ variants, data, onUpdate }) => {
     // State untuk kontrol mode edit
     const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     
-    // State untuk field baru
-    const [namaPengelola, setNamaPengelola] = useState("Syahrul Hannan");
+    // State untuk field
+    const [formData, setFormData] = useState({
+        nama_perusahaan: "",
+        nama_pengguna: "",
+        email: "",
+        alamat_perusahaan: "",
+        deskripsi: ""
+    });
+
     const [nibFile, setNibFile] = useState(null);
+    const [nibFileName, setNibFileName] = useState("");
     const nibInputRef = useRef(null);
+
+    // Sync data from props
+    useEffect(() => {
+        if (data) {
+            setFormData({
+                nama_perusahaan: data.nama_perusahaan || "",
+                nama_pengguna: data.nama_pengguna || "",
+                email: data.email || "",
+                alamat_perusahaan: data.alamat_perusahaan || "",
+                deskripsi: data.deskripsi || ""
+            });
+            setNibFileName(data.dokumen_izin ? data.dokumen_izin.split('/').pop() : "");
+        }
+    }, [data]);
 
     // Fungsi toggle edit
     const toggleEdit = () => {
+        if (isEditing) {
+            // Reset to original data if cancel
+            if (data) {
+                setFormData({
+                    nama_perusahaan: data.nama_perusahaan || "",
+                    nama_pengguna: data.nama_pengguna || "",
+                    email: data.email || "",
+                    alamat_perusahaan: data.alamat_perusahaan || "",
+                    deskripsi: data.deskripsi || ""
+                });
+                setNibFile(null);
+                setNibFileName(data.dokumen_izin ? data.dokumen_izin.split('/').pop() : "");
+            }
+        }
         setIsEditing(!isEditing);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     // Fungsi trigger upload NIB
@@ -25,7 +68,42 @@ const FormProfil = ({ variants }) => {
 
     const handleNibChange = (e) => {
         const file = e.target.files[0];
-        if (file) setNibFile(file.name);
+        if (file) {
+            setNibFile(file);
+            setNibFileName(file.name);
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            setIsSaving(true);
+            const submissionData = new FormData();
+            submissionData.append('nama_perusahaan', formData.nama_perusahaan);
+            submissionData.append('nama_pengguna', formData.nama_pengguna);
+            submissionData.append('email', formData.email);
+            submissionData.append('alamat_perusahaan', formData.alamat_perusahaan);
+            submissionData.append('deskripsi', formData.deskripsi);
+            
+            if (nibFile) {
+                submissionData.append('dokumen_izin', nibFile);
+            }
+
+            const response = await api.post('/admin/profil-perusahaan', submissionData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (response.data.status === 'success') {
+                setIsEditing(false);
+                onUpdate();
+            }
+        } catch (error) {
+            console.error('Gagal memperbarui profil:', error);
+            alert(error.response?.data?.message || 'Gagal memperbarui profil');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -36,6 +114,7 @@ const FormProfil = ({ variants }) => {
             {/* TOMBOL EDIT (PencilSquare) */}
             <button 
                 onClick={toggleEdit}
+                disabled={isSaving}
                 className={`absolute top-[18px] right-[18px] p-[8px] rounded-full transition-all duration-300 ${
                     isEditing ? 'bg-[#4B2E2B] shadow-inner' : 'bg-transparent hover:bg-[#F3EDE6]'
                 }`}
@@ -57,8 +136,10 @@ const FormProfil = ({ variants }) => {
                         </label>
                         <input 
                             type="text" 
-                            defaultValue="Dermayu Beans"
-                            disabled={!isEditing}
+                            name="nama_perusahaan"
+                            value={formData.nama_perusahaan}
+                            onChange={handleInputChange}
+                            disabled={!isEditing || isSaving}
                             className={`input-profil w-full h-[38px] px-[16px] bg-[#F3EDE6] border border-[#CCCCCC]/80 rounded-[5px] font-poppins text-[14px] text-[#4B2E2B] transition-all ${
                                 isEditing 
                                 ? 'focus:outline-none focus:border-[#F7B750] ring-1 ring-[#F7B750]/20' 
@@ -73,9 +154,10 @@ const FormProfil = ({ variants }) => {
                         </label>
                         <input 
                             type="text" 
-                            value={namaPengelola}
-                            onChange={(e) => setNamaPengelola(e.target.value)}
-                            disabled={!isEditing}
+                            name="nama_pengguna"
+                            value={formData.nama_pengguna}
+                            onChange={handleInputChange}
+                            disabled={!isEditing || isSaving}
                             className={`input-profil w-full h-[38px] px-[16px] bg-[#F3EDE6] border border-[#CCCCCC]/80 rounded-[5px] font-poppins text-[14px] text-[#4B2E2B] transition-all ${
                                 isEditing 
                                 ? 'focus:outline-none focus:border-[#F7B750] ring-1 ring-[#F7B750]/20' 
@@ -96,8 +178,10 @@ const FormProfil = ({ variants }) => {
                         </label>
                         <input 
                             type="email" 
-                            defaultValue="dermayubeans@gmail.com"
-                            disabled={!isEditing}
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            disabled={!isEditing || isSaving}
                             className={`input-profil w-full h-[38px] px-[16px] bg-[#F3EDE6] border border-[#CCCCCC]/80 rounded-[5px] font-poppins text-[14px] text-[#4B2E2B] transition-all ${
                                 isEditing 
                                 ? 'focus:outline-none focus:border-[#F7B750] ring-1 ring-[#F7B750]/20' 
@@ -112,8 +196,10 @@ const FormProfil = ({ variants }) => {
                         </label>
                         <input 
                             type="text" 
-                            defaultValue="Jl. Karangampel No. 12, Indramayu"
-                            disabled={!isEditing}
+                            name="alamat_perusahaan"
+                            value={formData.alamat_perusahaan}
+                            onChange={handleInputChange}
+                            disabled={!isEditing || isSaving}
                             className={`input-profil w-full h-[38px] px-[16px] bg-[#F3EDE6] border border-[#CCCCCC]/80 rounded-[5px] font-poppins text-[14px] text-[#4B2E2B] transition-all ${
                                 isEditing 
                                 ? 'focus:outline-none focus:border-[#F7B750] ring-1 ring-[#F7B750]/20' 
@@ -132,8 +218,10 @@ const FormProfil = ({ variants }) => {
                         Deskripsi Cafe
                     </label>
                     <textarea 
-                        defaultValue="Dermayu Beans adalah cafe yang berfokus pada penyajian kopi lokal terbaik dari daerah Indramayu dan sekitarnya. Kami berkomitmen untuk memberikan pengalaman minum kopi yang otentik dan nyaman bagi para pelanggan kami."
-                        disabled={!isEditing}
+                        name="deskripsi"
+                        value={formData.deskripsi}
+                        onChange={handleInputChange}
+                        disabled={!isEditing || isSaving}
                         className={`input-profil w-full h-[204px] p-[16px] bg-[#F3EDE6] border border-[#CCCCCC]/80 rounded-[5px] font-poppins text-[14px] text-[#4B2E2B] resize-none transition-all ${
                             isEditing 
                             ? 'focus:outline-none focus:border-[#F7B750] ring-1 ring-[#F7B750]/20' 
@@ -166,7 +254,7 @@ const FormProfil = ({ variants }) => {
                         }`}
                     >
                         <span className="truncate">
-                            {nibFile || "Belum ada file yang diunggah"}
+                            {nibFileName || "Belum ada file yang diunggah"}
                         </span>
                         {isEditing && (
                             <span className="text-[12px] bg-[#4B2E2B] text-white px-3 py-1 rounded-full shrink-0">
@@ -185,8 +273,12 @@ const FormProfil = ({ variants }) => {
                             exit={{ opacity: 0, y: 10 }}
                             className="mt-[30px] flex justify-end"
                         >
-                            <button className="tombol-simpan w-[189px] h-[48px] bg-[#4B2E2B] hover:bg-[#F5B759] text-[#F3EDE6] hover:text-[#4B2E2B] font-poppins font-bold text-[16px] rounded-[50px] transition-all duration-300 shadow-md">
-                                Simpan Perubahan
+                            <button 
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="tombol-simpan w-[189px] h-[48px] bg-[#4B2E2B] hover:bg-[#F5B759] text-[#F3EDE6] hover:text-[#4B2E2B] font-poppins font-bold text-[16px] rounded-[50px] transition-all duration-300 shadow-md flex items-center justify-center disabled:opacity-70"
+                            >
+                                {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
                             </button>
                         </motion.div>
                     )}

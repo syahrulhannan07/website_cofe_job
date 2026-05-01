@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import FormProfil from './komponen/FormProfil';
 import FotoProfil from './komponen/FotoProfil';
+import { useAdmin } from '../../konteks/AdminContext';
+import LoadingKopi from '../../komponen/LoadingKopi';
 
 const HalamanProfil = () => {
+    const { profilData: profil, fetchProfil, loading } = useAdmin();
+
+    useEffect(() => {
+        fetchProfil();
+    }, [fetchProfil]);
+
     // Varian animasi untuk elemen form
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -19,6 +27,10 @@ const HalamanProfil = () => {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0 }
     };
+
+    if (loading && !profil) {
+        return <LoadingKopi />;
+    }
 
     return (
         <div className="halaman-profil w-full min-h-full px-[32px] py-[30px] flex flex-col gap-[64px]">
@@ -44,10 +56,18 @@ const HalamanProfil = () => {
                 className="konten-profil flex flex-col lg:flex-row gap-[24px] items-start"
             >
                 {/* KOMPONEN FORM */}
-                <FormProfil variants={itemVariants} />
+                <FormProfil 
+                    variants={itemVariants} 
+                    data={profil} 
+                    onUpdate={() => fetchProfil(true)}
+                />
 
                 {/* KOMPONEN FOTO */}
-                <FotoProfil variants={itemVariants} />
+                <FotoProfil 
+                    variants={itemVariants} 
+                    data={profil}
+                    onUpdate={() => fetchProfil(true)}
+                />
             </motion.div>
 
             <div className="h-[40px]" />

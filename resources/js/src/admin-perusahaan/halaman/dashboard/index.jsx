@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import KartuStatistik from './komponen/KartuStatistik';
 import GrafikTrenPelamar from './komponen/GrafikTrenPelamar';
 import TabelPelamarTerbaru from './komponen/TabelPelamarTerbaru';
 import GrafikStatusLamaran from './komponen/GrafikStatusLamaran';
 import { motion } from 'framer-motion';
+import { useAdmin } from '../../konteks/AdminContext';
+import LoadingKopi from '../../komponen/LoadingKopi';
 
 /**
  * IMPORT ASET DASHBOARD
@@ -13,33 +15,58 @@ import schoolBriefcasePng from '../../aset/dashboard/School Briefcase.png';
 import warrantyPng        from '../../aset/dashboard/Warranty.png';
 import scheduleDashPng    from '../../aset/dashboard/Schedule.png';
 
+const SkeletonCard = () => (
+    <div className="bg-[#EAE4DC]/50 animate-pulse rounded-[20px] h-[180px] w-full" />
+);
+
 const HalamanDashboardAdmin = () => {
+    const { dashboardData, fetchDashboard, loading } = useAdmin();
+
+    useEffect(() => {
+        fetchDashboard();
+    }, [fetchDashboard]);
+
+    // Tampilkan Loading Kopi tematik saat pertama kali memuat data (data masih kosong)
+    if (loading && !dashboardData) {
+        return <LoadingKopi />;
+    }
 
     const dataStatistik = [
-        { id: 'pelamar',       judul: 'Pelamar',              nilai: '1,245', ikon: groupPersonPng,     ikonAlt: 'Ikon Pelamar'       },
-        { id: 'lowongan',      judul: 'Lowongan Aktif',       nilai: '45',    ikon: schoolBriefcasePng, ikonAlt: 'Ikon Lowongan'      },
-        { id: 'wawancara',     judul: 'Wawancara Terjadwal',  nilai: '30',    ikon: scheduleDashPng,    ikonAlt: 'Ikon Wawancara'     },
-        { id: 'terverifikasi', judul: 'Lamaran Diterima',     nilai: '12',    ikon: warrantyPng,        ikonAlt: 'Ikon Diterima'      },
-    ];
-
-    const dataPelamarTerbaru = [
-        { id: 1,  nama: 'Syahrul',  posisi: 'Marketing',       tanggal: '30 April 2026', status: 'Pending'   },
-        { id: 2,  nama: 'Ramadhan', posisi: 'Kasir',           tanggal: '12 April 2026', status: 'Pending'   },
-        { id: 3,  nama: 'Juwaidi',  posisi: 'Waitress',        tanggal: '08 April 2026', status: 'Pending'   },
-        { id: 4,  nama: 'Syjura',   posisi: 'Barista',         tanggal: '21 April 2026', status: 'Pending'   },
-        { id: 5,  nama: 'Syjura',   posisi: 'Cleaning Service', tanggal: '21 April 2026', status: 'Pending'  },
-        { id: 6,  nama: 'Ahmad',    posisi: 'Chef',            tanggal: '22 April 2026', status: 'Review'    },
-        { id: 7,  nama: 'Budi',     posisi: 'Driver',          tanggal: '23 April 2026', status: 'Wawancara' },
-        { id: 8,  nama: 'Citra',    posisi: 'Accounting',      tanggal: '24 April 2026', status: 'Pending'   },
-        { id: 9,  nama: 'Dedi',     posisi: 'IT Support',      tanggal: '25 April 2026', status: 'Ditolak'   },
-        { id: 10, nama: 'Eka',      posisi: 'Receptionist',    tanggal: '26 April 2026', status: 'Diterima'  },
+        { 
+            id: 'pelamar',       
+            judul: 'Pelamar',              
+            nilai: dashboardData?.statistik?.total_pelamar?.toLocaleString() || '0', 
+            ikon: groupPersonPng,     
+            ikonAlt: 'Ikon Pelamar'       
+        },
+        { 
+            id: 'lowongan',      
+            judul: 'Lowongan Aktif',       
+            nilai: dashboardData?.statistik?.lowongan_aktif?.toString() || '0',    
+            ikon: schoolBriefcasePng, 
+            ikonAlt: 'Ikon Lowongan'      
+        },
+        { 
+            id: 'wawancara',     
+            judul: 'Wawancara Terjadwal',  
+            nilai: dashboardData?.statistik?.wawancara_terjadwal?.toString() || '0',    
+            ikon: scheduleDashPng,    
+            ikonAlt: 'Ikon Wawancara'     
+        },
+        { 
+            id: 'terverifikasi', 
+            judul: 'Lamaran Diterima',     
+            nilai: dashboardData?.statistik?.lamaran_diterima?.toString() || '0',    
+            ikon: warrantyPng,        
+            ikonAlt: 'Ikon Diterima'      
+        },
     ];
 
     const dataStatusLamaran = [
-        { label: 'Diproses',  nilai: 157, warna: '#F5B759' },
-        { label: 'Wawancara', nilai: 38,  warna: '#67D9F0' },
-        { label: 'Ditolak',   nilai: 43,  warna: '#F05D5D' },
-        { label: 'Diterima',  nilai: 17,  warna: '#27AE60' },
+        { label: 'Diproses',  nilai: dashboardData?.distribusi_status?.Diproses || 0,  warna: '#F5B759' },
+        { label: 'Wawancara', nilai: dashboardData?.distribusi_status?.Wawancara || 0, warna: '#67D9F0' },
+        { label: 'Ditolak',   nilai: dashboardData?.distribusi_status?.Ditolak || 0,   warna: '#F05D5D' },
+        { label: 'Diterima',  nilai: dashboardData?.distribusi_status?.Diterima || 0,  warna: '#27AE60' },
     ];
 
     return (
@@ -54,15 +81,21 @@ const HalamanDashboardAdmin = () => {
 
             {/* SECTION 1: KARTU STATISTIK */}
             <div className="baris-kartu-statistik grid grid-cols-4 gap-[20px]">
-                {dataStatistik.map((kartu) => (
-                    <KartuStatistik 
-                        key={kartu.id} 
-                        judul={kartu.judul} 
-                        nilai={kartu.nilai} 
-                        ikon={kartu.ikon} 
-                        ikonAlt={kartu.ikonAlt} 
-                    />
-                ))}
+                {loading && !dashboardData ? (
+                    <>
+                        <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+                    </>
+                ) : (
+                    dataStatistik.map((kartu) => (
+                        <KartuStatistik 
+                            key={kartu.id} 
+                            judul={kartu.judul} 
+                            nilai={kartu.nilai} 
+                            ikon={kartu.ikon} 
+                            ikonAlt={kartu.ikonAlt} 
+                        />
+                    ))
+                )}
             </div>
 
             {/* SECTION 2: GRAFIK TREN */}
@@ -72,7 +105,11 @@ const HalamanDashboardAdmin = () => {
                 transition={{ delay: 0.2 }}
                 className="pembungkus-grafik-tren w-full"
             >
-                <GrafikTrenPelamar />
+                {loading && !dashboardData ? (
+                    <div className="bg-[#EAE4DC]/50 animate-pulse rounded-[20px] h-[300px] w-full" />
+                ) : (
+                    <GrafikTrenPelamar dataTren={dashboardData?.tren_pelamar || []} />
+                )}
             </motion.div>
 
             {/* SECTION 3: TABEL & STATUS */}
@@ -88,7 +125,11 @@ const HalamanDashboardAdmin = () => {
                         Pelamar Terbaru
                     </h2>
                     <div className="flex-1">
-                        <TabelPelamarTerbaru dataPelamar={dataPelamarTerbaru} />
+                        {loading && !dashboardData ? (
+                            <div className="bg-[#EAE4DC]/50 animate-pulse rounded-[20px] h-[400px] w-full" />
+                        ) : (
+                            <TabelPelamarTerbaru dataPelamar={dashboardData?.pelamar_terbaru || []} />
+                        )}
                     </div>
                 </motion.div>
 
@@ -103,7 +144,11 @@ const HalamanDashboardAdmin = () => {
                         Status Lamaran
                     </h2>
                     <div className="flex-1">
-                        <GrafikStatusLamaran dataStatus={dataStatusLamaran} />
+                        {loading && !dashboardData ? (
+                            <div className="bg-[#EAE4DC]/50 animate-pulse rounded-[20px] h-[400px] w-full" />
+                        ) : (
+                            <GrafikStatusLamaran dataStatus={dataStatusLamaran} />
+                        )}
                     </div>
                 </motion.div>
             </div>
