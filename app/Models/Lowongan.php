@@ -18,6 +18,8 @@ class Lowongan extends Model
         'posisi',
         'deskripsi',
         'persyaratan',
+        'lokasi',
+        'gaji',
         'batas_awal',
         'batas_akhir',
         'status',

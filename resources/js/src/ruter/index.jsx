@@ -13,6 +13,7 @@ import DashboardAdmin from '../admin-perusahaan/halaman/dashboard';
 import ProfilAdmin    from '../admin-perusahaan/halaman/profil';
 import PelamarAdmin   from '../admin-perusahaan/halaman/pelamar';
 import LowonganAdmin  from '../admin-perusahaan/halaman/lowongan';
+import TambahLowongan  from '../admin-perusahaan/halaman/lowongan/TambahLowongan';
 import WawancaraAdmin from '../admin-perusahaan/halaman/wawancara';
 
 import SuperAdmin from '../halaman/super-admin';
@@ -42,6 +43,8 @@ const ruter = createBrowserRouter([
             { path: 'profil',    element: <ProfilAdmin /> },
             { path: 'pelamar',   element: <PelamarAdmin /> },
             { path: 'lowongan',  element: <LowonganAdmin /> },
+            { path: 'lowongan/tambah', element: <TambahLowongan /> },
+            { path: 'lowongan/edit/:id', element: <TambahLowongan /> },
             { path: 'wawancara', element: <WawancaraAdmin /> },
         ],
     },

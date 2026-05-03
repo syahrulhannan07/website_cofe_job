@@ -38,6 +38,15 @@ const TataLetakAdminContent = () => {
     }
 
     const isHalamanProfil = location.pathname === '/admin/profil';
+    const isHalamanStandalone = location.pathname === '/admin/lowongan/tambah' || location.pathname.includes('/admin/lowongan/edit');
+
+    if (isHalamanStandalone) {
+        return (
+            <main className="flex-1 min-h-screen overflow-y-auto bg-[#F3EDE6]">
+                <Outlet />
+            </main>
+        );
+    }
 
     return (
         <div className="layout-admin-utama h-screen w-screen overflow-hidden flex font-poppins bg-[#F3EDE6]">

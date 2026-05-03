@@ -15,16 +15,16 @@ class LowonganRepository
         $today = now()->toDateString();
 
         // Sinkronisasi status otomatis berdasarkan tanggal
-        // 1. Otomatis 'Ditutup' jika sudah melewati batas akhir
+        // 1. Otomatis 'Closed' jika sudah melewati batas akhir
         Lowongan::where('id_perusahaan', $idPerusahaan)
-            ->where('status', 'Aktif')
+            ->where('status', 'Active')
             ->whereNotNull('batas_akhir')
             ->where('batas_akhir', '<', $today)
-            ->update(['status' => 'Ditutup']);
+            ->update(['status' => 'Closed']);
 
         // 2. Otomatis 'Draft' jika hari ini masih sebelum batas awal
         Lowongan::where('id_perusahaan', $idPerusahaan)
-            ->where('status', 'Aktif')
+            ->where('status', 'Active')
             ->whereNotNull('batas_awal')
             ->where('batas_awal', '>', $today)
             ->update(['status' => 'Draft']);
