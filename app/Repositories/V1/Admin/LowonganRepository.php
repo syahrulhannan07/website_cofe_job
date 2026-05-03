@@ -12,6 +12,23 @@ class LowonganRepository
      */
     public function getByPerusahaan(int $idPerusahaan, array $filters = []): LengthAwarePaginator
     {
+        $today = now()->toDateString();
+
+        // Sinkronisasi status otomatis berdasarkan tanggal
+        // 1. Otomatis 'Ditutup' jika sudah melewati batas akhir
+        Lowongan::where('id_perusahaan', $idPerusahaan)
+            ->where('status', 'Aktif')
+            ->whereNotNull('batas_akhir')
+            ->where('batas_akhir', '<', $today)
+            ->update(['status' => 'Ditutup']);
+
+        // 2. Otomatis 'Draft' jika hari ini masih sebelum batas awal
+        Lowongan::where('id_perusahaan', $idPerusahaan)
+            ->where('status', 'Aktif')
+            ->whereNotNull('batas_awal')
+            ->where('batas_awal', '>', $today)
+            ->update(['status' => 'Draft']);
+
         $query = Lowongan::where('id_perusahaan', $idPerusahaan)
             ->withCount('lamaran');
 

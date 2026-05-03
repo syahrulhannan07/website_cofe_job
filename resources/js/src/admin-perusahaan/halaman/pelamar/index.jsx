@@ -1,73 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '../../konteks/AdminContext';
 import HeaderPelamar from './komponen/HeaderPelamar';
 import KartuLowonganPelamar from './komponen/KartuLowonganPelamar';
 import DetailPelamar from './komponen/DetailPelamar';
 import ProfilPelamar from './komponen/ProfilPelamar';
+import api from '../../../layanan/api';
+
+import LoadingKopi from '../../komponen/LoadingKopi';
 
 const HalamanPelamar = () => {
     const { setTopbarAction } = useAdmin();
     const [activeFilter, setActiveFilter] = useState('All');
-
-    // Data Dummy realistis sesuai desain Figma
-    const dataLowongan = [
-        {
-            id: 1,
-            judul: 'Senior Barista',
-            tanggalPublikasi: '15 Maret 2026',
-            status: 'Active',
-            jumlahPelamar: 4
-        },
-        {
-            id: 2,
-            judul: 'Head Roaster',
-            tanggalPublikasi: '12 Maret 2026',
-            status: 'Draft',
-            jumlahPelamar: 4
-        },
-        {
-            id: 3,
-            judul: 'Service Attendant',
-            tanggalPublikasi: '09 Maret 2026',
-            status: 'Closed',
-            jumlahPelamar: 4
-        }
-    ];
+    const [searchQuery, setSearchQuery] = useState('');
+    const [dataLowongan, setDataLowongan] = useState([]);
+    const [stats, setStats] = useState({ totalLowongan: 0, totalPelamar: 0 });
+    const [loading, setLoading] = useState(true);
 
     const [selectedLowongan, setSelectedLowongan] = useState(null);
     const [selectedPelamar, setSelectedPelamar] = useState(null);
 
-    const filteredLowongan = dataLowongan.filter(item => 
-        activeFilter === 'All' || item.status === activeFilter
-    );
+    // Fetch data dari API
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const params = {};
+            if (activeFilter !== 'All') {
+                // Map status ke bahasa database (Aktif/Ditutup)
+                params.status = activeFilter === 'Active' ? 'Aktif' : 
+                               activeFilter === 'Closed' ? 'Ditutup' : 
+                               activeFilter;
+            }
+            if (searchQuery) {
+                params.search = searchQuery;
+            }
 
-    const stats = {
-        totalLowongan: 12,
-        totalPelamar: 24
-    };
+            const response = await api.get('/admin/lowongan', { params });
+            setDataLowongan(response.data.data);
+            
+            // Ambil statistik dari meta response
+            if (response.data.meta?.statistik) {
+                setStats({
+                    totalLowongan: response.data.meta.statistik.total_lowongan,
+                    totalPelamar: response.data.meta.statistik.total_pelamar
+                });
+            }
+        } catch (error) {
+            console.error("Gagal mengambil data lowongan:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [activeFilter, searchQuery]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     useEffect(() => {
         if (selectedPelamar) {
             setTopbarAction({
-                prefix: `Lowongan / ${selectedLowongan?.judul} / `,
+                prefix: `Lowongan / ${selectedLowongan?.judul || selectedLowongan?.posisi} / `,
                 highlight: 'Pelamar',
                 onBack: () => setSelectedPelamar(null)
             });
         } else if (selectedLowongan) {
             setTopbarAction({
                 prefix: 'Lowongan / ',
-                highlight: selectedLowongan.judul,
+                highlight: selectedLowongan.posisi || selectedLowongan.judul,
                 onBack: () => setSelectedLowongan(null)
             });
         } else {
             setTopbarAction(null);
         }
     }, [selectedLowongan, selectedPelamar, setTopbarAction]);
-
-    const handleSelectLowongan = (id) => {
-        const lowongan = dataLowongan.find(l => l.id === id);
-        setSelectedLowongan(lowongan);
-    };
 
     const handleSelectPelamar = (pelamar) => {
         setSelectedPelamar(pelamar);
@@ -100,12 +104,15 @@ const HalamanPelamar = () => {
                 stats={stats} 
                 activeFilter={activeFilter} 
                 setActiveFilter={setActiveFilter} 
+                onSearch={setSearchQuery}
             />
 
             {/* List Lowongan */}
             <div className="flex flex-col gap-[20px] w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {filteredLowongan.length > 0 ? (
-                    filteredLowongan.map((lowongan) => (
+                {loading ? (
+                    <LoadingKopi fullScreen={false} />
+                ) : dataLowongan.length > 0 ? (
+                    dataLowongan.map((lowongan) => (
                         <KartuLowonganPelamar 
                             key={lowongan.id} 
                             lowongan={lowongan} 
@@ -115,7 +122,7 @@ const HalamanPelamar = () => {
                 ) : (
                     <div className="bg-[#EAE4DC] border border-dashed border-[#CCCCCC] rounded-[10px] p-20 flex flex-col items-center justify-center">
                         <p className="font-poppins text-[#4B2E2B]/50 text-center italic">
-                            Tidak ada lowongan dengan status "{activeFilter}"
+                            {searchQuery ? `Tidak ada lowongan ditemukan untuk "${searchQuery}"` : `Tidak ada lowongan dengan status "${activeFilter}"`}
                         </p>
                     </div>
                 )}

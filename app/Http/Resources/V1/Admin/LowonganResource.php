@@ -25,6 +25,12 @@ class LowonganResource extends JsonResource
             'batas_akhir'    => $this->batas_akhir,
             'created_at'     => $this->created_at?->toDateTimeString(),
             'updated_at'     => $this->updated_at?->toDateTimeString(),
+            'perusahaan'     => [
+                'nama'   => $this->perusahaan?->nama_perusahaan,
+                'alamat' => $this->perusahaan?->alamat_perusahaan,
+                'email'  => $this->perusahaan?->pengguna?->email,
+                'logo'   => $this->perusahaan?->logo_perusahaan,
+            ],
             'dokumen'        => $this->whenLoaded('dokumenDibutuhkan'),
             'pertanyaan'     => $this->whenLoaded('pertanyaanSeleksi'),
         ];

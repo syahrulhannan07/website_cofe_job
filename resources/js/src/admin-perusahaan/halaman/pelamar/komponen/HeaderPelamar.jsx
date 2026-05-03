@@ -3,7 +3,7 @@ import BriefcaseIcon from '../../../aset/pelamar/School Briefcase.png';
 import GroupIcon from '../../../aset/pelamar/Group.png';
 import SearchIcon from '../../../aset/pelamar/Search.svg';
 
-const HeaderPelamar = ({ stats, activeFilter, setActiveFilter }) => {
+const HeaderPelamar = ({ stats, activeFilter, setActiveFilter, onSearch }) => {
     const filters = ['All', 'Active', 'Draft', 'Closed'];
 
     return (
@@ -28,6 +28,7 @@ const HeaderPelamar = ({ stats, activeFilter, setActiveFilter }) => {
                 <input 
                     type="text" 
                     placeholder="Search" 
+                    onChange={(e) => onSearch(e.target.value)}
                     className="bg-transparent border-none outline-none font-poppins text-[15px] text-[#4B2E2B] placeholder-[#4B2E2B] w-full"
                 />
             </div>

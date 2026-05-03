@@ -33,9 +33,23 @@ class LowonganController extends Controller
         $profil = auth('api')->user()->profilPerusahaan;
         if (!$profil) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
 
-        $lowongan = $this->service->listVacancies($profil->id_perusahaan, $request->all());
+        $idPerusahaan = $profil->id_perusahaan;
+        $lowongan = $this->service->listVacancies($idPerusahaan, $request->all());
 
-        return LowonganResource::collection($lowongan);
+        // Global Statistics for the company
+        $totalLowongan = Lowongan::where('id_perusahaan', $idPerusahaan)->count();
+        $totalPelamar = \App\Models\Lamaran::whereHas('lowongan', function($q) use ($idPerusahaan) {
+            $q->where('id_perusahaan', $idPerusahaan);
+        })->count();
+
+        return LowonganResource::collection($lowongan)->additional([
+            'meta' => [
+                'statistik' => [
+                    'total_lowongan' => $totalLowongan,
+                    'total_pelamar' => $totalPelamar
+                ]
+            ]
+        ]);
     }
 
     /**
