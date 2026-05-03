@@ -1,26 +1,169 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../../../layanan/api';
+import LoadingKopi from '../../komponen/LoadingKopi';
 
-const HalamanWawancara = () => (
-    <div className="flex-1 w-full flex flex-col p-8 lg:p-10 bg-[#F3EDE6] min-h-screen">
-        <div className="mb-8">
-            <h1 className="font-poppins font-bold text-[32px] text-[#4B2E2B]">Wawancara</h1>
+// Components
+import WawancaraToolbar from './komponen/WawancaraToolbar';
+import WawancaraStats from './komponen/WawancaraStats';
+import WawancaraTable from './komponen/WawancaraTable';
+import ModalJadwalWawancara from './komponen/ModalJadwalWawancara';
+
+const HalamanWawancara = () => {
+    const [interviews, setInterviews] = useState([]);
+    const [stats, setStats] = useState({ total_pelamar: 0, lamaran_diterima: 0 });
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Modal State
+    const [showModal, setShowModal] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
+    const [selectedId, setSelectedId] = useState(null);
+    const [candidates, setCandidates] = useState([]);
+    const [formData, setFormData] = useState({
+        id_lamaran: '',
+        tanggal: '',
+        jam: '',
+        lokasi: '',
+        status: 'Terjadwal',
+        catatan: ''
+    });
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const interviewRes = await api.get('/admin/wawancara', {
+                params: { search: debouncedSearch }
+            });
+            setInterviews(interviewRes.data.data);
+
+            const dashboardRes = await api.get('/admin/dashboard');
+            const dStats = dashboardRes.data.data.statistik;
+            setStats({
+                total_pelamar: dStats.total_pelamar,
+                lamaran_diterima: dStats.lamaran_diterima
+            });
+        } catch (error) {
+            console.error("Gagal mengambil data wawancara:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [debouncedSearch]);
+
+    const fetchCandidates = async () => {
+        try {
+            const res = await api.get('/admin/lamaran/status/wawancara');
+            setCandidates(res.data.data);
+        } catch (error) {
+            console.error("Gagal mengambil kandidat:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const handleOpenAddModal = () => {
+        setModalMode('add');
+        setFormData({ id_lamaran: '', tanggal: '', jam: '', lokasi: '', status: 'Terjadwal', catatan: '' });
+        fetchCandidates();
+        setShowModal(true);
+    };
+
+    const handleOpenEditModal = (item) => {
+        setModalMode('edit');
+        setSelectedId(item.id_wawancara);
+        const [date, time] = item.tanggal_wawancara.split(' ');
+        setFormData({
+            id_lamaran: item.kandidat.id_lamaran,
+            tanggal: date,
+            jam: time.substring(0, 5),
+            lokasi: item.lokasi,
+            status: item.status || 'Terjadwal',
+            catatan: item.catatan || ''
+        });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const payload = {
+            tanggal_wawancara: `${formData.tanggal} ${formData.jam}`,
+            lokasi: formData.lokasi,
+            status: formData.status,
+            catatan: formData.catatan
+        };
+
+        try {
+            if (modalMode === 'add') {
+                await api.post(`/admin/lamaran/${formData.id_lamaran}/wawancara`, payload);
+            } else {
+                await api.put(`/admin/wawancara/${selectedId}`, payload);
+            }
+            setShowModal(false);
+            fetchData();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Gagal menyimpan jadwal');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm('Apakah Anda yakin ingin membatalkan jadwal wawancara ini?')) {
+            try {
+                await api.delete(`/admin/wawancara/${id}`);
+                fetchData();
+            } catch (error) {
+                alert('Gagal membatalkan jadwal');
+            }
+        }
+    };
+
+    const handleSelesai = async (id) => {
+        try {
+            await api.post(`/admin/wawancara/${id}/selesai`);
+            fetchData();
+        } catch (error) {
+            alert('Gagal memperbarui status');
+        }
+    };
+
+    if (loading && interviews.length === 0) return <LoadingKopi />;
+
+    return (
+        <div className="flex-1 w-full flex flex-col p-6 lg:p-10 bg-[#F3EDE6] min-h-screen font-poppins relative overflow-x-hidden">
+            <WawancaraToolbar 
+                onAdd={handleOpenAddModal} 
+                search={search} 
+                setSearch={setSearch} 
+            />
+
+            <WawancaraStats stats={stats} />
+
+            <WawancaraTable 
+                interviews={interviews} 
+                onEdit={handleOpenEditModal} 
+                onDelete={handleDelete} 
+                onSelesai={handleSelesai} 
+            />
+
+            <ModalJadwalWawancara 
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                mode={modalMode}
+                formData={formData}
+                setFormData={setFormData}
+                handleSubmit={handleSubmit}
+                candidates={candidates}
+            />
         </div>
-        
-        <div className="flex-1 flex flex-col items-center justify-center -mt-20">
-            <div className="w-24 h-24 mb-6 opacity-20">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#4B2E2B" strokeWidth="1.5">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-            </div>
-            <h2 className="font-poppins font-bold text-[24px] text-[#4B2E2B]">Tahap Pengembangan</h2>
-            <p className="font-poppins text-[16px] text-[#4B2E2B]/60 mt-2 text-center max-w-md">
-                Fitur manajemen jadwal wawancara sedang disiapkan. Segera hadir untuk memudahkan interaksi Anda dengan pelamar.
-            </p>
-        </div>
-    </div>
-);
+    );
+};
 
 export default HalamanWawancara;

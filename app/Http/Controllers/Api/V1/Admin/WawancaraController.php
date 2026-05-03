@@ -75,7 +75,15 @@ class WawancaraController extends Controller
 
         $wawancara = $this->repository->findByIdAndPerusahaan($id_wawancara, $profil->id_perusahaan, ['lamaran.profil']);
         if (!$wawancara) return $this->errorResponse('Jadwal tidak ditemukan', 404);
-        if ($wawancara->status !== 'Terjadwal') return $this->errorResponse('Hanya jadwal Terjadwal yang bisa diubah', 422);
+
+        $validator = Validator::make($request->all(), [
+            'tanggal_wawancara' => 'nullable|date_format:Y-m-d H:i',
+            'lokasi'            => 'nullable|string|max:500',
+            'status'            => 'nullable|in:Terjadwal,Selesai,Dibatalkan',
+            'catatan'           => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
 
         try {
             $this->service->rescheduleWawancara($wawancara, $request->all(), $profil->nama_perusahaan);

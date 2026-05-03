@@ -112,6 +112,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('lamaran')->group(function () {
             Route::get('/{id_lamaran}', [\App\Http\Controllers\Api\V1\Admin\SeleksiLamaranController::class, 'detailLamaran']);
             Route::put('/{id_lamaran}/status', [\App\Http\Controllers\Api\V1\Admin\SeleksiLamaranController::class, 'updateStatus']);
+            Route::get('/status/wawancara', [\App\Http\Controllers\Api\V1\Admin\SeleksiLamaranController::class, 'kandidatWawancara']);
 
             // Wawancara Scheduling: buat jadwal untuk kandidat
             Route::post('/{id_lamaran}/wawancara', [\App\Http\Controllers\Api\V1\Admin\WawancaraController::class, 'store']);
