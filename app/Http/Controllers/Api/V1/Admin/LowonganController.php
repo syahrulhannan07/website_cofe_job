@@ -120,10 +120,16 @@ class LowonganController extends Controller
 
         // Simple validation for update (could also use a dedicated Request)
         $validator = Validator::make($request->all(), [
-            'posisi'      => 'nullable|string|max:255',
-            'status'      => 'nullable|in:Draft,Active,Closed',
-            'batas_awal'  => 'nullable|date|date_format:Y-m-d',
-            'batas_akhir' => 'nullable|date|date_format:Y-m-d|after:batas_awal',
+            'posisi'                               => 'nullable|string|max:255',
+            'status'                               => 'nullable|in:Draft,Active,Closed',
+            'batas_awal'                           => 'nullable|date|date_format:Y-m-d',
+            'batas_akhir'                          => 'nullable|date|date_format:Y-m-d|after:batas_awal',
+            'dokumen_dibutuhkan'                   => 'nullable|array',
+            'dokumen_dibutuhkan.*.id_jenis_dokumen'=> 'required|exists:jenis_dokumen,id_jenis_dokumen',
+            'dokumen_dibutuhkan.*.wajib'           => 'required|boolean',
+            'pertanyaan'                           => 'nullable|array',
+            'pertanyaan.*.pertanyaan'              => 'required|string',
+            'pertanyaan.*.tipe_jawaban'            => 'required|string',
         ]);
 
         if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());

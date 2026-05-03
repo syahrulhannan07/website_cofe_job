@@ -11,6 +11,8 @@ import TipsIcon from '../../aset/lowongan/tips.svg';
 import DurationIcon from '../../aset/lowongan/duration.svg';
 import TransparansiIcon from '../../aset/lowongan/transpansi.svg';
 import NoteIcon from '../../aset/lowongan/note.svg';
+import TrashIcon from '../../aset/lowongan/TrashFill.svg';
+import PlusIcon from '../../aset/lowongan/Plus.svg';
 
 const TambahLowongan = () => {
     const navigate = useNavigate();
@@ -30,8 +32,13 @@ const TambahLowongan = () => {
             "Mengapa Anda ingin bergabung dengan kami?",
             "Berapa ekspektasi gaji anda?",
             "Apakah bersedia bekerja di hari libur/shift?"
-        ]
+        ],
+        dokumen_dibutuhkan: [] // New field
     });
+
+    const [availableDocuments, setAvailableDocuments] = useState([]);
+    const [customDocName, setCustomDocName] = useState('');
+    const [showCustomDocInput, setShowCustomDocInput] = useState(false);
 
     const systemQuestions = [
         "Mengapa Anda ingin bergabung dengan kami?",
@@ -47,10 +54,20 @@ const TambahLowongan = () => {
 
     useEffect(() => {
         checkProfileStatus();
+        fetchJenisDokumen();
         if (isEdit) {
             fetchVacancy();
         }
     }, [id]);
+
+    const fetchJenisDokumen = async () => {
+        try {
+            const response = await api.get('/jenis-dokumen');
+            setAvailableDocuments(response.data.data);
+        } catch (error) {
+            console.error("Gagal mengambil jenis dokumen:", error);
+        }
+    };
 
     const fetchVacancy = async () => {
         setLoading(true);
@@ -67,9 +84,14 @@ const TambahLowongan = () => {
                 gaji: lowongan.gaji || '',
                 batas_awal: lowongan.batas_awal ? lowongan.batas_awal.split('T')[0].split(' ')[0] : '',
                 batas_akhir: lowongan.batas_akhir ? lowongan.batas_akhir.split('T')[0].split(' ')[0] : '',
-                status: lowongan.status || 'Draft',
+                status: lowongan.status_raw || 'Draft', // Use raw status for internal state
                 jumlah_pertanyaan: (lowongan.pertanyaan?.length || 0).toString(),
-                pertanyaan: lowongan.pertanyaan?.map(q => q.pertanyaan) || []
+                pertanyaan: lowongan.pertanyaan?.map(q => q.pertanyaan) || [],
+                dokumen_dibutuhkan: lowongan.dokumen?.map(d => ({
+                    id_jenis_dokumen: d.id_jenis_dokumen,
+                    nama_dokumen: d.jenis_dokumen?.nama_dokumen,
+                    wajib: !!d.wajib
+                })) || []
             });
         } catch (error) {
             console.error("Gagal mengambil data lowongan:", error);
@@ -104,7 +126,71 @@ const TambahLowongan = () => {
         setFormData(prev => ({ ...prev, pertanyaan: newQuestions }));
     };
 
-    const handleSubmit = async (status) => {
+    const handleAddDocument = (id_jenis, nama) => {
+        if (formData.dokumen_dibutuhkan.some(d => d.id_jenis_dokumen === id_jenis)) return;
+        
+        setFormData(prev => ({
+            ...prev,
+            dokumen_dibutuhkan: [
+                ...prev.dokumen_dibutuhkan,
+                { id_jenis_dokumen: id_jenis, nama_dokumen: nama, wajib: true }
+            ]
+        }));
+    };
+
+    const handleRemoveDocument = (id_jenis) => {
+        setFormData(prev => ({
+            ...prev,
+            dokumen_dibutuhkan: prev.dokumen_dibutuhkan.filter(d => d.id_jenis_dokumen !== id_jenis)
+        }));
+    };
+
+    const handleToggleWajib = (id_jenis) => {
+        setFormData(prev => ({
+            ...prev,
+            dokumen_dibutuhkan: prev.dokumen_dibutuhkan.map(d => 
+                d.id_jenis_dokumen === id_jenis ? { ...d, wajib: !d.wajib } : d
+            )
+        }));
+    };
+
+    const handleCreateCustomDoc = async () => {
+        if (!customDocName.trim()) return;
+        try {
+            const response = await api.post('/jenis-dokumen', { nama_dokumen: customDocName });
+            const newDoc = response.data.data;
+            setAvailableDocuments(prev => [...prev, newDoc]);
+            handleAddDocument(newDoc.id_jenis_dokumen, newDoc.nama_dokumen);
+            setCustomDocName('');
+            setShowCustomDocInput(false);
+        } catch (error) {
+            console.error("Gagal membuat dokumen custom:", error);
+            alert(error.response?.data?.message || "Gagal membuat dokumen");
+        }
+    };
+
+    const handleSubmit = async (statusIntent) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const start = formData.batas_awal ? new Date(formData.batas_awal) : null;
+        const end = formData.batas_akhir ? new Date(formData.batas_akhir) : null;
+
+        // Validasi Khusus Simpan Draft (Harus tanggal mendatang)
+        if (statusIntent === 'Draft' && start) {
+            if (start <= today) {
+                alert("Untuk menyimpan sebagai Draft, Tanggal Buka harus lebih besar dari hari ini.");
+                return;
+            }
+        }
+
+        // Validasi Umum Rentang Tanggal
+        if (start && end) {
+            if (end < start) {
+                alert("Tanggal Tutup tidak boleh lebih kecil dari Tanggal Buka.");
+                return;
+            }
+        }
+
         setLoading(true);
         try {
             const formattedQuestions = formData.pertanyaan
@@ -117,8 +203,12 @@ const TambahLowongan = () => {
 
             const dataToSubmit = { 
                 ...formData, 
-                status,
-                pertanyaan: formattedQuestions 
+                status: statusIntent,
+                pertanyaan: formattedQuestions,
+                dokumen_dibutuhkan: formData.dokumen_dibutuhkan.map(d => ({
+                    id_jenis_dokumen: d.id_jenis_dokumen,
+                    wajib: d.wajib
+                }))
             };
 
             if (isEdit) {
@@ -307,6 +397,100 @@ const TambahLowongan = () => {
                             </div>
                         </div>
 
+                        {/* 5.5. Dokumen yang Diperlukan (NEW SECTION) */}
+                        <div className="flex flex-col gap-6 p-8 bg-[#FDFCFB] rounded-[20px] border border-[#4B2E2B]/10">
+                            <div className="flex flex-col gap-1">
+                                <h3 className="font-poppins font-bold text-[20px] text-[#2B1810]">Dokumen yang Diperlukan</h3>
+                                <p className="font-poppins text-[#78716C] text-[14px]">
+                                    Pilih dokumen apa saja yang harus diunggah oleh pelamar saat mendaftar.
+                                </p>
+                            </div>
+
+                            {/* List Selected Documents */}
+                            <div className="flex flex-col gap-3">
+                                {formData.dokumen_dibutuhkan.map((doc) => (
+                                    <div key={doc.id_jenis_dokumen} className="flex items-center justify-between p-4 bg-white border border-[#E7E5E4] rounded-[12px] shadow-sm animate-in fade-in zoom-in-95 duration-200">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-8 h-8 rounded-full bg-[#4B2E2B]/5 flex items-center justify-center">
+                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M9 1.5H3.5C3.10218 1.5 2.72064 1.65804 2.43934 1.93934C2.15804 2.22064 2 2.60218 2 3V13C2 13.3978 2.15804 13.7794 2.43934 14.0607C2.72064 14.342 3.10218 14.5 3.5 14.5H12.5C12.8978 14.5 13.2794 14.342 13.5607 14.0607C13.842 13.7794 14 13.3978 14 13V6.5L9 1.5Z" stroke="#4B2E2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    <path d="M9 1.5V6.5H14" stroke="#4B2E2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                </svg>
+                                            </div>
+                                            <span className="font-poppins font-semibold text-[#2B1810] text-[15px]">{doc.nama_dokumen}</span>
+                                        </div>
+                                        <div className="flex items-center gap-6">
+                                            <label className="flex items-center gap-2 cursor-pointer group">
+                                                <div 
+                                                    onClick={() => handleToggleWajib(doc.id_jenis_dokumen)}
+                                                    className={`w-10 h-6 rounded-full transition-all relative ${doc.wajib ? 'bg-[#4B2E2B]' : 'bg-[#E7E5E4]'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${doc.wajib ? 'left-5' : 'left-1'}`}></div>
+                                                </div>
+                                                <span className="font-poppins text-[13px] text-[#4B2E2B] font-medium">Wajib</span>
+                                            </label>
+                                            <button 
+                                                onClick={() => handleRemoveDocument(doc.id_jenis_dokumen)}
+                                                className="p-2 hover:bg-red-50 rounded-full transition-colors group"
+                                            >
+                                                <img src={TrashIcon} alt="Hapus" className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Add Document Section */}
+                            <div className="flex flex-col gap-4 mt-2">
+                                <div className="flex flex-wrap gap-2">
+                                    {availableDocuments
+                                        .filter(ad => !formData.dokumen_dibutuhkan.some(fd => fd.id_jenis_dokumen === ad.id_jenis_dokumen))
+                                        .map((ad) => (
+                                            <button
+                                                key={ad.id_jenis_dokumen}
+                                                onClick={() => handleAddDocument(ad.id_jenis_dokumen, ad.nama_dokumen)}
+                                                className="px-4 py-2 bg-white border border-[#E7E5E4] rounded-full font-poppins text-[13px] text-[#4B2E2B] hover:border-[#4B2E2B] hover:bg-[#4B2E2B]/5 transition-all flex items-center gap-2"
+                                            >
+                                                <img src={PlusIcon} className="w-3 h-3" alt="" />
+                                                {ad.nama_dokumen}
+                                            </button>
+                                        ))}
+                                    <button 
+                                        onClick={() => setShowCustomDocInput(true)}
+                                        className="px-4 py-2 bg-[#F3EDE6] border border-dashed border-[#4B2E2B]/30 rounded-full font-poppins text-[13px] text-[#4B2E2B] hover:bg-[#F3EDE6]/80 transition-all flex items-center gap-2"
+                                    >
+                                        <img src={PlusIcon} className="w-3 h-3" alt="" />
+                                        Tambah Dokumen Lainnya
+                                    </button>
+                                </div>
+
+                                {showCustomDocInput && (
+                                    <div className="flex items-center gap-3 p-4 bg-[#F3EDE6]/30 border border-[#4B2E2B]/10 rounded-[12px] animate-in slide-in-from-top-2 duration-300">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Nama dokumen baru (misal: Sertifikat Halal)..." 
+                                            value={customDocName}
+                                            onChange={(e) => setCustomDocName(e.target.value)}
+                                            className="flex-1 bg-white h-[44px] px-4 rounded-[8px] border border-[#E7E5E4] font-poppins text-[14px] outline-none focus:border-[#4B2E2B]/40"
+                                            onKeyDown={(e) => e.key === 'Enter' && handleCreateCustomDoc()}
+                                        />
+                                        <button 
+                                            onClick={handleCreateCustomDoc}
+                                            className="h-[44px] px-6 bg-[#4B2E2B] text-white font-poppins font-bold text-[13px] rounded-[8px] hover:bg-[#4B2E2B]/90 transition-all"
+                                        >
+                                            Tambah
+                                        </button>
+                                        <button 
+                                            onClick={() => { setShowCustomDocInput(false); setCustomDocName(''); }}
+                                            className="h-[44px] px-4 text-[#4B2E2B]/60 font-poppins text-[13px] hover:text-[#4B2E2B]"
+                                        >
+                                            Batal
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                         {/* 6. Pertanyaan Perusahaan */}
                         <div className="mt-6 flex flex-col gap-8">
                             <div className="flex flex-col gap-2">
@@ -385,7 +569,7 @@ const TambahLowongan = () => {
                         </button>
                         <button 
                             disabled={loading}
-                            onClick={() => handleSubmit(formData.status)}
+                            onClick={() => handleSubmit('Active')}
                             className="flex-1 md:flex-none h-[48px] px-10 bg-[#FEB02C] text-[#6B4500] font-poppins font-bold text-[14px] rounded-full hover:bg-[#FEB02C]/90 transition-all shadow-lg shadow-[#FEB02C]/20 disabled:opacity-50"
                         >
                             {loading ? 'Memproses...' : isEdit ? 'Simpan' : 'Publikasikan'}

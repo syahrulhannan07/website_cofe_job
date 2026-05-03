@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class Lowongan extends Model
 {
@@ -44,4 +45,29 @@ class Lowongan extends Model
     {
         return $this->hasMany(Lamaran::class, 'id_lowongan', 'id_lowongan');
     }
+
+    /**
+     * Get the dynamic status based on dates.
+     */
+    public function getStatusLabelAttribute()
+    {
+        $today = Carbon::now('Asia/Jakarta')->format('Y-m-d');
+        $start = Carbon::parse($this->batas_awal)->format('Y-m-d');
+        $end   = Carbon::parse($this->batas_akhir)->format('Y-m-d');
+
+        // Jika Belum Waktunya -> Paksa Draft
+        if ($today < $start) {
+            return 'Draft';
+        }
+
+        // Jika Sudah Lewat -> Paksa Closed
+        if ($today > $end) {
+            return 'Closed';
+        }
+
+        // Jika sedang dalam rentang tanggal -> Ikuti pilihan manual HR di database
+        return $this->status;
+    }
+
+    protected $appends = ['status_label'];
 }

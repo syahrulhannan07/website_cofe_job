@@ -21,8 +21,9 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    // Jenis Dokumen (Public)
+    // Jenis Dokumen
     Route::get('/jenis-dokumen', [\App\Http\Controllers\Api\V1\JenisDokumenController::class, 'index']);
+    Route::post('/jenis-dokumen', [\App\Http\Controllers\Api\V1\JenisDokumenController::class, 'store'])->middleware(['auth:api', 'role:Admin_Perusahaan']);
 
     // Notifikasi (Protected - Semua Peran)
     Route::middleware(['auth:api'])->prefix('notifikasi')->group(function () {

@@ -21,7 +21,8 @@ class LowonganResource extends JsonResource
             'persyaratan'    => $this->persyaratan,
             'lokasi'         => $this->lokasi,
             'gaji'           => $this->gaji,
-            'status'         => $this->status,
+            'status'         => $this->status_label,
+            'status_raw'     => $this->status, // Keep raw status for internal logic if needed
             'jumlah_pelamar' => $this->lamaran_count ?? $this->lamaran()->count(),
             'batas_awal'     => $this->batas_awal,
             'batas_akhir'    => $this->batas_akhir,
