@@ -9,6 +9,7 @@ export const AdminProvider = ({ children }) => {
     const [identitas, setIdentitas] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [topbarAction, setTopbarAction] = useState(null);
 
     const fetchDashboard = useCallback(async (force = false) => {
         if (dashboardData && !force) return;
@@ -61,7 +62,9 @@ export const AdminProvider = ({ children }) => {
             fetchDashboard,
             fetchProfil,
             refreshAll,
-            setIdentitas
+            setIdentitas,
+            topbarAction,
+            setTopbarAction
         }}>
             {children}
         </AdminContext.Provider>
