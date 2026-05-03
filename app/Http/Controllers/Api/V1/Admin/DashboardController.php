@@ -33,7 +33,7 @@ class DashboardController extends Controller
         })->count();
 
         $lowonganAktif = Lowongan::where('id_perusahaan', $idPerusahaan)
-            ->where('status', 'Aktif')
+            ->where('status', 'Active')
             ->count();
 
         $wawancaraTerjadwal = Wawancara::whereHas('lamaran.lowongan', function ($query) use ($idPerusahaan) {

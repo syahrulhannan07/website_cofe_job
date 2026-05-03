@@ -9,9 +9,9 @@ const KartuLowonganPelamar = ({ lowongan, onDetail }) => {
 
     // Map status dari API ke theme internal
     const statusMap = {
-        'Aktif': 'active',
+        'Active': 'active',
         'Draft': 'draft',
-        'Ditutup': 'closed'
+        'Closed': 'closed'
     };
     const statusKey = statusMap[lowongan.status] || 'draft';
 
@@ -60,7 +60,7 @@ const KartuLowonganPelamar = ({ lowongan, onDetail }) => {
                         {lowongan.posisi}
                     </h3>
                     <div className={`px-4 py-1 rounded-full text-[10px] font-poppins font-medium ${theme.tagBg} ${theme.tagText}`}>
-                        {lowongan.status === 'Aktif' ? 'Active' : lowongan.status === 'Ditutup' ? 'Closed' : 'Draft'}
+                        {lowongan.status}
                     </div>
                 </div>
                 <p className={`font-poppins text-[12px] md:text-[13px] ${theme.dateText}`}>

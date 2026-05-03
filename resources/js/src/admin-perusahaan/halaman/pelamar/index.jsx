@@ -25,10 +25,7 @@ const HalamanPelamar = () => {
         try {
             const params = {};
             if (activeFilter !== 'All') {
-                // Map status ke bahasa database (Aktif/Ditutup)
-                params.status = activeFilter === 'Active' ? 'Aktif' : 
-                               activeFilter === 'Closed' ? 'Ditutup' : 
-                               activeFilter;
+                params.status = activeFilter;
             }
             if (searchQuery) {
                 params.search = searchQuery;
@@ -40,7 +37,7 @@ const HalamanPelamar = () => {
             // Ambil statistik dari meta response
             if (response.data.meta?.statistik) {
                 setStats({
-                    totalLowongan: response.data.meta.statistik.total_lowongan,
+                    totalLowongan: response.data.meta.statistik.total,
                     totalPelamar: response.data.meta.statistik.total_pelamar
                 });
             }

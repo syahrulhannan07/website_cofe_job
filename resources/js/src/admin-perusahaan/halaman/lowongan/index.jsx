@@ -78,6 +78,16 @@ const HalamanLowongan = () => {
         }
     };
 
+    const handleStatusChange = async (id, newStatus) => {
+        try {
+            await api.put(`/admin/lowongan/${id}`, { status: newStatus });
+            fetchData(); // Refresh list and stats
+        } catch (error) {
+            console.error("Gagal mengubah status:", error);
+            alert(error.response?.data?.message || "Gagal mengubah status.");
+        }
+    };
+
     if (loading && vacancies.length === 0) {
         return <LoadingKopi />;
     }
@@ -143,54 +153,60 @@ const HalamanLowongan = () => {
             {/* Table Section */}
             <div className="bg-white rounded-[24px] shadow-sm overflow-hidden border border-[#4B2E2B]/5">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left table-fixed">
                         <thead>
-                            <tr className="bg-[#EAE4DC] border-b border-[#4B2E2B]/5">
-                                <th className="px-10 py-5 font-poppins font-semibold text-[#4B2E2B] text-[13px]">Posisi</th>
-                                <th className="px-6 py-5 font-poppins font-semibold text-[#4B2E2B] text-[13px]">Tanggal Buka</th>
-                                <th className="px-6 py-5 font-poppins font-semibold text-[#4B2E2B] text-[13px]">Tanggal Tutup</th>
-                                <th className="px-6 py-5 font-poppins font-semibold text-[#4B2E2B] text-[13px]">Status</th>
-                                <th className="px-10 py-5 font-poppins font-semibold text-[#4B2E2B] text-[13px] text-right">Aksi</th>
+                            <tr className="bg-[#EAE4DC] border-b border-[#4B2E2B]/5 h-[60px]">
+                                <th className="w-[30%] px-10 font-poppins font-semibold text-[#4B2E2B] text-[13px]">Posisi</th>
+                                <th className="w-[20%] px-6 font-poppins font-semibold text-[#4B2E2B] text-[13px]">Tanggal Buka</th>
+                                <th className="w-[20%] px-6 font-poppins font-semibold text-[#4B2E2B] text-[13px]">Tanggal Tutup</th>
+                                <th className="w-[15%] px-6 font-poppins font-semibold text-[#4B2E2B] text-[13px]">Status</th>
+                                <th className="w-[15%] px-10 font-poppins font-semibold text-[#4B2E2B] text-[13px] text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#4B2E2B]/5">
                             {vacancies.length > 0 ? (
                                 vacancies.map((item) => (
-                                    <tr key={item.id} className="hover:bg-[#F3EDE6]/20 transition-colors">
-                                        <td className="px-10 py-5">
-                                            <span className="font-poppins font-semibold text-[#4B2E2B] text-[13px]">{item.posisi}</span>
+                                    <tr key={item.id} className="hover:bg-[#F3EDE6]/20 transition-colors h-[72px]">
+                                        <td className="px-10 py-4 truncate">
+                                            <span className="font-poppins font-semibold text-[#4B2E2B] text-[14px]">{item.posisi}</span>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <span className="font-poppins text-[#4B2E2B] text-[13px] font-normal">{formatDate(item.batas_awal)}</span>
+                                        <td className="px-6 py-4">
+                                            <span className="font-poppins text-[#4B2E2B]/80 text-[13px] font-medium">{formatDate(item.batas_awal)}</span>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <span className="font-poppins text-[#4B2E2B] text-[13px] font-normal">{formatDate(item.batas_akhir)}</span>
+                                        <td className="px-6 py-4">
+                                            <span className="font-poppins text-[#4B2E2B]/80 text-[13px] font-medium">{formatDate(item.batas_akhir)}</span>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <span className={`inline-flex items-center justify-center w-[84px] h-[27px] rounded-full text-[13px] font-poppins font-semibold ${getStatusStyles(item.status)}`}>
-                                                {item.status}
-                                            </span>
+                                        <td className="px-6 py-4">
+                                            <select 
+                                                value={item.status}
+                                                onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                                                className={`appearance-none inline-flex items-center justify-center w-[92px] h-[28px] rounded-full text-[11px] font-poppins font-bold text-center cursor-pointer outline-none transition-all border-none focus:ring-2 focus:ring-[#4B2E2B]/10 ${getStatusStyles(item.status)}`}
+                                            >
+                                                <option value="Active">Active</option>
+                                                <option value="Draft">Draft</option>
+                                                <option value="Closed">Closed</option>
+                                            </select>
                                         </td>
-                                        <td className="px-10 py-5 text-right">
-                                            <div className="flex items-center justify-end gap-4">
+                                        <td className="px-10 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-5">
                                                 <button 
                                                     onClick={() => navigate(`/admin/lowongan/edit/${item.id}`)}
-                                                    className="hover:opacity-70 transition-opacity"
+                                                    className="hover:scale-110 transition-transform p-1"
                                                 >
                                                     <img 
                                                         src={PencilIcon} 
                                                         alt="Edit" 
-                                                        className="w-[20px] h-[20px]" 
+                                                        className="w-[18px] h-[18px]" 
                                                     />
                                                 </button>
                                                 <button 
                                                     onClick={() => handleDelete(item.id)}
-                                                    className="hover:opacity-70 transition-opacity"
+                                                    className="hover:scale-110 transition-transform p-1"
                                                 >
                                                     <img 
                                                         src={TrashIcon} 
                                                         alt="Delete" 
-                                                        className="w-[20px] h-[20px]" 
+                                                        className="w-[18px] h-[18px]" 
                                                     />
                                                 </button>
                                             </div>

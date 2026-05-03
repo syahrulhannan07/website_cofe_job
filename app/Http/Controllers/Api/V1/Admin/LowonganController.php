@@ -36,12 +36,18 @@ class LowonganController extends Controller
         $idPerusahaan = $profil->id_perusahaan;
         $lowongan = $this->service->listVacancies($idPerusahaan, $request->all());
 
+        // Calculate total applicants across all company vacancies
+        $totalPelamar = \App\Models\Lamaran::whereHas('lowongan', function($query) use ($idPerusahaan) {
+            $query->where('id_perusahaan', $idPerusahaan);
+        })->count();
+
         // Detailed Statistics for the company
         $stats = [
-            'total'  => Lowongan::where('id_perusahaan', $idPerusahaan)->count(),
-            'active' => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Active')->count(),
-            'draft'  => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Draft')->count(),
-            'closed' => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Closed')->count(),
+            'total'         => Lowongan::where('id_perusahaan', $idPerusahaan)->count(),
+            'active'        => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Active')->count(),
+            'draft'         => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Draft')->count(),
+            'closed'        => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Closed')->count(),
+            'total_pelamar' => $totalPelamar
         ];
 
         return LowonganResource::collection($lowongan)->additional([
