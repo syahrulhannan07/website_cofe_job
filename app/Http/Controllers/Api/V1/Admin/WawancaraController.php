@@ -29,6 +29,9 @@ class WawancaraController extends Controller
         $profil = auth('api')->user()->profilPerusahaan;
         if (!$profil) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
 
+        // Auto cleanup overdue interviews
+        $this->service->autoCancelOverdueInterviews($profil->id_perusahaan);
+
         $wawancara = $this->repository->getByPerusahaan($profil->id_perusahaan, $request->all());
 
         return WawancaraResource::collection($wawancara);
@@ -56,8 +59,11 @@ class WawancaraController extends Controller
         if ($lamaran->status !== 'Wawancara') return $this->errorResponse('Status lamaran harus Wawancara', 422);
 
         try {
+            $data = $request->all();
+            $data['id_lamaran'] = $id_lamaran;
+            
             $wawancara = $this->service->scheduleWawancara(
-                $request->all(), 
+                $data, 
                 $profil->nama_perusahaan, 
                 $lamaran->lowongan->posisi, 
                 $lamaran->profil->id_pengguna
@@ -102,10 +108,10 @@ class WawancaraController extends Controller
         if (!$wawancara) return $this->errorResponse('Jadwal tidak ditemukan', 404);
 
         try {
-            $this->service->cancelWawancara($wawancara, $profil->nama_perusahaan);
-            return $this->successResponse(null, 'Jadwal wawancara berhasil dibatalkan');
+            $this->service->deleteWawancara($wawancara, $profil->nama_perusahaan);
+            return $this->successResponse(null, 'Jadwal wawancara berhasil dihapus');
         } catch (\Exception $e) {
-            return $this->errorResponse('Terjadi kesalahan saat membatalkan jadwal', 500, $e->getMessage());
+            return $this->errorResponse('Terjadi kesalahan saat menghapus jadwal', 500, $e->getMessage());
         }
     }
 

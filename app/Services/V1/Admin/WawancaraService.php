@@ -21,7 +21,8 @@ class WawancaraService
     public function scheduleWawancara(array $data, string $namaKafe, string $posisi, int $idPengguna): Wawancara
     {
         return DB::transaction(function () use ($data, $namaKafe, $posisi, $idPengguna) {
-            $wawancara = $this->repository->create(array_merge($data, ['status' => 'Terjadwal']));
+            $data['status'] = $data['status'] ?? 'Terjadwal';
+            $wawancara = $this->repository->create($data);
 
             $this->notifikasiService->kirim(
                 $idPengguna,
@@ -61,5 +62,41 @@ class WawancaraService
 
             return true;
         });
+    }
+
+    public function deleteWawancara(Wawancara $wawancara, string $namaKafe): bool
+    {
+        return DB::transaction(function () use ($wawancara, $namaKafe) {
+            $idPengguna = $wawancara->lamaran->profil->id_pengguna;
+            
+            $wawancara->delete();
+
+            $this->notifikasiService->kirim(
+                $idPengguna,
+                'Jadwal Dihapus 🗑️',
+                "Jadwal wawancara Anda di {$namaKafe} telah dihapus dari sistem."
+            );
+
+            return true;
+        });
+    }
+
+    public function autoCancelOverdueInterviews(int $idPerusahaan): void
+    {
+        $overdue = Wawancara::whereHas('lamaran.lowongan', fn($q) => $q->where('id_perusahaan', $idPerusahaan))
+            ->where('status', 'Terjadwal')
+            ->where('tanggal_wawancara', '<', now())
+            ->get();
+
+        foreach ($overdue as $item) {
+            $this->repository->update($item, ['status' => 'Dibatalkan']);
+            
+            // Optional: Notifikasi pembatalan otomatis
+            $this->notifikasiService->kirim(
+                $item->lamaran->profil->id_pengguna,
+                'Wawancara Kadaluarsa ⏰',
+                "Jadwal wawancara Anda telah melewati waktu yang ditentukan dan otomatis dibatalkan."
+            );
+        }
     }
 }

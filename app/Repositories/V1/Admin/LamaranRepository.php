@@ -50,5 +50,15 @@ class LamaranRepository
             ->orderBy('created_at', 'desc')
             ->get();
     }
+
+    public function getKandidatSiapWawancara(int $idPerusahaan): \Illuminate\Database\Eloquent\Collection
+    {
+        return Lamaran::with(['profil', 'lowongan'])
+            ->whereHas('lowongan', fn($q) => $q->where('id_perusahaan', $idPerusahaan))
+            ->where('status', 'Wawancara')
+            ->doesntHave('wawancara')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 }
 

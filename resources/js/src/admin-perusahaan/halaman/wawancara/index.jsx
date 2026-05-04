@@ -115,12 +115,12 @@ const HalamanWawancara = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Apakah Anda yakin ingin membatalkan jadwal wawancara ini?')) {
+        if (window.confirm('Apakah Anda yakin ingin menghapus jadwal wawancara ini?')) {
             try {
                 await api.delete(`/admin/wawancara/${id}`);
                 fetchData();
             } catch (error) {
-                alert('Gagal membatalkan jadwal');
+                alert('Gagal menghapus jadwal');
             }
         }
     };

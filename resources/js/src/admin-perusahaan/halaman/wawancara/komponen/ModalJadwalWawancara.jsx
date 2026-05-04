@@ -75,19 +75,19 @@ const ModalJadwalWawancara = ({
                         </div>
 
                         {/* Body - Putih Gading (Node 229:1908) */}
-                        <form onSubmit={handleSubmit} className="p-6 pt-6 bg-[#FDF9F4]">
-                            <div className="space-y-5">
+                        <form onSubmit={handleSubmit} className="p-5 pt-4 bg-[#FDF9F4]">
+                            <div className="space-y-4">
                                 {/* Pelamar Selection (Node 229:1910) */}
                                 {mode === 'add' && (
                                     <div className="flex flex-col gap-[6px]">
                                         <div className="flex items-center gap-2">
                                             <img src={PersonIcon} alt="person" className="w-[9.33px] h-[9.33px]" />
-                                            <label className="text-[16px] font-regular text-[#1C1C19] font-poppins leading-[24px]">Pelamar (ID Lamaran)</label>
+                                            <label className="text-[15px] font-regular text-[#1C1C19] font-poppins leading-[22px]">Pelamar (ID Lamaran)</label>
                                         </div>
                                         <div className="relative group">
                                             <select
                                                 required
-                                                className="w-full h-[50px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[16px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins"
+                                                className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins"
                                                 value={formData.id_lamaran}
                                                 onChange={(e) => setFormData({...formData, id_lamaran: e.target.value})}
                                             >
@@ -99,7 +99,7 @@ const ModalJadwalWawancara = ({
                                                 ))}
                                             </select>
                                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-60">
-                                                <img src={DropdownIcon} alt="dropdown" className="w-6 h-6" />
+                                                <img src={DropdownIcon} alt="dropdown" className="w-5 h-5" />
                                             </div>
                                         </div>
                                     </div>
@@ -109,13 +109,13 @@ const ModalJadwalWawancara = ({
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="flex flex-col gap-[6px]">
                                         <div className="flex items-center gap-2">
-                                            <img src={StatusIcon} alt="status" className="w-[11.6px] h-[11.6px] opacity-80" />
-                                            <label className="text-[16px] font-regular text-[#1C1C19] font-poppins leading-[24px]">Status</label>
+                                            <img src={StatusIcon} alt="status" className="w-[11px] h-[11px] opacity-80" />
+                                            <label className="text-[15px] font-regular text-[#1C1C19] font-poppins leading-[22px]">Status</label>
                                         </div>
                                         <div className="relative group">
                                             <select
                                                 required
-                                                className="w-full h-[50px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[16px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins"
+                                                className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins"
                                                 value={formData.status || 'Terjadwal'}
                                                 onChange={(e) => setFormData({...formData, status: e.target.value})}
                                             >
@@ -124,20 +124,20 @@ const ModalJadwalWawancara = ({
                                                 <option value="Dibatalkan">Dibatalkan</option>
                                             </select>
                                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-60">
-                                                <img src={DropdownIcon} alt="dropdown" className="w-6 h-6" />
+                                                <img src={DropdownIcon} alt="dropdown" className="w-5 h-5" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-[6px]">
                                         <div className="flex items-center gap-2">
-                                            <img src={LokasiIcon} alt="lokasi" className="w-[14px] h-[14px] opacity-80" />
-                                            <label className="text-[16px] font-regular text-[#1C1C19] font-poppins leading-[24px]">Tempat / Link</label>
+                                            <img src={LokasiIcon} alt="lokasi" className="w-[13px] h-[13px] opacity-80" />
+                                            <label className="text-[15px] font-regular text-[#1C1C19] font-poppins leading-[22px]">Tempat / Link</label>
                                         </div>
                                         <input
                                             required
                                             type="text"
                                             placeholder="Online / Alamat Kantor"
-                                            className="w-full h-[53px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[16px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins placeholder:text-[#6B7280]/60"
+                                            className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins placeholder:text-[#6B7280]/60"
                                             value={formData.lokasi}
                                             onChange={(e) => setFormData({...formData, lokasi: e.target.value})}
                                         />
@@ -149,12 +149,12 @@ const ModalJadwalWawancara = ({
                                     <div className="flex flex-col gap-[6px]">
                                         <div className="flex items-center gap-2">
                                             <img src={TanggalIcon} alt="tanggal" className="w-[10.5px] h-[11.6px] opacity-80" />
-                                            <label className="text-[16px] font-regular text-[#1C1C19] font-poppins leading-[24px]">Tanggal</label>
+                                            <label className="text-[15px] font-regular text-[#1C1C19] font-poppins leading-[22px]">Tanggal</label>
                                         </div>
                                         <input
                                             required
                                             type="date"
-                                            className="w-full h-[50px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[16px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer"
+                                            className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer"
                                             value={formData.tanggal}
                                             onChange={(e) => setFormData({...formData, tanggal: e.target.value})}
                                         />
@@ -162,12 +162,12 @@ const ModalJadwalWawancara = ({
                                     <div className="flex flex-col gap-[6px]">
                                         <div className="flex items-center gap-2">
                                             <img src={JamIcon} alt="jam" className="w-[12.5px] h-[12.5px] opacity-80" />
-                                            <label className="text-[16px] font-regular text-[#1C1C19] font-poppins leading-[24px]">Jam</label>
+                                            <label className="text-[15px] font-regular text-[#1C1C19] font-poppins leading-[22px]">Jam</label>
                                         </div>
                                         <input
                                             required
                                             type="time"
-                                            className="w-full h-[50px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[16px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer"
+                                            className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer"
                                             value={formData.jam}
                                             onChange={(e) => setFormData({...formData, jam: e.target.value})}
                                         />
@@ -178,12 +178,12 @@ const ModalJadwalWawancara = ({
                                 <div className="flex flex-col gap-[6px]">
                                     <div className="flex items-center gap-2">
                                         <img src={CatatanIcon} alt="catatan" className="w-[9.3px] h-[11.6px] opacity-80" />
-                                        <label className="text-[16px] font-regular text-[#1C1C19] font-poppins leading-[24px]">Catatan</label>
+                                        <label className="text-[15px] font-regular text-[#1C1C19] font-poppins leading-[22px]">Catatan</label>
                                     </div>
                                     <textarea
-                                        rows="3"
+                                        rows="2"
                                         placeholder="Tuliskan detail tambahan atau instruksi untuk pelamar di sini..."
-                                        className="w-full min-h-[98px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 pt-3 pb-9 text-[16px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all resize-none font-poppins placeholder:text-[#6B7280]/60"
+                                        className="w-full min-h-[80px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 pt-3 pb-3 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all resize-none font-poppins placeholder:text-[#6B7280]/60"
                                         value={formData.catatan}
                                         onChange={(e) => setFormData({...formData, catatan: e.target.value})}
                                     />
@@ -191,22 +191,22 @@ const ModalJadwalWawancara = ({
                             </div>
 
                             {/* Footer Buttons (Node 229:1986) */}
-                            <div className="mt-8 pt-4 flex items-center justify-end gap-4 border-t border-[#E6E2DE]">
+                            <div className="mt-6 pt-4 flex items-center justify-end gap-3 border-t border-[#E6E2DE]">
                                 <button 
                                     type="button"
                                     onClick={onClose}
-                                    className="px-6 py-3 border border-[#2B1810] text-[#2B1810] rounded-full font-poppins text-[16px] hover:bg-[#2B1810]/5 transition-all active:scale-95"
+                                    className="px-5 py-2.5 border border-[#2B1810] text-[#2B1810] rounded-full font-poppins text-[15px] hover:bg-[#2B1810]/5 transition-all active:scale-95"
                                 >
                                     Batal
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="px-6 py-3 bg-[#FEAE2C] text-[#6B4500] rounded-full font-poppins text-[16px] hover:bg-[#FEAE2C]/90 shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)] transition-all transform active:scale-95 flex items-center justify-center gap-2"
+                                    className="px-6 py-2.5 bg-[#FEAE2C] text-[#6B4500] rounded-full font-poppins text-[15px] hover:bg-[#FEAE2C]/90 shadow-md transition-all transform active:scale-95 flex items-center justify-center gap-2"
                                 >
                                     <img 
                                         src={KirimIcon} 
                                         alt="kirim" 
-                                        className="w-[14.25px] h-[12px]"
+                                        className="w-[14px] h-[11px]"
                                     />
                                     {mode === 'add' ? 'Kirim Undangan Wawancara' : 'Simpan Perubahan'}
                                 </button>

@@ -107,7 +107,7 @@ class SeleksiLamaranController extends Controller
         $profil = auth('api')->user()->profilPerusahaan;
         if (!$profil) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
 
-        $lamaran = $this->repository->getByPerusahaanAndStatus($profil->id_perusahaan, 'Wawancara');
+        $lamaran = $this->repository->getKandidatSiapWawancara($profil->id_perusahaan);
 
         return LamaranResource::collection($lamaran);
     }
