@@ -1,12 +1,12 @@
 import React from 'react';
-import BagianHero from './BagianHero';
-import BagianCariCafe from './BagianCariCafe';
-import BagianAjakan from './BagianAjakan';
-import BagianLowonganTerbaru from './BagianLowonganTerbaru';
+import BagianHero from './komponen/BagianHero';
+import BagianCariCafe from './komponen/BagianCariCafe';
+import BagianAjakan from './komponen/BagianAjakan';
+import BagianLowonganTerbaru from './komponen/BagianLowonganTerbaru';
 
 const Beranda = () => {
     return (
-        <div className="w-full min-h-screen bg-[#F3EDE6]">
+        <div className="wadah-halaman-beranda w-full min-h-screen bg-[#F3EDE6]">
             <BagianHero />
             <BagianCariCafe />
             <BagianAjakan />

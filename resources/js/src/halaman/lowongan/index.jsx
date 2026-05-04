@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import HeaderHero from './components/HeaderHero';
-import JobCard from './components/JobCard';
-import Pagination from './components/Pagination';
-import DetailLowongan from './components/DetailLowongan';
+import HeaderHero from './komponen/HeaderHero';
+import JobCard from './komponen/JobCard';
+import Pagination from './komponen/Pagination';
+import DetailLowongan from './komponen/DetailLowongan';
 import { daftarLowongan } from './data/dummyJobs';
 
 const Lowongan = () => {

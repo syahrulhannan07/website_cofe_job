@@ -4,37 +4,37 @@ import logoGambar from '../../aset/logo.png';
 
 const Navbar = () => {
   return (
-    <div className="flex w-full justify-center mt-4 md:mt-10 px-4">
-      <nav className="flex flex-wrap md:flex-nowrap items-center justify-between w-full max-w-[908px] min-h-[90px] rounded-[30px] md:rounded-[100px] bg-[#4b2e2b] px-6 py-4 md:px-[40px] md:py-0 gap-4 md:gap-0">
+    <div className="wadah-navbar flex w-full justify-center mt-4 md:mt-10 px-4">
+      <nav className="navigasi-utama flex flex-wrap md:flex-nowrap items-center justify-between w-full max-w-[908px] min-h-[90px] rounded-[30px] md:rounded-[100px] bg-[#4b2e2b] px-6 py-4 md:px-[40px] md:py-0 gap-4 md:gap-0">
 
         {/* Grup Kiri: Logo + Tautan Navigasi */}
-        <div className="flex items-center gap-6 md:gap-[50px] w-full md:w-auto justify-between md:justify-start">
+        <div className="grup-kiri flex items-center gap-6 md:gap-[50px] w-full md:w-auto justify-between md:justify-start">
 
           {/* Logo */}
-          <div className="flex flex-col items-center justify-center w-[40px] h-[49px] md:w-[49px] md:h-[60px] shrink-0">
-              <img src={logoGambar} alt="Logo CAFE JOB" className="w-full h-full object-contain" />
+          <div className="area-logo flex flex-col items-center justify-center w-[40px] h-[49px] md:w-[49px] md:h-[60px] shrink-0">
+              <img src={logoGambar} alt="Logo CAFE JOB" className="gambar-logo w-full h-full object-contain" />
               <span className="sr-only">CAFE JOB</span>
           </div>
 
           {/* Tautan Navigasi — tampil di desktop */}
-          <div className="hidden md:flex items-center gap-[50px] h-[21px] justify-center">
-            <Link to="/" className="font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity whitespace-nowrap">
+          <div className="tautan-desktop hidden md:flex items-center gap-[50px] h-[21px] justify-center">
+            <Link to="/" className="tautan-nav font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity whitespace-nowrap">
               Beranda
             </Link>
-            <Link to="/lowongan" className="font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity whitespace-nowrap">
+            <Link to="/lowongan" className="tautan-nav font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity whitespace-nowrap">
               Lowongan
             </Link>
-            <Link to="/perusahaan" className="font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity whitespace-nowrap">
+            <Link to="/perusahaan" className="tautan-nav font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity whitespace-nowrap">
               Perusahaan
             </Link>
           </div>
         </div>
 
         {/* Grup Kanan: Masuk & Daftar */}
-        <div className="flex items-center gap-4 md:gap-[20px] w-full md:w-auto justify-center md:justify-start">
+        <div className="grup-kanan flex items-center gap-4 md:gap-[20px] w-full md:w-auto justify-center md:justify-start">
 
           {/* Tautan Navigasi — tampil di mobile (scroll horizontal) */}
-          <div className="md:hidden flex flex-1 overflow-x-auto gap-4 scrollbar-hide mr-4">
+          <div className="tautan-mobile md:hidden flex flex-1 overflow-x-auto gap-4 scrollbar-hide mr-4">
              <Link to="/" className="font-poppins font-[600] text-[12px] text-[#f3ede6] whitespace-nowrap">Beranda</Link>
              <Link to="/lowongan" className="font-poppins font-[600] text-[12px] text-[#f3ede6] whitespace-nowrap">Lowongan</Link>
              <Link to="/perusahaan" className="font-poppins font-[600] text-[12px] text-[#f3ede6] whitespace-nowrap">Perusahaan</Link>
@@ -43,7 +43,7 @@ const Navbar = () => {
           {/* Tombol Masuk */}
           <Link
             to="/masuk"
-            className="font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity shrink-0"
+            className="tombol-masuk font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity shrink-0"
           >
             Masuk
           </Link>
@@ -51,9 +51,9 @@ const Navbar = () => {
           {/* Tombol Daftar */}
           <Link
             to="/daftar"
-            className="flex flex-row items-center justify-center bg-[#c69c6d] rounded-[15px] w-[66px] h-[31px] hover:bg-opacity-90 transition-opacity shrink-0"
+            className="tombol-daftar flex flex-row items-center justify-center bg-[#c69c6d] rounded-[15px] w-[66px] h-[31px] hover:bg-opacity-90 transition-opacity shrink-0"
           >
-             <span className="font-poppins font-[700] text-[14px] leading-[21px] text-[#4b2e2b] block">Daftar</span>
+             <span className="teks-daftar font-poppins font-[700] text-[14px] leading-[21px] text-[#4b2e2b] block">Daftar</span>
           </Link>
         </div>
 
