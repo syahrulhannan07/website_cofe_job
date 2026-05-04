@@ -1,70 +1,50 @@
 import React from 'react';
 
 const TabelPelamar = () => {
-    const dataPelamar = [
-        {
-            id: 1,
-            nama: 'Ramadhan Sanjaya',
-            email: 'ramadhansanjaya18@gmail.com',
-            tanggal: '17 Maret 2026',
-            pendidikan: 'S1 Terapan Komputer',
-            status: 'Diterima',
-            statusBg: 'bg-[#edf7ee]',
-            statusText: 'text-[#3d7a40]'
-        },
-        {
-            id: 2,
-            nama: 'Syahrul Hannan Ramdhani',
-            email: 'syahrulhannan07@gmail.com',
-            tanggal: '20 Maret 2026',
-            pendidikan: 'S1 Terapan Komputer',
-            status: 'Diproses',
-            statusBg: 'bg-[#eef2f6]',
-            statusText: 'text-[#496b99]'
-        },
-        {
-            id: 3,
-            nama: 'Junanti',
-            email: 'antitwvinterb@gmail.com',
-            tanggal: '19 Maret 2026',
-            pendidikan: 'S1 Terapan Komputer',
-            status: 'Diterima',
-            statusBg: 'bg-[#edf7ee]',
-            statusText: 'text-[#3d7a40]'
-        }
+    const data = [
+        { id: 1, nama: 'Syahrul Ramadhan', posisi: 'Senior Barista', tanggal: '30 April 2026', status: 'Wawancara' },
+        { id: 2, nama: 'Budi Santoso', posisi: 'Head Roaster', tanggal: '28 April 2026', status: 'Diproses' },
+        { id: 3, nama: 'Siti Aminah', posisi: 'Service Atten', tanggal: '25 April 2026', status: 'Diterima' },
+        { id: 4, nama: 'Andi Wijaya', posisi: 'Senior Barista', tanggal: '24 April 2026', status: 'Ditolak' },
+        { id: 5, nama: 'Rina Kartika', posisi: 'Head Roaster', tanggal: '22 April 2026', status: 'Diproses' },
     ];
 
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case 'Wawancara': return 'bg-purple-100 text-purple-700 border-purple-200';
+            case 'Diproses': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+            case 'Diterima': return 'bg-green-100 text-green-700 border-green-200';
+            case 'Ditolak': return 'bg-red-100 text-red-700 border-red-200';
+            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+        }
+    };
+
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <table className="w-full text-left font-poppins">
-                <thead className="bg-[#fcfafa] border-b border-gray-200 text-[#7a6153] text-sm font-medium">
-                    <tr>
-                        <th className="px-6 py-4">Nama Pelamar</th>
-                        <th className="px-6 py-4">Tanggal Melamar</th>
-                        <th className="px-6 py-4">Pendidikan</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4 text-center">Aksi</th>
+        <div className="bg-[#EAE4DC] border border-[#4B2E2B]/10 rounded-[12px] overflow-hidden">
+            <table className="w-full border-collapse">
+                <thead>
+                    <tr className="bg-[#4B2E2B]/5">
+                        <th className="px-6 py-4 text-left font-poppins font-bold text-[14px] text-[#4B2E2B]">Nama Pelamar</th>
+                        <th className="px-6 py-4 text-left font-poppins font-bold text-[14px] text-[#4B2E2B]">Posisi Dilamar</th>
+                        <th className="px-6 py-4 text-left font-poppins font-bold text-[14px] text-[#4B2E2B]">Tanggal Lamar</th>
+                        <th className="px-6 py-4 text-left font-poppins font-bold text-[14px] text-[#4B2E2B]">Status</th>
+                        <th className="px-6 py-4 text-center font-poppins font-bold text-[14px] text-[#4B2E2B]">Aksi</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 text-[#4b2e2b] text-sm">
-                    {dataPelamar.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                <tbody className="divide-y divide-[#4B2E2B]/10">
+                    {data.map((item) => (
+                        <tr key={item.id} className="hover:bg-[#4B2E2B]/5 transition-colors">
+                            <td className="px-6 py-4 font-poppins text-[14px] text-[#4B2E2B] font-medium">{item.nama}</td>
+                            <td className="px-6 py-4 font-poppins text-[14px] text-[#7A6153]">{item.posisi}</td>
+                            <td className="px-6 py-4 font-poppins text-[14px] text-[#7A6153]">{item.tanggal}</td>
                             <td className="px-6 py-4">
-                                <div className="font-semibold">{item.nama}</div>
-                                <div className="text-gray-500 text-xs mt-1">{item.email}</div>
-                            </td>
-                            <td className="px-6 py-4">{item.tanggal}</td>
-                            <td className="px-6 py-4">{item.pendidikan}</td>
-                            <td className="px-6 py-4">
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${item.statusBg} ${item.statusText}`}>
+                                <span className={`px-3 py-1 rounded-full border text-[12px] font-semibold ${getStatusStyle(item.status)}`}>
                                     {item.status}
                                 </span>
                             </td>
                             <td className="px-6 py-4 text-center">
-                                <button className="text-[#4b2e2b] hover:text-[#c2a38b] transition-colors p-2 rounded-lg hover:bg-gray-100">
-                                    <svg className="w-5 h-5 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                                    </svg>
+                                <button className="px-4 py-1.5 bg-white border border-[#4B2E2B]/20 text-[#4B2E2B] rounded-[6px] font-poppins text-[12px] font-bold hover:bg-[#4B2E2B] hover:text-white transition-all">
+                                    Detail
                                 </button>
                             </td>
                         </tr>

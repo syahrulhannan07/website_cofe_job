@@ -1,33 +1,53 @@
 import React from 'react';
+import BriefcaseIcon from '../../../aset/pelamar/School Briefcase.png';
+import GroupIcon from '../../../aset/pelamar/Group.png';
+import SearchIcon from '../../../aset/pelamar/Search.svg';
 
-const HeaderPelamar = () => {
+const HeaderPelamar = ({ stats, activeFilter, setActiveFilter, onSearch }) => {
+    const filters = ['All', 'Active', 'Draft', 'Closed'];
+
     return (
-        <div className="flex justify-between items-end mb-6">
-            <div>
-                <h1 className="font-poppins font-bold text-3xl text-[#4b2e2b] mb-2">Manajemen Data Pelamar</h1>
-                <p className="font-poppins text-[#7a6153] text-sm">Kelola data pelamar yang telah mengajukan lamaran pekerjaan.</p>
+        <div className="flex flex-wrap items-center gap-[19px] mb-[30px] w-full max-w-[1055px]">
+            {/* Card Lowongan */}
+            <div className="flex-1 min-w-[200px] lg:max-w-[256px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] px-4 flex items-center shrink-0">
+                <img src={BriefcaseIcon} alt="Lowongan" className="w-[30px] h-[30px] object-contain mr-3" />
+                <span className="font-poppins text-[15px] text-[#4B2E2B] mr-auto">Lowongan</span>
+                <span className="font-poppins font-semibold text-[24px] text-[#4B2E2B] leading-none">{stats.totalLowongan}</span>
             </div>
-            
-            <div className="flex items-center gap-4">
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <input 
-                        type="text" 
-                        placeholder="Cari nama pelamar" 
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c2a38b] focus:border-transparent font-poppins text-sm w-64"
-                    />
-                </div>
-                
-                <button className="flex items-center gap-2 bg-[#4b2e2b] hover:bg-[#3a2321] text-white px-4 py-2 rounded-lg font-poppins text-sm transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Export data
-                </button>
+
+            {/* Card Total Pelamar */}
+            <div className="flex-1 min-w-[200px] lg:max-w-[256px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] px-4 flex items-center shrink-0">
+                <img src={GroupIcon} alt="Total Pelamar" className="w-[30px] h-[30px] object-contain mr-3" />
+                <span className="font-poppins text-[15px] text-[#4B2E2B] mr-auto whitespace-nowrap">Total Pelamar</span>
+                <span className="font-poppins font-semibold text-[24px] text-[#4B2E2B] leading-none">{stats.totalPelamar}</span>
+            </div>
+
+            {/* Search Bar */}
+            <div className="flex-1 min-w-[166px] lg:max-w-[166px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-full px-5 flex items-center gap-2 shrink-0">
+                <img src={SearchIcon} alt="Search" className="w-[20px] h-[20px] object-contain" />
+                <input 
+                    type="text" 
+                    placeholder="Search" 
+                    onChange={(e) => onSearch(e.target.value)}
+                    className="bg-transparent border-none outline-none font-poppins text-[15px] text-[#4B2E2B] placeholder-[#4B2E2B] w-full"
+                />
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex-[2] min-w-[300px] lg:max-w-[320px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] p-[5px] flex items-center shrink-0">
+                {filters.map((filter) => (
+                    <button
+                        key={filter}
+                        onClick={() => setActiveFilter(filter)}
+                        className={`flex-1 h-full rounded-[5px] font-poppins font-semibold text-[15px] transition-all duration-200 ${
+                            activeFilter === filter 
+                                ? 'bg-[#F7B750] text-[#4B2E2B]' 
+                                : 'text-[#4B2E2B] hover:bg-[#F7B750]/20'
+                        }`}
+                    >
+                        {filter}
+                    </button>
+                ))}
             </div>
         </div>
     );

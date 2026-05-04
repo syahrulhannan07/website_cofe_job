@@ -33,11 +33,23 @@ class SeleksiLamaranController extends Controller
 
         $lamaran = $this->repository->getByLowongan($id_lowongan, $request->all());
 
-        if ($lamaran->isEmpty()) {
-            return $this->successResponse([], 'Belum ada lamaran masuk untuk posisi ini');
-        }
+        // Statistics for this specific vacancy
+        $statistik = \App\Models\Lamaran::where('id_lowongan', $id_lowongan)
+            ->selectRaw('status, COUNT(*) as jumlah')
+            ->groupBy('status')
+            ->pluck('jumlah', 'status');
 
-        return LamaranResource::collection($lamaran);
+        return LamaranResource::collection($lamaran)->additional([
+            'meta' => [
+                'statistik' => [
+                    'total' => $statistik->sum(),
+                    'diproses' => $statistik['Diproses'] ?? 0,
+                    'diterima' => $statistik['Diterima'] ?? 0,
+                    'ditolak' => $statistik['Ditolak'] ?? 0,
+                    'wawancara' => $statistik['Wawancara'] ?? 0,
+                ]
+            ]
+        ]);
     }
 
     /**

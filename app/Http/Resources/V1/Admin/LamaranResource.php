@@ -16,11 +16,15 @@ class LamaranResource extends JsonResource
             'tanggal_melamar' => $this->created_at?->toDateTimeString(),
             'pelamar'         => [
                 'nama_lengkap' => $this->profil?->nama_lengkap,
+                'email'        => $this->profil?->pengguna?->email,
                 'foto_profil'  => $this->profil?->foto_profil,
                 'tentang_saya' => $this->profil?->tentang_saya,
-                'telepon'      => $this->profil?->telepon,
+                'telepon'      => $this->profil?->nomor_telepon,
                 'alamat'       => $this->profil?->alamat,
             ],
+            'pendidikan_terakhir' => $this->profil?->pendidikan()->orderBy('tahun_selesai', 'desc')->first() 
+                ? $this->profil->pendidikan()->orderBy('tahun_selesai', 'desc')->first()->tingkat . ' ' . $this->profil->pendidikan()->orderBy('tahun_selesai', 'desc')->first()->jurusan
+                : '-',
             'lowongan'        => [
                 'id_lowongan' => $this->lowongan?->id_lowongan,
                 'posisi'      => $this->lowongan?->posisi,

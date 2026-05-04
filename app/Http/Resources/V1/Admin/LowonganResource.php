@@ -19,12 +19,21 @@ class LowonganResource extends JsonResource
             'posisi'         => $this->posisi,
             'deskripsi'      => $this->deskripsi,
             'persyaratan'    => $this->persyaratan,
-            'status'         => $this->status,
+            'lokasi'         => $this->lokasi,
+            'gaji'           => $this->gaji,
+            'status'         => $this->status_label,
+            'status_raw'     => $this->status, // Keep raw status for internal logic if needed
             'jumlah_pelamar' => $this->lamaran_count ?? $this->lamaran()->count(),
             'batas_awal'     => $this->batas_awal,
             'batas_akhir'    => $this->batas_akhir,
             'created_at'     => $this->created_at?->toDateTimeString(),
             'updated_at'     => $this->updated_at?->toDateTimeString(),
+            'perusahaan'     => [
+                'nama'   => $this->perusahaan?->nama_perusahaan,
+                'alamat' => $this->perusahaan?->alamat_perusahaan,
+                'email'  => $this->perusahaan?->pengguna?->email,
+                'logo'   => $this->perusahaan?->logo_perusahaan,
+            ],
             'dokumen'        => $this->whenLoaded('dokumenDibutuhkan'),
             'pertanyaan'     => $this->whenLoaded('pertanyaanSeleksi'),
         ];

@@ -21,8 +21,9 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    // Jenis Dokumen (Public)
+    // Jenis Dokumen
     Route::get('/jenis-dokumen', [\App\Http\Controllers\Api\V1\JenisDokumenController::class, 'index']);
+    Route::post('/jenis-dokumen', [\App\Http\Controllers\Api\V1\JenisDokumenController::class, 'store'])->middleware(['auth:api', 'role:Admin_Perusahaan']);
 
     // Notifikasi (Protected - Semua Peran)
     Route::middleware(['auth:api'])->prefix('notifikasi')->group(function () {
@@ -84,6 +85,9 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::middleware(['auth:api', 'role:Admin_Perusahaan'])->prefix('admin')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\Api\V1\Admin\DashboardController::class, 'index']);
+
         // Profil Perusahaan
         Route::prefix('profil-perusahaan')->group(function () {
             Route::get('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'index']);

@@ -7,9 +7,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class LamaranRepository
 {
-    public function getByLowongan(int $idLowongan, array $filters = []): LengthAwarePaginator
+    public function getByLowongan(int $idLowongan, array $filters = []): \Illuminate\Database\Eloquent\Collection
     {
-        $query = Lamaran::with('profil')
+        $query = Lamaran::with(['profil.pengguna', 'profil.pendidikan'])
             ->where('id_lowongan', $idLowongan);
 
         if (!empty($filters['status'])) {
@@ -18,13 +18,15 @@ class LamaranRepository
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->whereHas('profil', function ($q) use ($search) {
-                $q->where('nama_lengkap', 'LIKE', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('status', 'LIKE', "%{$search}%")
+                  ->orWhereHas('profil', function ($sq) use ($search) {
+                      $sq->where('nama_lengkap', 'LIKE', "%{$search}%");
+                  });
             });
         }
 
-        $perPage = $filters['per_page'] ?? 10;
-        return $query->orderBy('created_at', 'desc')->paginate($perPage);
+        return $query->orderBy('created_at', 'desc')->get();
     }
 
     public function findByIdAndPerusahaan(int $id, int $idPerusahaan, array $with = []): ?Lamaran

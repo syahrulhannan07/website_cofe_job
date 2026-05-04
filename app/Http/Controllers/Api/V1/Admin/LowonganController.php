@@ -33,9 +33,28 @@ class LowonganController extends Controller
         $profil = auth('api')->user()->profilPerusahaan;
         if (!$profil) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
 
-        $lowongan = $this->service->listVacancies($profil->id_perusahaan, $request->all());
+        $idPerusahaan = $profil->id_perusahaan;
+        $lowongan = $this->service->listVacancies($idPerusahaan, $request->all());
 
-        return LowonganResource::collection($lowongan);
+        // Calculate total applicants across all company vacancies
+        $totalPelamar = \App\Models\Lamaran::whereHas('lowongan', function($query) use ($idPerusahaan) {
+            $query->where('id_perusahaan', $idPerusahaan);
+        })->count();
+
+        // Detailed Statistics for the company
+        $stats = [
+            'total'         => Lowongan::where('id_perusahaan', $idPerusahaan)->count(),
+            'active'        => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Active')->count(),
+            'draft'         => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Draft')->count(),
+            'closed'        => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Closed')->count(),
+            'total_pelamar' => $totalPelamar
+        ];
+
+        return LowonganResource::collection($lowongan)->additional([
+            'meta' => [
+                'statistik' => $stats
+            ]
+        ]);
     }
 
     /**
@@ -46,7 +65,7 @@ class LowonganController extends Controller
         $profil = auth('api')->user()->profilPerusahaan;
         if (!$profil) return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu', 403);
 
-        if ($request->status === 'Aktif' && !$this->isProfileComplete($profil)) {
+        if ($request->status === 'Active' && !$this->isProfileComplete($profil)) {
             return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu sebelum memposting', 422);
         }
 
@@ -101,15 +120,21 @@ class LowonganController extends Controller
 
         // Simple validation for update (could also use a dedicated Request)
         $validator = Validator::make($request->all(), [
-            'posisi'      => 'nullable|string|max:255',
-            'status'      => 'nullable|in:Draft,Aktif,Ditutup',
-            'batas_awal'  => 'nullable|date|date_format:Y-m-d',
-            'batas_akhir' => 'nullable|date|date_format:Y-m-d|after:batas_awal',
+            'posisi'                               => 'nullable|string|max:255',
+            'status'                               => 'nullable|in:Draft,Active,Closed',
+            'batas_awal'                           => 'nullable|date|date_format:Y-m-d',
+            'batas_akhir'                          => 'nullable|date|date_format:Y-m-d|after:batas_awal',
+            'dokumen_dibutuhkan'                   => 'nullable|array',
+            'dokumen_dibutuhkan.*.id_jenis_dokumen'=> 'required|exists:jenis_dokumen,id_jenis_dokumen',
+            'dokumen_dibutuhkan.*.wajib'           => 'required|boolean',
+            'pertanyaan'                           => 'nullable|array',
+            'pertanyaan.*.pertanyaan'              => 'required|string',
+            'pertanyaan.*.tipe_jawaban'            => 'required|string',
         ]);
 
         if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
 
-        if ($request->status === 'Aktif' && $lowongan->status !== 'Aktif' && !$this->isProfileComplete($profil)) {
+        if ($request->status === 'Active' && $lowongan->status !== 'Active' && !$this->isProfileComplete($profil)) {
             return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu sebelum memposting', 422);
         }
 
@@ -152,12 +177,12 @@ class LowonganController extends Controller
         $lowongan = $this->repository->findByIdAndPerusahaan($id, $profil->id_perusahaan);
         if (!$lowongan) return $this->errorResponse('Lowongan tidak ditemukan', 404);
 
-        if ($lowongan->status === 'Aktif') return $this->errorResponse('Lowongan sudah dalam status Aktif', 422);
+        if ($lowongan->status === 'Active') return $this->errorResponse('Lowongan sudah dalam status Active', 422);
         if (!$this->isProfileComplete($profil)) return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu', 422);
 
-        $this->repository->update($lowongan, ['status' => 'Aktif']);
+        $this->repository->update($lowongan, ['status' => 'Active']);
 
-        return $this->successResponse(['id' => $lowongan->id_lowongan, 'status' => 'Aktif'], 'Lowongan berhasil dipublikasikan');
+        return $this->successResponse(['id' => $lowongan->id_lowongan, 'status' => 'Active'], 'Lowongan berhasil dipublikasikan');
     }
 
     /**
@@ -171,11 +196,11 @@ class LowonganController extends Controller
         $lowongan = $this->repository->findByIdAndPerusahaan($id, $profil->id_perusahaan);
         if (!$lowongan) return $this->errorResponse('Lowongan tidak ditemukan', 404);
 
-        if ($lowongan->status === 'Ditutup') return $this->errorResponse('Lowongan sudah ditutup', 422);
+        if ($lowongan->status === 'Closed') return $this->errorResponse('Lowongan sudah ditutup', 422);
 
-        $this->repository->update($lowongan, ['status' => 'Ditutup']);
+        $this->repository->update($lowongan, ['status' => 'Closed']);
 
-        return $this->successResponse(['id' => $lowongan->id_lowongan, 'status' => 'Ditutup'], 'Lowongan berhasil ditutup');
+        return $this->successResponse(['id' => $lowongan->id_lowongan, 'status' => 'Closed'], 'Lowongan berhasil ditutup');
     }
 
     private function isProfileComplete($profil): bool
