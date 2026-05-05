@@ -5,6 +5,7 @@ import TataLetakSuperAdmin from '../tata-letak/TataLetakSuperAdmin';
 import Beranda from '../halaman/beranda';
 import Lowongan from '../halaman/lowongan';
 import Perusahaan from '../halaman/perusahaan';
+import Profil from '../halaman/profil';
 import Masuk from '../halaman/autentikasi/Masuk';
 import Daftar from '../halaman/autentikasi/Daftar';
 
@@ -27,6 +28,7 @@ const ruter = createBrowserRouter([
             { index: true, element: <Beranda /> },
             { path: 'lowongan', element: <Lowongan /> },
             { path: 'perusahaan', element: <Perusahaan /> },
+            { path: 'profil', element: <Profil /> },
         ],
     },
 

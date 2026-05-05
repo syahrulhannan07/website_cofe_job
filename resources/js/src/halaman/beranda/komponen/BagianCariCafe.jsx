@@ -2,16 +2,18 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import starbucksLogo from '../../../aset/beranda/starbucks.png';
 
-const BagianCariCafe = () => {
+import Paginasi from '../../../halaman/perusahaan/komponen/Paginasi';
+
+const BagianCariCafe = ({ tampilkanPaginasi = false }) => {
   return (
     <div 
-        className="wadah-cari-cafe flex w-full relative justify-center bg-[#F3EDE6] pt-20 pb-[90px]"
+        className="wadah-cari-cafe flex w-full relative justify-center bg-[#F3EDE6] pt-10 pb-16"
     >
         <section 
             className="konten-utama flex flex-col w-full max-w-[1300px] px-4"
         >
             {/* Kontainer Header */}
-            <div className="area-header flex flex-col relative w-full gap-[36px] mb-12">
+            <div className="area-header flex flex-col items-start text-left relative w-full gap-[36px] mb-12">
                 <h2 
                     className="judul-seksi font-poppins font-bold text-[36px] text-[#4B2E2B] leading-[54px]"
                 >
@@ -19,7 +21,7 @@ const BagianCariCafe = () => {
                 </h2>
                 
                 <p 
-                    className="deskripsi-seksi font-lato font-medium text-[24px] text-[#4B2E2B] leading-[28.8px] max-w-[1208px]"
+                    className="deskripsi-seksi font-lato font-medium text-[20px] md:text-[24px] text-[#4B2E2B] leading-[28.8px] max-w-[1149px]"
                 >
                     Jelajahi profil cafe untuk menemukan tempat kerja yang tepat bagi Anda. Pelajari tentang pekerjaan, ulasan, budaya perusahaan, keuntungan, dan tunjangan.
                 </p>
@@ -31,13 +33,13 @@ const BagianCariCafe = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="daftar-kartu flex flex-wrap lg:flex-nowrap justify-between w-full gap-4 lg:gap-[10px]"
+                className="daftar-kartu grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-6 lg:gap-[10px]"
             >
                 {[1, 2, 3, 4].map((item, index) => (
                     <motion.div 
                         key={item} 
                         whileHover={{ y: -5, boxShadow: "0px 8px 20px rgba(75, 46, 43, 0.15)" }}
-                        className="kartu-cafe flex flex-col items-center relative bg-[#C69C6D] rounded-[50px] border-[1px] border-[#4B2E2B] w-full lg:w-[317px] h-[317px] shrink-0 cursor-pointer group"
+                        className="kartu-cafe flex flex-col items-center relative bg-[#C69C6D] rounded-[50px] border-[1px] border-[#4B2E2B] w-full max-w-[317px] h-[317px] mx-auto cursor-pointer group"
                     >
                         {/* Logo */}
                         <div className="wadah-logo-cafe flex items-center justify-center relative w-[80px] h-[80px] mt-[60px] bg-[#F3EDE6] rounded-full overflow-hidden border border-[#4B2E2B]/10">
@@ -63,6 +65,12 @@ const BagianCariCafe = () => {
                 ))}
             </motion.div>
 
+            {/* Paginasi */}
+            {tampilkanPaginasi && (
+                <div className="mt-8">
+                    <Paginasi />
+                </div>
+            )}
         </section>
     </div>
   );

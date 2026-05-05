@@ -68,6 +68,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\LowonganController::class, 'show']);
     });
 
+    // Perusahaan (Public)
+    Route::prefix('perusahaan')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\PerusahaanController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\PerusahaanController::class, 'show']);
+    });
+
     // Lamaran (Protected)
     Route::middleware(['auth:api', 'role:Pelamar'])->prefix('lamaran')->group(function () {
         Route::post('/mulai', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'mulai']);

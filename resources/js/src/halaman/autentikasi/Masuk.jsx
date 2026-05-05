@@ -30,7 +30,7 @@ const Masuk = () => {
                 // Redirect based on role
                 const userPeran = respons.data.pengguna.peran;
                 if (userPeran === 'Pelamar') {
-                    navigate('/');
+                    navigate('/profil');
                 } else if (userPeran === 'Admin_Perusahaan') {
                     navigate('/admin');
                 } else if (userPeran === 'Super_Admin') {
