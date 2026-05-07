@@ -3,9 +3,8 @@ import backgroundVector from '../../../aset/profil/Vector.png';
 import pencilSquareIcon from '../../../aset/profil/PencilSquare.svg';
 import layananProfil from '../../../layanan/layananProfil';
 
-const FormInformasiPribadi = () => {
+const FormInformasiPribadi = ({ initialData, onRefresh }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(true);
     const [profil, setProfil] = useState({
         nama_lengkap: '',
         tentang_saya: '',
@@ -16,46 +15,33 @@ const FormInformasiPribadi = () => {
         tanggal_lahir: ''
     });
 
-    // Mengambil data profil saat komponen dimuat
+    // Sinkronisasi dengan data dari parent
     useEffect(() => {
-        const fetchProfil = async () => {
-            try {
-                const data = await layananProfil.ambilProfil();
-                if (data.status === 'success') {
-                    const p = data.data;
-                    setProfil({
-                        nama_lengkap: p.nama_lengkap || '',
-                        tentang_saya: p.tentang_saya || '',
-                        alamat: p.alamat || '',
-                        email: p.pengguna?.email || '',
-                        nomor_telepon: p.nomor_telepon || '',
-                        jenis_kelamin: p.jenis_kelamin || '',
-                        tanggal_lahir: p.tanggal_lahir || ''
-                    });
-                }
-            } catch (error) {
-                console.error("Gagal mengambil profil:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProfil();
-    }, []);
+        if (initialData) {
+            setProfil({
+                nama_lengkap: initialData.nama_lengkap || '',
+                tentang_saya: initialData.tentang_saya || '',
+                alamat: initialData.alamat || '',
+                email: initialData.pengguna?.email || '',
+                nomor_telepon: initialData.nomor_telepon || '',
+                jenis_kelamin: initialData.jenis_kelamin || '',
+                tanggal_lahir: initialData.tanggal_lahir || ''
+            });
+        }
+    }, [initialData]);
 
-    // Menangani perubahan input
     const handleChange = (e) => {
         const { name, value } = e.target;
         setProfil(prev => ({ ...prev, [name]: value }));
     };
 
-    // Menyimpan perubahan ke server
     const handleSimpan = async () => {
         try {
-            // Email sekarang dikirim agar bisa diperbarui di tabel pengguna
             const respons = await layananProfil.updateProfil(profil);
             if (respons.status === 'success') {
                 setIsEditing(false);
-                alert("Profil dan Email berhasil diperbarui! Silakan gunakan email baru untuk login berikutnya.");
+                alert("Profil dan Email berhasil diperbarui!");
+                if (onRefresh) onRefresh(); // Segarkan data global
             }
         } catch (error) {
             console.error("Gagal memperbarui profil:", error);
@@ -67,8 +53,6 @@ const FormInformasiPribadi = () => {
             }
         }
     };
-
-    if (loading) return <div className="loading-state text-[#4B2E2B] font-poppins">Memuat data...</div>;
 
     return (
         <div className="form-informasi-pribadi bg-[#C69C6D] rounded-[25px] p-8 md:p-10 shadow-lg w-full min-h-[460px] relative overflow-hidden z-10 flex flex-col">
@@ -114,7 +98,6 @@ const FormInformasiPribadi = () => {
                             disabled={!isEditing}
                             type="text" 
                             className="input-field h-[50px] bg-[#E3CEB6] border-none rounded-[8px] px-4 font-poppins text-[#4B2E2B] focus:ring-2 focus:ring-[#4B2E2B]/20 outline-none placeholder:text-[#4B2E2B]/40 transition-shadow disabled:opacity-70"
-                            placeholder="Nama Lengkap"
                         />
                     </div>
 
@@ -128,7 +111,6 @@ const FormInformasiPribadi = () => {
                             onChange={handleChange}
                             disabled={!isEditing}
                             className="input-field h-[110px] bg-[#E3CEB6] border-none rounded-[8px] p-4 font-poppins text-[#4B2E2B] focus:ring-2 focus:ring-[#4B2E2B]/20 outline-none resize-none placeholder:text-[#4B2E2B]/40 transition-shadow disabled:opacity-70"
-                            placeholder="Ceritakan tentang diri Anda..."
                         />
                     </div>
 
@@ -142,7 +124,6 @@ const FormInformasiPribadi = () => {
                             onChange={handleChange}
                             disabled={!isEditing}
                             className="input-field h-[110px] bg-[#E3CEB6] border-none rounded-[8px] p-4 font-poppins text-[#4B2E2B] focus:ring-2 focus:ring-[#4B2E2B]/20 outline-none resize-none placeholder:text-[#4B2E2B]/40 transition-shadow disabled:opacity-70"
-                            placeholder="Alamat lengkap Anda..."
                         />
                     </div>
                 </div>
@@ -159,7 +140,6 @@ const FormInformasiPribadi = () => {
                             disabled={!isEditing}
                             type="email" 
                             className="input-field h-[50px] bg-[#E3CEB6] border-none rounded-[8px] px-4 font-poppins text-[#4B2E2B] focus:ring-2 focus:ring-[#4B2E2B]/20 outline-none placeholder:text-[#4B2E2B]/40 transition-shadow disabled:opacity-70"
-                            placeholder="email@contoh.com"
                         />
                     </div>
 
@@ -174,7 +154,6 @@ const FormInformasiPribadi = () => {
                             disabled={!isEditing}
                             type="text" 
                             className="input-field h-[50px] bg-[#E3CEB6] border-none rounded-[8px] px-4 font-poppins text-[#4B2E2B] focus:ring-2 focus:ring-[#4B2E2B]/20 outline-none placeholder:text-[#4B2E2B]/40 transition-shadow disabled:opacity-70"
-                            placeholder="08123456789"
                         />
                     </div>
 
@@ -199,16 +178,14 @@ const FormInformasiPribadi = () => {
                         <label className="label-input font-poppins font-semibold text-[18px] md:text-[20px] text-[#4B2E2B]">
                             Tanggal Lahir
                         </label>
-                        <div className="relative">
-                            <input 
-                                name="tanggal_lahir"
-                                value={profil.tanggal_lahir}
-                                onChange={handleChange}
-                                disabled={!isEditing}
-                                type="date" 
-                                className="input-field w-full h-[50px] bg-[#E3CEB6] border-none rounded-[8px] px-4 font-poppins text-[#4B2E2B] focus:ring-2 focus:ring-[#4B2E2B]/20 outline-none transition-shadow disabled:opacity-70"
-                            />
-                        </div>
+                        <input 
+                            name="tanggal_lahir"
+                            value={profil.tanggal_lahir}
+                            onChange={handleChange}
+                            disabled={!isEditing}
+                            type="date" 
+                            className="input-field w-full h-[50px] bg-[#E3CEB6] border-none rounded-[8px] px-4 font-poppins text-[#4B2E2B] focus:ring-2 focus:ring-[#4B2E2B]/20 outline-none transition-shadow disabled:opacity-70"
+                        />
                     </div>
                 </div>
             </form>

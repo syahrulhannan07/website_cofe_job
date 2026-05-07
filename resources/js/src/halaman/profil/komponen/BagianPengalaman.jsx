@@ -4,7 +4,7 @@ import plusIcon from '../../../aset/profil/Plus Math.png';
 import backgroundVector from '../../../aset/profil/Vector.png';
 import layananProfil from '../../../layanan/layananProfil';
 
-const BagianPengalaman = () => {
+const BagianPengalaman = ({ initialData, onRefresh }) => {
     const [listPengalaman, setListPengalaman] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editId, setEditId] = useState(null);
@@ -16,20 +16,12 @@ const BagianPengalaman = () => {
         tanggal_selesai: ''
     });
 
-    const fetchPengalaman = async () => {
-        try {
-            const data = await layananProfil.ambilProfil();
-            if (data.status === 'success') {
-                setListPengalaman(data.data.pengalaman_kerja || []);
-            }
-        } catch (error) {
-            console.error("Gagal mengambil data pengalaman:", error);
-        }
-    };
-
+    // Sinkronisasi dengan data dari parent
     useEffect(() => {
-        fetchPengalaman();
-    }, []);
+        if (initialData) {
+            setListPengalaman(initialData);
+        }
+    }, [initialData]);
 
     const formatTanggal = (tanggalStr) => {
         if (!tanggalStr) return '';
@@ -38,7 +30,7 @@ const BagianPengalaman = () => {
 
     const handleOpenModal = (item = null) => {
         if (item) {
-            setEditId(item.id_pengalaman); // Menggunakan id_pengalaman sesuai model
+            setEditId(item.id_pengalaman);
             setForm({
                 nama_perusahaan: item.nama_perusahaan,
                 posisi: item.posisi,
@@ -61,7 +53,7 @@ const BagianPengalaman = () => {
                 await layananProfil.tambahPengalaman(form);
             }
             setIsModalOpen(false);
-            fetchPengalaman();
+            if (onRefresh) onRefresh(); // Segarkan data global
         } catch (error) {
             console.error("Gagal menyimpan pengalaman:", error);
             if (error.response?.data?.errors) {
@@ -74,7 +66,7 @@ const BagianPengalaman = () => {
         if (window.confirm("Hapus riwayat pengalaman ini?")) {
             try {
                 await layananProfil.hapusPengalaman(id);
-                fetchPengalaman();
+                if (onRefresh) onRefresh();
             } catch (error) {
                 console.error("Gagal menghapus pengalaman:", error);
             }

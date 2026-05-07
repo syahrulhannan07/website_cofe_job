@@ -4,7 +4,7 @@ import pencilIcon from '../../../aset/profil/Pencil.png';
 import backgroundVector from '../../../aset/profil/Vector.png';
 import layananProfil from '../../../layanan/layananProfil';
 
-const BagianPendidikan = () => {
+const BagianPendidikan = ({ initialData, onRefresh }) => {
     const [listPendidikan, setListPendidikan] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editId, setEditId] = useState(null);
@@ -16,20 +16,12 @@ const BagianPendidikan = () => {
         tahun_selesai: ''
     });
 
-    const fetchPendidikan = async () => {
-        try {
-            const data = await layananProfil.ambilProfil();
-            if (data.status === 'success') {
-                setListPendidikan(data.data.pendidikan || []);
-            }
-        } catch (error) {
-            console.error("Gagal mengambil data pendidikan:", error);
-        }
-    };
-
+    // Sinkronisasi dengan data dari parent
     useEffect(() => {
-        fetchPendidikan();
-    }, []);
+        if (initialData) {
+            setListPendidikan(initialData);
+        }
+    }, [initialData]);
 
     const formatTanggal = (tanggalStr) => {
         if (!tanggalStr) return '';
@@ -38,7 +30,7 @@ const BagianPendidikan = () => {
 
     const handleOpenModal = (item = null) => {
         if (item) {
-            setEditId(item.id_pendidikan); // Menggunakan id_pendidikan sesuai model
+            setEditId(item.id_pendidikan);
             setForm({
                 institusi: item.institusi,
                 jurusan: item.jurusan,
@@ -61,7 +53,7 @@ const BagianPendidikan = () => {
                 await layananProfil.tambahPendidikan(form);
             }
             setIsModalOpen(false);
-            fetchPendidikan();
+            if (onRefresh) onRefresh(); // Segarkan data global
         } catch (error) {
             console.error("Gagal menyimpan pendidikan:", error);
             if (error.response?.data?.errors) {
@@ -74,7 +66,7 @@ const BagianPendidikan = () => {
         if (window.confirm("Hapus riwayat pendidikan ini?")) {
             try {
                 await layananProfil.hapusPendidikan(id);
-                fetchPendidikan();
+                if (onRefresh) onRefresh();
             } catch (error) {
                 console.error("Gagal menghapus pendidikan:", error);
             }
