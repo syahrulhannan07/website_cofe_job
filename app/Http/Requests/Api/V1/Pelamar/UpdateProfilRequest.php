@@ -13,6 +13,7 @@ class UpdateProfilRequest extends FormRequest
 
     public function rules(): array
     {
+        $id_pengguna = auth('api')->id();
         return [
             'nama_lengkap' => 'sometimes|string|max:255',
             'tentang_saya' => 'sometimes|string',
@@ -21,6 +22,7 @@ class UpdateProfilRequest extends FormRequest
             'alamat' => 'sometimes|string',
             'jenis_kelamin' => 'sometimes|in:Laki-laki,Perempuan',
             'foto_profil' => 'sometimes|image|mimes:jpg,jpeg,png|max:2048',
+            'email' => 'sometimes|email|unique:pengguna,email,' . $id_pengguna . ',id_pengguna',
         ];
     }
 
