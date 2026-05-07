@@ -9,6 +9,8 @@ import Perusahaan from '../halaman/perusahaan';
 import DetailPerusahaan from '../halaman/perusahaan/DetailPerusahaan';
 import DetailLowongan from '../halaman/lowongan/komponen/DetailLowongan';
 import Profil from '../halaman/profil';
+import StatusLamaran from '../halaman/status_lamaran';
+import DetailStatusLamaran from '../halaman/status_lamaran/DetailStatusLamaran';
 import Masuk from '../halaman/autentikasi/Masuk';
 import Daftar from '../halaman/autentikasi/Daftar';
 
@@ -32,6 +34,8 @@ const ruter = createBrowserRouter([
             { path: 'lowongan', element: <Lowongan /> },
             { path: 'perusahaan', element: <Perusahaan /> },
             { path: 'profil', element: <Profil /> },
+            { path: 'status-lamaran', element: <StatusLamaran /> },
+            { path: 'status-lamaran/:id', element: <DetailStatusLamaran /> },
         ],
     },
 

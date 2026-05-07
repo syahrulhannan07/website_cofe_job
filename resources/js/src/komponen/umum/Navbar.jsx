@@ -39,7 +39,10 @@ const Navbar = () => {
               Perusahaan
             </Link>
             {isLoggedIn && userRole === 'Pelamar' && (
-              <Link to="/status-lamaran" className="tautan-nav font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity whitespace-nowrap">
+              <Link 
+                to="/status-lamaran" 
+                className="tautan-nav font-poppins font-[700] text-[14px] leading-[21px] text-[#f3ede6] hover:opacity-80 transition-opacity whitespace-nowrap"
+              >
                 Status Lamaran
               </Link>
             )}
