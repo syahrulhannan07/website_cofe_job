@@ -1,10 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import starbucksLogo from '../../../aset/beranda/starbucks.png';
 
 import Paginasi from '../../../halaman/perusahaan/komponen/Paginasi';
 
 const BagianCariCafe = ({ tampilkanPaginasi = false }) => {
+  const navigate = useNavigate();
   return (
     <div 
         className="wadah-cari-cafe flex w-full relative justify-center bg-[#F3EDE6] pt-10 pb-16"
@@ -55,7 +57,13 @@ const BagianCariCafe = ({ tampilkanPaginasi = false }) => {
                         
                         {/* Tombol / CTA */}
                         <div className="area-tombol flex items-center justify-center relative w-full mt-[30px]">
-                            <div className="tombol-pekerjaan flex items-center justify-center relative w-[198px] h-[42px] bg-[#F3EDE6] rounded-[5px] transition-colors duration-300 group-hover:bg-[#4B2E2B] group-hover:text-[#F3EDE6]">
+                            <div 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate('/perusahaan/1');
+                                }}
+                                className="tombol-pekerjaan flex items-center justify-center relative w-[198px] h-[42px] bg-[#F3EDE6] rounded-[5px] transition-colors duration-300 group-hover:bg-[#4B2E2B] group-hover:text-[#F3EDE6] cursor-pointer"
+                            >
                                 <span className="teks-tombol font-poppins font-semibold text-[16px] text-inherit">
                                     4 Pekerjaan
                                 </span>

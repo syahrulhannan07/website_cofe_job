@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import starbucksLogo from '../../../aset/beranda/starbucks.png';
 import iconLocation from '../../../aset/lowongan/Location.png';
 import leftArrow from '../../../aset/lowongan/Left Arrow.png';
@@ -6,20 +7,27 @@ import iconLokasiMini from '../../../aset/lowongan/Icon2.svg';
 import calendarIcon from '../../../aset/lowongan/Calendar.png';
 import briefcaseIcon from '../../../aset/lowongan/School Briefcase.png';
 
-const DetailLowongan = ({ lowongan, onBack }) => {
-    useEffect(() => {
-        // Sembunyikan navbar dan footer saat komponen ini muncul
-        const navbar = document.getElementById('app-navbar');
-        const footer = document.getElementById('app-footer');
-        if (navbar) navbar.style.display = 'none';
-        if (footer) footer.style.display = 'none';
+const DetailLowongan = ({ lowongan: lowonganProp, onBack }) => {
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-        // Kembalikan seperti semula saat komponen unmount
-        return () => {
-            if (navbar) navbar.style.display = '';
-            if (footer) footer.style.display = '';
-        };
-    }, []);
+    // Mock data jika tidak ada prop (akses via rute langsung)
+    const lowongan = lowonganProp || {
+        id: id || 1,
+        judul: "Senior Barista",
+        perusahaan: "Starbucks Indonesia",
+        lokasi: "Karangampel, Indramayu",
+        gaji: "IDR 3.5M - 4.5M",
+        deskripsi: "Sebagai Marketing Intern, Anda akan berperan penting dalam menceritakan kisah di balik setiap cangkir kopi kami. Anda akan membantu memperkuat identitas brand Indra Coffee Roasters melalui kreativitas digital dan interaksi langsung.",
+    };
+
+    const handleBack = () => {
+        if (onBack) {
+            onBack();
+        } else {
+            navigate(-1);
+        }
+    };
 
     return (
         <div className="w-full min-h-screen bg-[#F3EDE6] font-poppins pb-[100px] flex flex-col">
@@ -59,7 +67,7 @@ const DetailLowongan = ({ lowongan, onBack }) => {
                             Lamar Sekarang
                         </button>
                         <button 
-                            onClick={onBack}
+                            onClick={handleBack}
                             className="w-[200px] h-[61px] border border-[#F3EDE6] rounded-[12px] font-inter font-bold text-[24px] text-[#C69C6D] hover:bg-[#F3EDE6]/10 transition-colors flex items-center justify-center gap-[10px]"
                         >
                             <img src={leftArrow} alt="Back" className="w-[37px] h-[50px] object-contain" />
@@ -78,7 +86,7 @@ const DetailLowongan = ({ lowongan, onBack }) => {
                         Deskripsi Pekerjaan
                     </h2>
                     <p className="font-poppins font-normal text-[15px] text-[#C69C6D] leading-[1.8] mb-[64px] text-justify whitespace-pre-line">
-                        Sebagai Marketing Intern, Anda akan berperan penting dalam menceritakan kisah di balik setiap cangkir kopi kami. Anda akan membantu memperkuat identitas brand Indra Coffee Roasters melalui kreativitas digital dan interaksi langsung.
+                        {lowongan.deskripsi || "Sebagai Marketing Intern, Anda akan berperan penting dalam menceritakan kisah di balik setiap cangkir kopi kami. Anda akan membantu memperkuat identitas brand Indra Coffee Roasters melalui kreativitas digital dan interaksi langsung."}
                         {'\n\n'}Tanggung Jawab Utama:{'\n'}
                         Produksi Konten Kreatif: Mengambil foto, merekam video (Reels/TikTok), dan mendesain visual menarik untuk media sosial.{'\n'}
                         Copywriting: Menyusun takarir (caption) yang kreatif dan informatif yang mencerminkan karakter brand.{'\n'}
@@ -160,7 +168,10 @@ const DetailLowongan = ({ lowongan, onBack }) => {
                             </div>
 
                             {/* Profil Button */}
-                            <button className="w-[467px] h-[51px] bg-[#C69C6D] rounded-[25px] font-poppins font-extrabold text-[24px] text-[#F3EDE6] mb-[40px] mt-auto hover:bg-[#b0895f] transition-colors self-center">
+                            <button 
+                                onClick={() => navigate(`/perusahaan/${lowongan.perusahaanId || 1}`)}
+                                className="w-[467px] h-[51px] bg-[#C69C6D] rounded-[25px] font-poppins font-extrabold text-[24px] text-[#F3EDE6] mb-[40px] mt-auto hover:bg-[#b0895f] transition-colors self-center"
+                            >
                                 Lihat Profil Perusahaan
                             </button>
                         </div>
