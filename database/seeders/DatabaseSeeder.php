@@ -116,14 +116,14 @@ class DatabaseSeeder extends Seeder
                     $this->seedLowonganDetails($idLowongan, $idsJenisDokumen, $faker, $posisi);
                 }
 
-                // Pelamar (50 per perusahaan)
-                for ($p = 1; $p <= 50; $p++) {
+                // Pelamar (10 per perusahaan)
+                for ($p = 1; $p <= 10; $p++) {
                     $this->seedPelamar($i, $p, $lowongans, $kec, $faker);
                 }
             }
 
             DB::commit();
-            $this->command->info("Seeding data utama SELESAI! Total 1.250 pelamar berhasil dibuat.");
+            $this->command->info("Seeding data utama SELESAI! Total 250 pelamar berhasil dibuat.");
 
             // ✅ Jalankan seeder tambahan setelah data utama selesai
             $this->command->info('Menjalankan JawabanLamaranSeeder...');
