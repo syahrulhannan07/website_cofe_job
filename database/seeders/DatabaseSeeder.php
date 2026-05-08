@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             // 3. Loop Perusahaan (25)
             for ($i = 1; $i <= 25; $i++) {
                 $this->command->comment("Seeding Perusahaan $i/25...");
-                
+             
                 $idUserPerusahaan = DB::table('pengguna')->insertGetId([
                     'nama_pengguna' => "Owner " . $faker->name,
                     'email' => "cafe" . $i . "@gmail.com",

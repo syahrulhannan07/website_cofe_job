@@ -14,7 +14,7 @@ class LowonganController extends Controller
     {
         $query = Lowongan::query()
             ->with(['perusahaan'])
-            ->where('status', 'Aktif')
+            ->where('status', 'Active')
             ->where('batas_akhir', '>=', now()->toDateString());
 
         // Pencarian berdasarkan posisi atau deskripsi

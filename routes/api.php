@@ -62,6 +62,9 @@ Route::prefix('v1')->group(function () {
         Route::delete('/pengalaman/{id}', [ProfilController::class, 'deletePengalaman']);
     });
 
+    // Beranda
+    Route::get('/beranda', [\App\Http\Controllers\Api\V1\Pelamar\BerandaController::class, 'index']);
+
     // Lowongan (Public/Optional Auth)
     Route::prefix('lowongan')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\LowonganController::class, 'index']);

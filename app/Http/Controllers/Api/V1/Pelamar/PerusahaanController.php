@@ -13,9 +13,9 @@ class PerusahaanController extends Controller
     {
         $query = ProfilPerusahaan::query()
             ->withCount(['lowongan' => function ($query) {
-                $query->where('status', 'Aktif');
+                $query->where('status', 'Active');
             }])
-            ->where('status_verifikasi', 'Disetujui');
+            ->where('status_verifikasi', 'Diterima');
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -31,10 +31,10 @@ class PerusahaanController extends Controller
     public function show($id)
     {
         $perusahaan = ProfilPerusahaan::with(['lowongan' => function ($query) {
-                $query->where('status', 'Aktif');
+                $query->where('status', 'Active');
             }])
             ->withCount(['lowongan' => function ($query) {
-                $query->where('status', 'Aktif');
+                $query->where('status', 'Active');
             }])
             ->where('id_perusahaan', $id)
             ->firstOrFail();

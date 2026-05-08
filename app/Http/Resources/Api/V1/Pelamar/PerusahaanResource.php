@@ -13,8 +13,9 @@ class PerusahaanResource extends JsonResource
             'nama_perusahaan' => $this->nama_perusahaan,
             'logo_perusahaan' => $this->logo_perusahaan ? asset('storage/' . $this->logo_perusahaan) : null,
             'alamat_perusahaan' => $this->alamat_perusahaan,
+            'kecamatan' => $this->kecamatan,
             'deskripsi' => $this->deskripsi,
-            'jumlah_lowongan' => $this->lowongan_count ?? $this->lowongan()->where('status', 'Aktif')->count(),
+            'jumlah_lowongan' => $this->lowongan_count ?? $this->lowongan()->where('status', 'Active')->count(),
         ];
     }
 }

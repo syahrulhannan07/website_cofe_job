@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import starbucksLogo from '../../../aset/beranda/starbucks.png';
+import placeholderProfile from '../../../admin-perusahaan/aset/profil-perusahaan/placeholder_profile.png';
 
 import Paginasi from '../../../halaman/perusahaan/komponen/Paginasi';
 
-const BagianCariCafe = ({ tampilkanPaginasi = false }) => {
+const BagianCariCafe = ({ data = [], sedangMemuat = false, tampilkanPaginasi = false }) => {
   const navigate = useNavigate();
   return (
     <div 
@@ -37,40 +37,48 @@ const BagianCariCafe = ({ tampilkanPaginasi = false }) => {
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className="daftar-kartu grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-6 lg:gap-[10px]"
             >
-                {[1, 2, 3, 4].map((item, index) => (
-                    <motion.div 
-                        key={item} 
-                        whileHover={{ y: -5, boxShadow: "0px 8px 20px rgba(75, 46, 43, 0.15)" }}
-                        className="kartu-cafe flex flex-col items-center relative bg-[#C69C6D] rounded-[50px] border-[1px] border-[#4B2E2B] w-full max-w-[317px] h-[317px] mx-auto cursor-pointer group"
-                    >
-                        {/* Logo */}
-                        <div className="wadah-logo-cafe flex items-center justify-center relative w-[80px] h-[80px] mt-[60px] bg-[#F3EDE6] rounded-full overflow-hidden border border-[#4B2E2B]/10">
-                            <img src={starbucksLogo} alt="Starbucks" className="logo-cafe w-[60px] h-[60px] object-contain" />
-                        </div>
-                        
-                        {/* Nama Cafe */}
-                        <div className="area-nama-cafe flex items-center justify-center relative mt-[10px]">
-                            <span className="nama-cafe font-poppins font-semibold text-[24px] text-[#4B2E2B] leading-[36px]">
-                                Starbucks
-                            </span>
-                        </div>
-                        
-                        {/* Tombol / CTA */}
-                        <div className="area-tombol flex items-center justify-center relative w-full mt-[30px]">
-                            <div 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate('/perusahaan/1');
-                                }}
-                                className="tombol-pekerjaan flex items-center justify-center relative w-[198px] h-[42px] bg-[#F3EDE6] rounded-[5px] transition-colors duration-300 group-hover:bg-[#4B2E2B] group-hover:text-[#F3EDE6] cursor-pointer"
-                            >
-                                <span className="teks-tombol font-poppins font-semibold text-[16px] text-inherit">
-                                    4 Pekerjaan
+                {sedangMemuat ? (
+                    // Skeleton or Loading State
+                    [1, 2, 3, 4].map((item) => (
+                        <div key={item} className="kartu-kafe-populer flex flex-col items-center relative bg-[#C69C6D]/50 animate-pulse rounded-[50px] w-full max-w-[317px] h-[317px] mx-auto" />
+                    ))
+                ) : (
+                    data.map((kafe) => (
+                        <motion.div 
+                            key={kafe.id_perusahaan} 
+                            whileHover={{ y: -5, boxShadow: "0px 8px 20px rgba(75, 46, 43, 0.15)" }}
+                            className="kartu-kafe-populer flex flex-col items-center relative bg-[#C69C6D] rounded-[50px] border-[1px] border-[#4B2E2B] w-full max-w-[317px] h-[317px] mx-auto cursor-pointer group"
+                            onClick={() => navigate(`/perusahaan/${kafe.id_perusahaan}`)}
+                        >
+                            {/* Logo */}
+                            <div className="wadah-logo-cafe flex items-center justify-center relative w-[80px] h-[80px] mt-[60px] bg-[#F3EDE6] rounded-full overflow-hidden border border-[#4B2E2B]/10">
+                                <img 
+                                    src={kafe.logo_perusahaan || placeholderProfile} 
+                                    alt={kafe.nama_perusahaan} 
+                                    className="gambar-profil-kafe w-full h-full object-cover" 
+                                />
+                            </div>
+                            
+                            {/* Nama Cafe */}
+                            <div className="area-nama-cafe flex items-center justify-center relative mt-[10px]">
+                                <span className="nama-cafe font-poppins font-semibold text-[24px] text-[#4B2E2B] leading-[36px] text-center px-4 line-clamp-1">
+                                    {kafe.nama_perusahaan}
                                 </span>
                             </div>
-                        </div>
-                    </motion.div>
-                ))}
+                            
+                            {/* Tombol / CTA */}
+                            <div className="area-tombol flex items-center justify-center relative w-full mt-[30px]">
+                                <div 
+                                    className="tombol-jumlah-loker flex items-center justify-center relative w-[198px] h-[42px] bg-[#F3EDE6] rounded-[5px] transition-colors duration-300 group-hover:bg-[#4B2E2B] group-hover:text-[#F3EDE6] cursor-pointer"
+                                >
+                                    <span className="teks-tombol font-poppins font-semibold text-[16px] text-inherit">
+                                        {kafe.jumlah_lowongan} Pekerjaan
+                                    </span>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))
+                )}
             </motion.div>
 
             {/* Paginasi */}

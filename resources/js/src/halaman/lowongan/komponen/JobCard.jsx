@@ -10,30 +10,30 @@ const JobCard = ({ lowongan, onDetail }) => {
     return (
         <div className="bg-[#F3EDE6] rounded-[16px] p-[24px] w-full h-full flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300">
             <div className="flex flex-col gap-[20px]">
-                {/* Logo Placeholder */}
+                {/* Logo Perusahaan */}
                 <div className="w-[56px] h-[56px] bg-[#F4ECE9] rounded-[12px] flex items-center justify-center shrink-0 overflow-hidden">
-                    <img src={starbucksLogo} alt="Logo" className="w-[40px] h-[40px] object-contain" />
+                    <img src={lowongan.logo_kafe || starbucksLogo} alt={lowongan.nama_kafe} className="w-[40px] h-[40px] object-contain" />
                 </div>
 
-                {/* Titles */}
+                {/* Judul Posisi & Nama Kafe */}
                 <div className="flex flex-col gap-[4px]">
-                    <h3 className="font-manrope font-normal text-[20px] leading-[28px] text-[#1E1B19]">
-                        {lowongan.judul}
+                    <h3 className="teks-posisi-kerja font-manrope font-normal text-[20px] leading-[28px] text-[#1E1B19]">
+                        {lowongan.posisi}
                     </h3>
                     <p className="font-inter font-normal text-[14px] leading-[20px] text-[#50453E]">
-                        {lowongan.perusahaan}
+                        {lowongan.nama_kafe}
                     </p>
                 </div>
 
                 {/* Metadata Pills */}
                 <div className="flex flex-wrap gap-[8px] pt-[12px] pb-[20px]">
-                    <div className="bg-[#F4ECE9] rounded-[6px] h-[24px] px-[8px] flex items-center gap-[4px]">
+                    <div className="label-lokasi-kecamatan bg-[#F4ECE9] rounded-[6px] h-[24px] px-[8px] flex items-center gap-[4px]">
                         <img src={iconLokasiMini} alt="Location Icon" className="w-[9.33px] h-[11.66px]" />
                         <span className="font-inter font-medium text-[12px] text-[#82746D]">
-                            {lowongan.lokasi}
+                            {lowongan.kecamatan}
                         </span>
                     </div>
-                    <div className="bg-[#F4ECE9] rounded-[6px] h-[24px] px-[8px] flex items-center gap-[4px]">
+                    <div className="kontainer-info-gaji bg-[#F4ECE9] rounded-[6px] h-[24px] px-[8px] flex items-center gap-[4px]">
                         <img src={iconGaji} alt="Salary Icon" className="w-[12.83px] h-[9.33px]" />
                         <span className="font-inter font-medium text-[12px] text-[#82746D]">
                             {lowongan.gaji}
