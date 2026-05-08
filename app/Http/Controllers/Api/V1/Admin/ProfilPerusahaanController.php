@@ -49,6 +49,7 @@ class ProfilPerusahaanController extends Controller
             'nama_pengguna' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:pengguna,email,' . $admin->id_pengguna . ',id_pengguna',
             'alamat_perusahaan' => 'nullable|string',
+            'kecamatan' => 'nullable|string|max:255',
             'deskripsi' => 'nullable|string',
             'logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'dokumen_izin' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
@@ -80,6 +81,9 @@ class ProfilPerusahaanController extends Controller
         }
         if ($request->has('alamat_perusahaan')) {
             $profil->alamat_perusahaan = $request->alamat_perusahaan;
+        }
+        if ($request->has('kecamatan')) {
+            $profil->kecamatan = $request->kecamatan;
         }
         if ($request->has('deskripsi')) {
             $profil->deskripsi = $request->deskripsi;

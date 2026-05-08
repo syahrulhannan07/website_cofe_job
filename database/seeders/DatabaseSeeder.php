@@ -74,6 +74,7 @@ class DatabaseSeeder extends Seeder
                     'id_pengguna'       => $idUserPerusahaan,
                     'nama_perusahaan'   => $namaCafeRealistis[$i - 1] ?? ($faker->company . " Coffee"),
                     'alamat_perusahaan' => 'Jl. Raya ' . $kec . ' No. ' . rand(1, 200) . ', Kecamatan ' . $kec . ', Kab. Indramayu',
+                    'kecamatan'         => $kec, // ✅ Tambahkan kolom kecamatan
                     'deskripsi'         => 'Sebuah kafe yang berlokasi strategis di ' . $kec . ' dengan konsep modern dan suasana nyaman. Kami berkomitmen menyajikan kopi berkualitas tinggi kepada masyarakat Indramayu.',
                     'status_verifikasi' => $statusVerif,
                     'alasan_penolakan'  => $alasanPenolakan, // ✅ FIX: wajib diisi jika Ditolak
