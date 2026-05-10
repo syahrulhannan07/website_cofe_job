@@ -37,7 +37,6 @@ const ruter = createBrowserRouter([
             { path: 'profil', element: <Profil /> },
             { path: 'status-lamaran', element: <StatusLamaran /> },
             { path: 'status-lamaran/:id', element: <DetailStatusLamaran /> },
-            { path: 'melamar', element: <Melamar /> },
         ],
     },
 
@@ -48,6 +47,7 @@ const ruter = createBrowserRouter([
         children: [
             { path: 'perusahaan/:id', element: <DetailPerusahaan /> },
             { path: 'lowongan/:id', element: <DetailLowongan /> },
+            { path: 'melamar', element: <Melamar /> },
         ],
     },
 
