@@ -15,7 +15,7 @@ class ProfilPerusahaan extends Model
         'nama_perusahaan',
         'alamat_perusahaan',
         'dokumen_izin',
-        'dokumen_legalitas',
+        'tanggal_berdiri',
         'deskripsi',
         'status_verifikasi',
         'alasan_penolakan',

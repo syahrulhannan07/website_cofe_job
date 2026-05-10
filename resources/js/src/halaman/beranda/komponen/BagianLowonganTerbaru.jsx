@@ -112,7 +112,7 @@ const BagianLowonganTerbaru = ({ data = [], sedangMemuat = false }) => {
                                             <JobCard 
                                                 lowongan={lowongan} 
                                                 onDetail={(job) => {
-                                                    navigate('/lowongan', { state: { selectedJob: job, from: '/' } });
+                                                    navigate(`/lowongan/${job.id}`, { state: { job: job } });
                                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                                 }}
                                             />

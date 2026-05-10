@@ -13,6 +13,7 @@ import StatusLamaran from '../halaman/status_lamaran';
 import DetailStatusLamaran from '../halaman/status_lamaran/DetailStatusLamaran';
 import Masuk from '../halaman/autentikasi/Masuk';
 import Daftar from '../halaman/autentikasi/Daftar';
+import Melamar from '../halaman/melamar';
 
 // Fitur Admin Perusahaan
 import DashboardAdmin from '../admin-perusahaan/halaman/dashboard';
@@ -36,6 +37,7 @@ const ruter = createBrowserRouter([
             { path: 'profil', element: <Profil /> },
             { path: 'status-lamaran', element: <StatusLamaran /> },
             { path: 'status-lamaran/:id', element: <DetailStatusLamaran /> },
+            { path: 'melamar', element: <Melamar /> },
         ],
     },
 

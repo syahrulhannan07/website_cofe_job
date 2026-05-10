@@ -38,6 +38,9 @@ class LowonganController extends Controller
             ->where('id_lowongan', $id)
             ->firstOrFail();
 
-        return new LowonganDetailResource($lowongan);
+        return response()->json([
+            'status' => 'success',
+            'data' => new LowonganDetailResource($lowongan)
+        ]);
     }
 }
