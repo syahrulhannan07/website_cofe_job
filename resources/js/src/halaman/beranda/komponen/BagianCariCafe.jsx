@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import placeholderProfile from '../../../admin-perusahaan/aset/profil-perusahaan/placeholder_profile.png';
+import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
 import Paginasi from '../../../halaman/perusahaan/komponen/Paginasi';
 
@@ -38,10 +39,9 @@ const BagianCariCafe = ({ data = [], sedangMemuat = false, tampilkanPaginasi = f
                 className="daftar-kartu grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-6 lg:gap-[10px]"
             >
                 {sedangMemuat ? (
-                    // Skeleton or Loading State
-                    [1, 2, 3, 4].map((item) => (
-                        <div key={item} className="kartu-kafe-populer flex flex-col items-center relative bg-[#C69C6D]/50 animate-pulse rounded-[50px] w-full max-w-[317px] h-[317px] mx-auto" />
-                    ))
+                    <div className="col-span-full w-full">
+                        <LoadingKopi fullScreen={false} pesan="Menyeduh daftar cafe..." />
+                    </div>
                 ) : (
                     data.map((kafe) => (
                         <motion.div 

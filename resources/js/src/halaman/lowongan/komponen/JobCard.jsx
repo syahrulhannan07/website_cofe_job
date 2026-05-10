@@ -29,13 +29,13 @@ const JobCard = ({ lowongan, onDetail }) => {
                 <div className="flex flex-wrap gap-[8px] pt-[12px] pb-[20px]">
                     <div className="label-lokasi-kecamatan bg-[#F4ECE9] rounded-[6px] h-[24px] px-[8px] flex items-center gap-[4px]">
                         <img src={iconLokasiMini} alt="Location Icon" className="w-[9.33px] h-[11.66px]" />
-                        <span className="font-inter font-medium text-[12px] text-[#82746D]">
+                        <span className="info-kecamatan-lokasi font-inter font-medium text-[12px] text-[#82746D]">
                             {lowongan.kecamatan}
                         </span>
                     </div>
                     <div className="kontainer-info-gaji bg-[#F4ECE9] rounded-[6px] h-[24px] px-[8px] flex items-center gap-[4px]">
                         <img src={iconGaji} alt="Salary Icon" className="w-[12.83px] h-[9.33px]" />
-                        <span className="font-inter font-medium text-[12px] text-[#82746D]">
+                        <span className="label-rentang-gaji font-inter font-medium text-[12px] text-[#82746D]">
                             {lowongan.gaji}
                         </span>
                     </div>
@@ -51,7 +51,7 @@ const JobCard = ({ lowongan, onDetail }) => {
                         navigate(`/lowongan/${lowongan.id || 1}`);
                     }
                 }}
-                className="w-full h-[54px] border-[3px] border-[#C69C6D] rounded-[12px] 
+                className="tombol-navigasi-detail w-full h-[54px] border-[3px] border-[#C69C6D] rounded-[12px] 
                            font-inter font-normal text-[16px] text-[#82746D]
                            transition-all duration-300 hover:bg-[#C69C6D] hover:text-[#F3EDE6] active:scale-95"
             >

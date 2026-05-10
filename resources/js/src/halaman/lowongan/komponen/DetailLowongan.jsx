@@ -10,6 +10,9 @@ import calendarIcon from '../../../aset/lowongan/Calendar.png';
 import briefcaseIcon from '../../../aset/lowongan/School Briefcase.png';
 import verifiedBadge from '../../../aset/lowongan/Verified Badge.png';
 
+import HalamanErrorKopi from '../../../komponen/umum/HalamanErrorKopi';
+import LoadingKopi from '../../../komponen/umum/LoadingKopi';
+
 const DetailLowongan = ({ lowongan: lowonganProp }) => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -18,6 +21,7 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
     // Gunakan data dari prop atau state rute jika tersedia agar tampilan muncul instan
     const [dataLowongan, setDataLowongan] = useState(lowonganProp || state?.job || null);
     const [sedangMemuat, setSedangMemuat] = useState(!lowonganProp && !state?.job);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         // Mengambil data detail lowongan dari API Laravel berdasarkan ID
@@ -25,12 +29,20 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
         const ambilDetailLowongan = async () => {
             try {
                 if (!dataLowongan) setSedangMemuat(true);
-                const respons = await api.get(`/lowongan/${id}`);
+                const respons = await api.get(`/lowongan/${id}`, { timeout: 10000 }); // 10 detik timeout
                 if (respons.data.status === 'success') {
                     setDataLowongan(respons.data.data);
+                    setError(null);
                 }
-            } catch (error) {
-                console.error('Gagal mengambil detail lowongan:', error);
+            } catch (err) {
+                console.error('Gagal mengambil detail lowongan:', err);
+                if (err.response?.status === 404) {
+                    setError(404);
+                } else if (err.code === 'ECONNABORTED' || !err.response) {
+                    setError('timeout');
+                } else {
+                    setError('error');
+                }
             } finally {
                 setSedangMemuat(false);
             }
@@ -55,21 +67,21 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
         navigate(-1);
     };
 
-    if (sedangMemuat) {
-        return (
-            <div className="w-full min-h-screen bg-[#F3EDE6] flex items-center justify-center">
-                <div className="animate-pulse text-[#4B2E2B] font-poppins font-bold text-[24px]">Memuat Detail Lowongan...</div>
-            </div>
-        );
+    // Tampilkan Halaman Error jika terjadi masalah
+    if (error === 404) {
+        return <HalamanErrorKopi code={404} message="Lowongan Tidak Ditemukan" subMessage="Maaf, lowongan yang Anda cari tidak tersedia atau sudah ditutup." />;
+    }
+
+    if (error === 'timeout' || error === 'error') {
+        return <HalamanErrorKopi code="500" message="Koneksi Terganggu" subMessage="Sepertinya ada masalah dengan jaringan Anda atau server kami sedang sibuk. Silakan coba lagi nanti." />;
+    }
+
+    if (sedangMemuat && !dataLowongan) {
+        return <LoadingKopi pesan="Menyeduh Data Lowongan..." />;
     }
 
     if (!dataLowongan) {
-        return (
-            <div className="w-full min-h-screen bg-[#F3EDE6] flex flex-col items-center justify-center gap-4">
-                <div className="text-[#4B2E2B] font-poppins font-bold text-[24px]">Lowongan tidak ditemukan.</div>
-                <button onClick={() => navigate('/lowongan')} className="text-[#C69C6D] underline">Kembali ke Daftar Lowongan</button>
-            </div>
-        );
+        return <HalamanErrorKopi code={404} message="Lowongan Kosong" />;
     }
 
     const lowongan = dataLowongan;

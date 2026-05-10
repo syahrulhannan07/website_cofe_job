@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../../layanan/api';
-import LoadingKopi from '../../komponen/LoadingKopi';
+import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
 // Icons
 import PeringatanIcon from '../../aset/lowongan/peringantan.svg';

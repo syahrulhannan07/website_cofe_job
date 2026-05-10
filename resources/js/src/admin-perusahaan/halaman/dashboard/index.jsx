@@ -5,7 +5,7 @@ import TabelPelamarTerbaru from './komponen/TabelPelamarTerbaru';
 import GrafikStatusLamaran from './komponen/GrafikStatusLamaran';
 import { motion } from 'framer-motion';
 import { useAdmin } from '../../konteks/AdminContext';
-import LoadingKopi from '../../komponen/LoadingKopi';
+import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
 /**
  * IMPORT ASET DASHBOARD

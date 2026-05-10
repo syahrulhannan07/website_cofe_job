@@ -5,7 +5,7 @@ import BagianPendidikan from './komponen/BagianPendidikan';
 import BagianPengalaman from './komponen/BagianPengalaman';
 import BagianKeahlian from './komponen/BagianKeahlian';
 import TombolKeluar from './komponen/TombolKeluar';
-import LoadingKopi from '../../admin-perusahaan/komponen/LoadingKopi';
+import LoadingKopi from '../../komponen/umum/LoadingKopi';
 import layananProfil from '../../layanan/layananProfil';
 
 const Profil = () => {

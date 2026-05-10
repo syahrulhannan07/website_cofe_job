@@ -1,62 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import starbucksLogo from '../../aset/beranda/starbucks.png';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import api from '../../layanan/api';
+import placeholderProfile from '../../admin-perusahaan/aset/profil-perusahaan/placeholder_profile.png';
 import leftArrow from '../../aset/perusahaan/Left Arrow.png';
 import JobCard from '../lowongan/komponen/JobCard';
+import HalamanErrorKopi from '../../komponen/umum/HalamanErrorKopi';
+import LoadingKopi from '../../komponen/umum/LoadingKopi';
 
 const DetailPerusahaan = () => {
+    const { id } = useParams();
     const navigate = useNavigate();
-    // Mock data berdasarkan Figma (Node 53:3308)
-    const perusahaan = {
-        nama: "Starbucks",
-        tagline: "Coffee berkualitas di dunia",
-        alamat: "Indramayu, Jl panjaitan nomer 13",
-        deskripsi: "Starbucks adalah jaringan kedai kopi global asal Amerika Serikat yang didirikan tahun 1971 di Seattle, terkenal dengan komitmen menggunakan 100% biji kopi Arabika berkualitas tinggi yang diperoleh secara etis. Mereka menawarkan pengalaman \"third place\" (tempat ketiga setelah rumah dan kantor) dengan suasana nyaman, menyajikan berbagai minuman espresso, frappuccino, dan kopi biji utuh."
-    };
+    const { state } = useLocation();
 
-    const lowonganList = [
-        { 
-            id: 1, 
-            judul: "Senior Barista", 
-            perusahaan: "Starbucks", 
-            lokasi: "Karangampel", 
-            gaji: "Rp 3.500.000 - 4.500.000" 
-        },
-        { 
-            id: 2, 
-            judul: "Store Manager", 
-            perusahaan: "Starbucks", 
-            lokasi: "Indramayu Kota", 
-            gaji: "Rp 5.000.000 - 7.000.000" 
-        },
-        { 
-            id: 3, 
-            judul: "Shift Supervisor", 
-            perusahaan: "Starbucks", 
-            lokasi: "Jatibarang", 
-            gaji: "Rp 4.000.000 - 5.000.000" 
-        },
-        { 
-            id: 4, 
-            judul: "Assistant Store Manager", 
-            perusahaan: "Starbucks", 
-            lokasi: "Indramayu Kota", 
-            gaji: "Rp 4.500.000 - 6.000.000" 
-        },
-    ];
+    // Gunakan data dari state rute jika tersedia agar tampilan muncul instan
+    const [perusahaan, setPerusahaan] = useState(state?.perusahaan || null);
+    const [sedangMemuat, setSedangMemuat] = useState(!state?.perusahaan);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const ambilDetailPerusahaan = async () => {
+            try {
+                if (!perusahaan) setSedangMemuat(true);
+                const respons = await api.get(`/perusahaan/${id}`, { timeout: 10000 });
+                if (respons.data && respons.data.data) {
+                    setPerusahaan(respons.data.data);
+                    setError(null);
+                }
+            } catch (err) {
+                console.error('Gagal mengambil detail perusahaan:', err);
+                if (err.response?.status === 404) {
+                    setError(404);
+                } else if (err.code === 'ECONNABORTED' || !err.response) {
+                    setError('timeout');
+                } else {
+                    setError('error');
+                }
+            } finally {
+                setSedangMemuat(false);
+            }
+        };
+
+        if (id) {
+            ambilDetailPerusahaan();
+        }
+    }, [id]);
+
+    // Tampilkan Halaman Error jika terjadi masalah
+    if (error === 404) {
+        return <HalamanErrorKopi code={404} message="Perusahaan Tidak Ditemukan" subMessage="Maaf, profil kafe yang Anda cari tidak tersedia." />;
+    }
+
+    if (error === 'timeout' || error === 'error') {
+        return <HalamanErrorKopi code="500" message="Koneksi Terganggu" subMessage="Gagal memuat profil kafe. Silakan periksa koneksi internet Anda." />;
+    }
+
+    if (sedangMemuat && !perusahaan) {
+        return <LoadingKopi pesan="Menyiapkan Profil Kafe..." />;
+    }
+
+    if (!perusahaan) {
+        return <HalamanErrorKopi code={404} message="Data Kosong" />;
+    }
 
     return (
         <div className="flex flex-col w-full bg-[#F3EDE6] min-h-screen">
-            {/* Header Perusahaan (Node 53:3309) */}
+            {/* Header Perusahaan */}
             <section className="w-full bg-[#4B2E2B] py-16 px-8 md:px-24 flex flex-col lg:flex-row items-center justify-between gap-12">
                 <div className="flex flex-col md:flex-row items-center gap-12">
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="w-[150px] h-[150px] bg-[#F3EDE6] rounded-full overflow-hidden flex items-center justify-center shrink-0 shadow-xl"
+                        className="w-[150px] h-[150px] bg-[#F3EDE6] rounded-full overflow-hidden flex items-center justify-center shrink-0 shadow-xl border-4 border-[#C69C6D]/20"
                     >
-                        <img src={starbucksLogo} alt={perusahaan.nama} className="w-[110px] h-[110px] object-contain" />
+                        <img 
+                            src={perusahaan.logo_perusahaan || placeholderProfile} 
+                            alt={perusahaan.nama_perusahaan} 
+                            className="w-[110px] h-[110px] object-contain" 
+                        />
                     </motion.div>
                     
                     <div className="flex flex-col text-center md:text-left">
@@ -65,20 +86,20 @@ const DetailPerusahaan = () => {
                             animate={{ opacity: 1, x: 0 }}
                             className="font-poppins font-bold text-[36px] md:text-[54px] text-[#F3EDE6] leading-tight"
                         >
-                            {perusahaan.nama}
+                            {perusahaan.nama_perusahaan}
                         </motion.h1>
                         <motion.p 
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="font-poppins font-regular text-[24px] md:text-[36px] text-[#F3EDE6] opacity-90"
+                            className="font-poppins font-regular text-[24px] md:text-[30px] text-[#C69C6D] opacity-90"
                         >
-                            {perusahaan.tagline}
+                            {perusahaan.tagline || "Coffee Experience Terbaik di Indramayu"}
                         </motion.p>
                     </div>
                 </div>
 
-                {/* Tombol Aksi (Sesuai Gambar) */}
+                {/* Tombol Navigasi */}
                 <div className="flex flex-col gap-5">
                     <motion.button
                         initial={{ opacity: 0, x: 20 }}
@@ -113,7 +134,7 @@ const DetailPerusahaan = () => {
             {/* Konten Utama */}
             <section className="max-w-[1300px] mx-auto w-full px-8 py-20 flex flex-col gap-16">
                 
-                {/* Sekilas Tentang Perusahaan (Node 376:386) */}
+                {/* Sekilas Tentang Perusahaan */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -127,24 +148,28 @@ const DetailPerusahaan = () => {
                     <div className="flex flex-col gap-8">
                         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 md:gap-8 items-start">
                             <span className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">Nama</span>
-                            <span className="font-poppins font-regular text-[20px] text-[#4B2E2B]">{perusahaan.nama}</span>
+                            <span className="font-poppins font-regular text-[20px] text-[#4B2E2B]">{perusahaan.nama_perusahaan}</span>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 md:gap-8 items-start">
                             <span className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">Alamat</span>
-                            <span className="font-poppins font-regular text-[20px] text-[#4B2E2B]">{perusahaan.alamat}</span>
+                            <span className="font-poppins font-regular text-[20px] text-[#4B2E2B]">
+                                {perusahaan.alamat_perusahaan}
+                                {perusahaan.kecamatan && !perusahaan.alamat_perusahaan.includes(perusahaan.kecamatan) && `, ${perusahaan.kecamatan}`}
+                                {", Indramayu"}
+                            </span>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 md:gap-8 items-start">
                             <span className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">Deskripsi</span>
-                            <p className="font-poppins font-regular text-[20px] text-[#4B2E2B] text-justify leading-relaxed">
-                                {perusahaan.deskripsi}
+                            <p className="font-poppins font-regular text-[20px] text-[#4B2E2B] text-justify leading-relaxed whitespace-pre-line">
+                                {perusahaan.deskripsi || "Informasi deskripsi perusahaan belum tersedia."}
                             </p>
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Bagian Lowongan (Node 53:3502) */}
+                {/* Bagian Lowongan Aktif */}
                 <div className="bg-[#C69C6D] rounded-[50px] px-[40px] py-[60px] md:px-[80px] md:py-[80px]">
                     <div className="flex flex-col gap-10">
                         <motion.div 
@@ -154,40 +179,31 @@ const DetailPerusahaan = () => {
                             className="flex flex-col gap-4"
                         >
                             <h2 className="font-poppins font-bold text-[36px] text-[#4B2E2B]">
-                                Lowongan di {perusahaan.nama}
+                                Lowongan di {perusahaan.nama_perusahaan}
                             </h2>
                             <p className="font-lato font-medium text-[24px] text-[#4B2E2B]">
-                                Temukan karir impianmu di {perusahaan.nama}
+                                Temukan karir impianmu di {perusahaan.nama_perusahaan}
                             </p>
                         </motion.div>
 
-                        <div 
-                            className="flex overflow-x-auto pb-8 gap-6 snap-x snap-mandatory scrollbar-hide"
-                            style={{ 
-                                scrollbarWidth: 'none', 
-                                msOverflowStyle: 'none',
-                                WebkitOverflowScrolling: 'touch'
-                            }}
-                        >
-                            <style>
-                                {`
-                                    .scrollbar-hide::-webkit-scrollbar {
-                                        display: none;
-                                    }
-                                `}
-                            </style>
-                            {lowonganList.map((lowongan, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className="flex-shrink-0 w-[85%] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] snap-start flex"
-                                >
-                                    <JobCard lowongan={lowongan} />
-                                </motion.div>
-                            ))}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {perusahaan.lowongan && perusahaan.lowongan.length > 0 ? (
+                                perusahaan.lowongan.map((lowongan) => (
+                                    <div key={lowongan.id} className="kartu-item-lowongan">
+                                        <JobCard 
+                                            lowongan={lowongan} 
+                                            onDetail={(job) => {
+                                                navigate(`/lowongan/${job.id}`, { state: { job: job } });
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                        />
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-full py-10 text-center text-[#4B2E2B] font-poppins font-semibold text-[20px]">
+                                    Belum ada lowongan aktif untuk saat ini.
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import FormProfil from './komponen/FormProfil';
 import FotoProfil from './komponen/FotoProfil';
 import { useAdmin } from '../../konteks/AdminContext';
-import LoadingKopi from '../../komponen/LoadingKopi';
+import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
 const HalamanProfil = () => {
     const { profilData: profil, fetchProfil, loading } = useAdmin();

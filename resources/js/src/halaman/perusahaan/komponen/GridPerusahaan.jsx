@@ -3,6 +3,7 @@ import KartuPerusahaan from './KartuPerusahaan';
 import Paginasi from './Paginasi';
 import layananPerusahaan from '../../../layanan/layananPerusahaan';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
 const GridPerusahaan = ({ pencarian }) => {
     const [perusahaanList, setPerusahaanList] = useState([]);
@@ -36,13 +37,7 @@ const GridPerusahaan = ({ pencarian }) => {
     }, [pencarian, halaman]);
 
     if (loading && perusahaanList.length === 0) {
-        return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 py-12">
-                {[...Array(8)].map((_, i) => (
-                    <div key={i} className="aspect-square bg-[#C69C6D]/20 animate-pulse rounded-[50px]"></div>
-                ))}
-            </div>
-        );
+        return <LoadingKopi fullScreen={false} pesan="Menyeduh daftar perusahaan..." />;
     }
 
     if (error) {

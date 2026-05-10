@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../../layanan/api';
-import LoadingKopi from '../../komponen/LoadingKopi';
+import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
 // Components
 import WawancaraToolbar from './komponen/WawancaraToolbar';
