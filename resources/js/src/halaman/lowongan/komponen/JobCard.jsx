@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import placeholderProfile from '../../../admin-perusahaan/aset/profil-perusahaan/placeholder_profile.png';
+import placeholderProfile from '../../../aset/profil/placeholder_profil.jpg';
 import iconGaji from '../../../aset/lowongan/Icon1.svg';
 import iconLokasiMini from '../../../aset/lowongan/Icon2.svg';
 
@@ -12,7 +12,7 @@ const JobCard = ({ lowongan, onDetail }) => {
             <div className="flex flex-col gap-[20px]">
                 {/* Logo Perusahaan */}
                 <div className="w-[56px] h-[56px] bg-[#F4ECE9] rounded-[12px] flex items-center justify-center shrink-0 overflow-hidden">
-                    <img src={lowongan.logo_kafe || placeholderProfile} alt={lowongan.nama_kafe} className="w-[40px] h-[40px] object-contain" />
+                    <img src={lowongan.logo_kafe || placeholderProfile} alt={lowongan.nama_kafe} className="w-full h-full object-cover" />
                 </div>
 
                 {/* Judul Posisi & Nama Kafe */}

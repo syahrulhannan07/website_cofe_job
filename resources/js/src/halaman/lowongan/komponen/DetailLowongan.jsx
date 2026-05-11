@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import api from '../../../layanan/api';
-import placeholderProfile from '../../../admin-perusahaan/aset/profil-perusahaan/placeholder_profile.png';
+import placeholderProfile from '../../../aset/profil/placeholder_profil.jpg';
 import iconLocation from '../../../aset/lowongan/Location.png';
 import leftArrow from '../../../aset/lowongan/Left Arrow.png';
 import iconLokasiMini from '../../../aset/lowongan/Icon2.svg';
@@ -95,11 +95,11 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
                     
                     {/* Info Utama Lowongan */}
                     <div className="info-utama-lowongan flex items-center gap-[30px] md:gap-[50px]">
-                        <div className="foto-profil-perusahaan-kecil w-[120px] h-[120px] md:w-[150px] md:h-[150px] bg-[#F3EDE6] rounded-[15px] flex items-center justify-center p-[10px] overflow-hidden shrink-0">
+                        <div className="foto-profil-perusahaan-kecil w-[120px] h-[120px] md:w-[150px] md:h-[150px] bg-[#F3EDE6] rounded-[15px] flex items-center justify-center overflow-hidden shrink-0">
                             <img 
                                 src={lowongan.logo_kafe || placeholderProfile} 
                                 alt={lowongan.nama_kafe} 
-                                className="w-full h-full object-contain" 
+                                className="w-full h-full object-cover" 
                             />
                         </div>
                         
@@ -170,11 +170,11 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
                         <div className="w-full h-[173px] bg-[#C69C6D] shrink-0" />
                         
                         {/* Logo Perusahaan */}
-                        <div className="absolute top-[82px] left-[40px] w-[160px] h-[160px] bg-[#F3EDE6] rounded-[15px] flex items-center justify-center p-[10px] border border-[#C69C6D]/20 shadow-lg">
+                        <div className="absolute top-[82px] left-[40px] w-[160px] h-[160px] bg-[#F3EDE6] rounded-[15px] flex items-center justify-center border border-[#C69C6D]/20 shadow-lg overflow-hidden">
                             <img 
                                 src={perusahaan?.logo_perusahaan || placeholderProfile} 
                                 alt={perusahaan?.nama_perusahaan} 
-                                className="w-[140px] h-[140px] object-contain" 
+                                className="w-full h-full object-cover" 
                             />
                         </div>
 

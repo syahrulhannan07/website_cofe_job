@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import api from '../../layanan/api';
-import placeholderProfile from '../../admin-perusahaan/aset/profil-perusahaan/placeholder_profile.png';
+import placeholderProfile from '../../aset/profil/placeholder_profil.jpg';
 import leftArrow from '../../aset/perusahaan/Left Arrow.png';
 import JobCard from '../lowongan/komponen/JobCard';
 import HalamanErrorKopi from '../../komponen/umum/HalamanErrorKopi';
@@ -76,7 +76,7 @@ const DetailPerusahaan = () => {
                         <img 
                             src={perusahaan.logo_perusahaan || placeholderProfile} 
                             alt={perusahaan.nama_perusahaan} 
-                            className="w-[110px] h-[110px] object-contain" 
+                            className="w-full h-full object-cover" 
                         />
                     </motion.div>
                     
