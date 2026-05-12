@@ -31,10 +31,12 @@ class PerusahaanController extends Controller
     public function show($id)
     {
         $perusahaan = ProfilPerusahaan::with(['lowongan' => function ($query) {
-                $query->where('status', 'Active');
+                $query->where('status', 'Active')
+                      ->where('batas_akhir', '>=', now()->toDateString());
             }])
             ->withCount(['lowongan' => function ($query) {
-                $query->where('status', 'Active');
+                $query->where('status', 'Active')
+                      ->where('batas_akhir', '>=', now()->toDateString());
             }])
             ->where('id_perusahaan', $id)
             ->firstOrFail();
