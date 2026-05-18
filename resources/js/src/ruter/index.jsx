@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import TataLetakUtama from '../tata-letak/TataLetakUtama';
 import TataLetakFooterSahaja from '../tata-letak/TataLetakFooterSahaja';
 import TataLetakAdmin from '../admin-perusahaan/tata-letak/TataLetakAdmin';
-import TataLetakSuperAdmin from '../tata-letak/TataLetakSuperAdmin';
+import TataLetakSuperAdmin from '../super-admin/tata-letak/TataLetakSuperAdmin';
 import Beranda from '../halaman/beranda';
 import Lowongan from '../halaman/lowongan';
 import Perusahaan from '../halaman/perusahaan';
@@ -23,7 +23,11 @@ import LowonganAdmin  from '../admin-perusahaan/halaman/lowongan';
 import TambahLowongan  from '../admin-perusahaan/halaman/lowongan/TambahLowongan';
 import WawancaraAdmin from '../admin-perusahaan/halaman/wawancara';
 
-import SuperAdmin from '../halaman/super-admin';
+import DashboardSuperAdmin from '../super-admin/halaman/dashboard';
+import LoginSuperAdmin    from '../super-admin/halaman/masuk';
+import VerifikasiSuperAdmin from '../super-admin/halaman/verifikasi';
+import KelolaAkunSuperAdmin from '../super-admin/halaman/kelola-akun';
+import HalamanDetailLowonganSuperAdmin from '../super-admin/halaman/kelola-akun/HalamanDetailLowonganSuperAdmin';
 
 const ruter = createBrowserRouter([
     // --- Rute Publik (Pelamar) ---
@@ -70,12 +74,20 @@ const ruter = createBrowserRouter([
         ],
     },
 
-    // --- Rute Super Admin ---
+    // --- Rute Super Admin (UC-10, UC-11, UC-12) ---
+    // Halaman Tanpa Layout Sidebar/Topbar
+    { path: '/super-admin/masuk', element: <LoginSuperAdmin /> },
+    { path: '/super-admin/kelola-akun/lowongan/:id', element: <HalamanDetailLowonganSuperAdmin /> },
+
+    // Panel terproteksi — dengan layout sidebar Super Admin
     {
         path: '/super-admin',
         element: <TataLetakSuperAdmin />,
         children: [
-            { index: true, element: <SuperAdmin /> },
+            { index: true,         element: <DashboardSuperAdmin /> },
+            { path: 'dashboard',   element: <DashboardSuperAdmin /> },
+            { path: 'verifikasi',  element: <VerifikasiSuperAdmin /> },
+            { path: 'kelola-akun', element: <KelolaAkunSuperAdmin /> },
         ],
     },
 ]);
