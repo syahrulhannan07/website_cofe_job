@@ -98,4 +98,18 @@ class SeleksiLamaranController extends Controller
             return $this->errorResponse('Terjadi kesalahan saat memperbarui status', 500, $e->getMessage());
         }
     }
+
+    /**
+     * Daftar kandidat yang berstatus Wawancara (untuk scheduling).
+     */
+    public function kandidatWawancara()
+    {
+        $profil = auth('api')->user()->profilPerusahaan;
+        if (!$profil) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
+
+        $lamaran = $this->repository->getKandidatSiapWawancara($profil->id_perusahaan);
+
+        return LamaranResource::collection($lamaran);
+    }
 }
+

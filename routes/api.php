@@ -62,10 +62,19 @@ Route::prefix('v1')->group(function () {
         Route::delete('/pengalaman/{id}', [ProfilController::class, 'deletePengalaman']);
     });
 
+    // Beranda
+    Route::get('/beranda', [\App\Http\Controllers\Api\V1\Pelamar\BerandaController::class, 'index']);
+
     // Lowongan (Public/Optional Auth)
     Route::prefix('lowongan')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\LowonganController::class, 'index']);
         Route::get('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\LowonganController::class, 'show']);
+    });
+
+    // Perusahaan (Public)
+    Route::prefix('perusahaan')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\PerusahaanController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\PerusahaanController::class, 'show']);
     });
 
     // Lamaran (Protected)
@@ -112,6 +121,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('lamaran')->group(function () {
             Route::get('/{id_lamaran}', [\App\Http\Controllers\Api\V1\Admin\SeleksiLamaranController::class, 'detailLamaran']);
             Route::put('/{id_lamaran}/status', [\App\Http\Controllers\Api\V1\Admin\SeleksiLamaranController::class, 'updateStatus']);
+            Route::get('/status/wawancara', [\App\Http\Controllers\Api\V1\Admin\SeleksiLamaranController::class, 'kandidatWawancara']);
 
             // Wawancara Scheduling: buat jadwal untuk kandidat
             Route::post('/{id_lamaran}/wawancara', [\App\Http\Controllers\Api\V1\Admin\WawancaraController::class, 'store']);

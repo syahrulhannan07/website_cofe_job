@@ -41,4 +41,24 @@ class LamaranRepository
     {
         return $lamaran->update(['status' => $status]);
     }
+
+    public function getByPerusahaanAndStatus(int $idPerusahaan, string $status): \Illuminate\Database\Eloquent\Collection
+    {
+        return Lamaran::with(['profil', 'lowongan'])
+            ->whereHas('lowongan', fn($q) => $q->where('id_perusahaan', $idPerusahaan))
+            ->where('status', $status)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function getKandidatSiapWawancara(int $idPerusahaan): \Illuminate\Database\Eloquent\Collection
+    {
+        return Lamaran::with(['profil', 'lowongan'])
+            ->whereHas('lowongan', fn($q) => $q->where('id_perusahaan', $idPerusahaan))
+            ->where('status', 'Wawancara')
+            ->doesntHave('wawancara')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 }
+

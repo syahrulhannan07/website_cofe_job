@@ -8,7 +8,7 @@ import ChatLeftFillIcon from '../../../aset/pelamar/ChatLeftFill.svg';
 import SearchIcon from '../../../aset/pelamar/Search.svg';
 import DownloadIcon from '../../../aset/pelamar/Download.svg';
 import api from '../../../../layanan/api';
-import LoadingKopi from '../../../komponen/LoadingKopi';
+import LoadingKopi from '../../../../komponen/umum/LoadingKopi';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 

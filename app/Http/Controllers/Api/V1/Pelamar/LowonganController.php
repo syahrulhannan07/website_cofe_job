@@ -14,7 +14,10 @@ class LowonganController extends Controller
     {
         $query = Lowongan::query()
             ->with(['perusahaan'])
-            ->where('status', 'Aktif')
+            ->where('status', 'Active')
+            ->whereHas('perusahaan', function ($q) {
+                $q->where('status_verifikasi', 'Diterima');
+            })
             ->where('batas_akhir', '>=', now()->toDateString());
 
         // Pencarian berdasarkan posisi atau deskripsi
@@ -38,6 +41,9 @@ class LowonganController extends Controller
             ->where('id_lowongan', $id)
             ->firstOrFail();
 
-        return new LowonganDetailResource($lowongan);
+        return response()->json([
+            'status' => 'success',
+            'data' => new LowonganDetailResource($lowongan)
+        ]);
     }
 }

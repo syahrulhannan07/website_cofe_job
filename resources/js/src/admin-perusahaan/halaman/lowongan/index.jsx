@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../layanan/api';
-import LoadingKopi from '../../komponen/LoadingKopi';
+import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
 // Icons
 import PlusIcon from '../../aset/lowongan/Plus.svg';

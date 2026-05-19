@@ -16,6 +16,7 @@ const FormProfil = ({ variants, data, onUpdate }) => {
         nama_pengguna: "",
         email: "",
         alamat_perusahaan: "",
+        kecamatan: "",
         deskripsi: ""
     });
 
@@ -31,6 +32,7 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                 nama_pengguna: data.nama_pengguna || "",
                 email: data.email || "",
                 alamat_perusahaan: data.alamat_perusahaan || "",
+                kecamatan: data.kecamatan || "",
                 deskripsi: data.deskripsi || ""
             });
             setNibFileName(data.dokumen_izin ? data.dokumen_izin.split('/').pop() : "");
@@ -47,6 +49,7 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                     nama_pengguna: data.nama_pengguna || "",
                     email: data.email || "",
                     alamat_perusahaan: data.alamat_perusahaan || "",
+                    kecamatan: data.kecamatan || "",
                     deskripsi: data.deskripsi || ""
                 });
                 setNibFile(null);
@@ -82,6 +85,7 @@ const FormProfil = ({ variants, data, onUpdate }) => {
             submissionData.append('nama_pengguna', formData.nama_pengguna);
             submissionData.append('email', formData.email);
             submissionData.append('alamat_perusahaan', formData.alamat_perusahaan);
+            submissionData.append('kecamatan', formData.kecamatan);
             submissionData.append('deskripsi', formData.deskripsi);
             
             if (nibFile) {
@@ -170,9 +174,9 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                 {/* SPACER 6px */}
                 <div className="h-0" />
 
-                {/* BARIS 2: EMAIL BISNIS & ALAMAT */}
+                {/* BARIS 2: EMAIL BISNIS & KECAMATAN */}
                 <div className="flex flex-col md:flex-row gap-[14px] w-full items-end">
-                    <div className="grup-input flex-1 flex flex-col gap-[6px]">
+                    <div className="grup-input flex-[2] flex flex-col gap-[6px]">
                         <label className="label-input font-poppins font-semibold text-[16px] text-[#4B2E2B]">
                             Email Bisnis
                         </label>
@@ -190,6 +194,31 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                         />
                     </div>
 
+                    <div className="grup-input flex-1 flex flex-col gap-[6px]">
+                        <label className="label-input font-poppins font-semibold text-[16px] text-[#4B2E2B]">
+                            Kecamatan
+                        </label>
+                        <input 
+                            type="text" 
+                            name="kecamatan"
+                            value={formData.kecamatan}
+                            onChange={handleInputChange}
+                            disabled={!isEditing || isSaving}
+                            placeholder="Contoh: Indramayu"
+                            className={`input-profil w-full h-[38px] px-[16px] bg-[#F3EDE6] border border-[#CCCCCC]/80 rounded-[5px] font-poppins text-[14px] text-[#4B2E2B] transition-all ${
+                                isEditing 
+                                ? 'focus:outline-none focus:border-[#F7B750] ring-1 ring-[#F7B750]/20' 
+                                : 'cursor-not-allowed opacity-90'
+                            }`}
+                        />
+                    </div>
+                </div>
+
+                {/* SPACER 6px */}
+                <div className="h-0" />
+
+                {/* BARIS 3: ALAMAT */}
+                <div className="flex flex-col md:flex-row gap-[14px] w-full items-end">
                     <div className="grup-input flex-1 flex flex-col gap-[6px]">
                         <label className="label-input font-poppins font-semibold text-[16px] text-[#4B2E2B]">
                             Alamat

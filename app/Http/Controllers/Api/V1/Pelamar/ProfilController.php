@@ -30,7 +30,7 @@ class ProfilController extends Controller
         }
 
         $profil = $pengguna->profilPelamar()
-            ->with(['skills', 'pendidikan', 'pengalamanKerja'])
+            ->with(['pengguna', 'skills', 'pendidikan', 'pengalamanKerja'])
             ->first();
 
         if (!$profil) {
@@ -55,6 +55,13 @@ class ProfilController extends Controller
         $profil = $pengguna->profilPelamar;
 
         $data = $request->validated();
+
+        // Handle Update Email di tabel pengguna
+        if ($request->has('email')) {
+            $pengguna->update([
+                'email' => $request->email
+            ]);
+        }
 
         // Handle Upload Foto Profil
         if ($request->hasFile('foto_profil')) {

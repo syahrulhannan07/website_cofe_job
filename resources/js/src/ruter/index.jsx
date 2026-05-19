@@ -1,12 +1,19 @@
 import { createBrowserRouter } from 'react-router-dom';
 import TataLetakUtama from '../tata-letak/TataLetakUtama';
+import TataLetakFooterSahaja from '../tata-letak/TataLetakFooterSahaja';
 import TataLetakAdmin from '../admin-perusahaan/tata-letak/TataLetakAdmin';
 import TataLetakSuperAdmin from '../tata-letak/TataLetakSuperAdmin';
 import Beranda from '../halaman/beranda';
 import Lowongan from '../halaman/lowongan';
 import Perusahaan from '../halaman/perusahaan';
+import DetailPerusahaan from '../halaman/perusahaan/DetailPerusahaan';
+import DetailLowongan from '../halaman/lowongan/komponen/DetailLowongan';
+import Profil from '../halaman/profil';
+import StatusLamaran from '../halaman/status_lamaran';
+import DetailStatusLamaran from '../halaman/status_lamaran/DetailStatusLamaran';
 import Masuk from '../halaman/autentikasi/Masuk';
 import Daftar from '../halaman/autentikasi/Daftar';
+import Melamar from '../halaman/melamar';
 
 // Fitur Admin Perusahaan
 import DashboardAdmin from '../admin-perusahaan/halaman/dashboard';
@@ -27,6 +34,20 @@ const ruter = createBrowserRouter([
             { index: true, element: <Beranda /> },
             { path: 'lowongan', element: <Lowongan /> },
             { path: 'perusahaan', element: <Perusahaan /> },
+            { path: 'profil', element: <Profil /> },
+            { path: 'status-lamaran', element: <StatusLamaran /> },
+            { path: 'status-lamaran/:id', element: <DetailStatusLamaran /> },
+        ],
+    },
+
+    // --- Rute Tanpa Navbar (Hanya Footer) ---
+    {
+        path: '/',
+        element: <TataLetakFooterSahaja />,
+        children: [
+            { path: 'perusahaan/:id', element: <DetailPerusahaan /> },
+            { path: 'lowongan/:id', element: <DetailLowongan /> },
+            { path: 'melamar', element: <Melamar /> },
         ],
     },
 

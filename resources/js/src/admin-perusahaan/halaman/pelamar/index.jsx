@@ -6,7 +6,7 @@ import DetailPelamar from './komponen/DetailPelamar';
 import ProfilPelamar from './komponen/ProfilPelamar';
 import api from '../../../layanan/api';
 
-import LoadingKopi from '../../komponen/LoadingKopi';
+import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
 const HalamanPelamar = () => {
     const { setTopbarAction } = useAdmin();
