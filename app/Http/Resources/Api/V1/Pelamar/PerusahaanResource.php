@@ -15,7 +15,10 @@ class PerusahaanResource extends JsonResource
             'alamat_perusahaan' => $this->alamat_perusahaan,
             'kecamatan' => $this->kecamatan,
             'deskripsi' => $this->deskripsi,
+            'tagline' => $this->tagline,
+            'tanggal_berdiri' => $this->tanggal_berdiri,
             'jumlah_lowongan' => $this->lowongan_count ?? $this->lowongan()->where('status', 'Active')->count(),
+            'lowongan' => LowonganResource::collection($this->whenLoaded('lowongan')),
         ];
     }
 }
