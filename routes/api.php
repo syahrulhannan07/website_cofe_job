@@ -46,6 +46,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:api', 'role:Pelamar'])->prefix('pelamar/profil')->group(function () {
         Route::get('/', [ProfilController::class, 'index']);
         Route::post('/update', [ProfilController::class, 'update']);
+        Route::post('/update-password', [ProfilController::class, 'updatePassword']);
         
         // Skill
         Route::post('/skill', [ProfilController::class, 'storeSkill']);

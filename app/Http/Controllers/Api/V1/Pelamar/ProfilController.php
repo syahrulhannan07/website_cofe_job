@@ -208,4 +208,37 @@ class ProfilController extends Controller
 
         return response()->json(['status' => 'success', 'message' => 'Data pengalaman kerja berhasil dihapus'], 200);
     }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        $pengguna = auth('api')->user();
+
+        // Validasi apakah password lama sesuai dengan di database
+        if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $pengguna->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Password saat ini salah.'
+            ], 422);
+        }
+
+        // Update password baru (di-hash otomatis)
+        $pengguna->update([
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Password berhasil diperbarui'
+        ], 200);
+    }
 }
