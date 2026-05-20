@@ -10,6 +10,7 @@ use App\Http\Requests\Api\V1\Pelamar\StorePengalamanRequest;
 use App\Models\Skill;
 use App\Models\Pendidikan;
 use App\Models\PengalamanKerja;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -219,19 +220,34 @@ class ProfilController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = Auth::user(); // Mengambil data user pelamar yang sedang login
+        // 2. Ambil user yang sedang login dengan taktik cadangan
+        $user = Auth::user();
 
-        // 2. Pengecekan password lama yang BENAR (Teks polos vs Hash DB)
-        if (!Hash::check($request->current_password, $user->password)) {
+        // Taktik Cadangan: Jika Auth::user() ternyata null/kosong karena masalah guard token
+        if (!$user) {
+            $user = auth('api')->user(); 
+        }
+
+        // Jika masih tidak ketemu juga (misal token benar-benar rusak)
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sesi berakhir atau user tidak dikenali.'
+            ], 401);
+        }
+
+        // 3. Pengecekan password lama (Teks polos vs Hash di DB)
+        // Tambahkan trim() untuk mengantisipasi adanya spasi tidak sengaja dari Flutter
+        if (!Hash::check(trim($request->current_password), $user->password)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Password saat ini salah.'
             ], 422);
         }
 
-        // 3. Update password baru dengan enkripsi Hash::make
+        // 4. Update password baru dengan enkripsi Hash::make
         $user->update([
-            'password' => Hash::make($request->password)
+            'password' => Hash::make(trim($request->password))
         ]);
 
         return response()->json([
