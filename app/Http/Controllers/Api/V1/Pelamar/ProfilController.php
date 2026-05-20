@@ -11,6 +11,8 @@ use App\Models\Skill;
 use App\Models\Pendidikan;
 use App\Models\PengalamanKerja;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class ProfilController extends Controller
