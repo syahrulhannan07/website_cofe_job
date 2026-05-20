@@ -211,34 +211,30 @@ class ProfilController extends Controller
 
     public function updatePassword(Request $request)
     {
+        // 1. Validasi input dari Flutter
         $request->validate([
             'current_password' => 'required',
-            'password' => 'required|min:8|confirmed',
-        ], [
-            'current_password.required' => 'Password saat ini wajib diisi.',
-            'password.required' => 'Password baru wajib diisi.',
-            'password.min' => 'Password baru minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $pengguna = auth('api')->user();
+        $user = Auth::user(); // Mengambil data user pelamar yang sedang login
 
-        // Validasi apakah password lama sesuai dengan di database
-        if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $pengguna->password)) {
+        // 2. Pengecekan password lama yang BENAR (Teks polos vs Hash DB)
+        if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Password saat ini salah.'
             ], 422);
         }
 
-        // Update password baru (di-hash otomatis)
-        $pengguna->update([
-            'password' => \Illuminate\Support\Facades\Hash::make($request->password)
+        // 3. Update password baru dengan enkripsi Hash::make
+        $user->update([
+            'password' => Hash::make($request->password)
         ]);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Password berhasil diperbarui'
+            'message' => 'Password Berhasil Diubah'
         ], 200);
     }
 }
