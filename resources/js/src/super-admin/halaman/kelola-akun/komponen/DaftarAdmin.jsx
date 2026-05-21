@@ -3,12 +3,13 @@ import BadgeStatus from './BadgeStatus';
 import ikonView from '../../../aset/akun admin/view.svg';
 
 const DaftarAdmin = ({ data, onSuspend, onAktifkan, onLihatDetail }) => {
+    // [UPDATE LOGIC] - Mengganti pesan ketika data kosong agar sesuai spesifikasi
     if (data.length === 0) {
         return (
             <div className="bg-white rounded-[12px] border border-[#EAE4DC] flex flex-col items-center justify-center py-16 gap-3">
                 <p className="text-[16px] font-semibold text-[#4B2E2B]"
                    style={{ fontFamily: 'Poppins, sans-serif' }}>
-                    Tidak ada data ditemukan
+                    Data akun kafe tidak ditemukan
                 </p>
             </div>
         );

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+// [UPDATE LOGIC] - Import Axios API instance
+import api from '../../../layanan/api';
 
 // Import Komponen Composite
 import CardTotalAdmin from './komponen/CardTotalAdmin';
@@ -9,46 +11,57 @@ import ModalDetailAdmin from './komponen/ModalDetailAdmin';
 // Import Assets
 import ikonSearch from '../../aset/akun admin/search.svg';
 
-/* ─────────────────────────────────────────────
-   DATA MOCK  (ganti dengan API call nanti)
-───────────────────────────────────────────── */
-const DATA_ADMIN_MOCK = [
-    { id: 1, nama_pengguna: 'Ramadhan Sanjaya',       nama_perusahaan: 'Kopi Kenangan Senopati', email: 'kenangakopi1@kafe.ac.id',    status: 'Aktif' },
-    { id: 2, nama_pengguna: 'Syahrul Hannan Ramdhani', nama_perusahaan: 'Janji Jiwa',             email: 'janjijiwacofe2@gmail.com', status: 'Nonaktif' },
-    { id: 3, nama_pengguna: 'Junanti',                 nama_perusahaan: 'Fore Coffe',             email: 'forecofe4@gmai.com',       status: 'Nonaktif' },
-];
-
 const HalamanKelolaAkun = () => {
     const [daftarAdmin, setDaftarAdmin]       = useState([]);
     const [sedangMemuat, setSedangMemuat]     = useState(true);
-    const [kueriPencarian, setKueriPencarian] = useState('');
+    // [UPDATE LOGIC] - Menggunakan state searchQuery menggantikan kueriPencarian
+    const [searchQuery, setSearchQuery]       = useState('');
     const [filterStatus, setFilterStatus]     = useState('Semua');
     const [notifikasi, setNotifikasi]         = useState(null);
     const [adminTerpilihDetail, setAdminTerpilihDetail] = useState(null);
 
-    useEffect(() => {
-        const muat = async () => {
-            setSedangMemuat(true);
-            await new Promise(r => setTimeout(r, 800));
-            setDaftarAdmin(DATA_ADMIN_MOCK);
-            setSedangMemuat(false);
-        };
-        muat();
-    }, []);
+    // [UPDATE LOGIC] - State untuk konfirmasi modal penonaktifan
+    const [modalKonfirmasiBuka, setModalKonfirmasiBuka] = useState(false);
+    const [adminIdUntukSuspend, setAdminIdUntukSuspend] = useState(null);
 
+    // [UPDATE LOGIC] - Mengambil data secara dinamis dari API berdasarkan searchQuery
+    useEffect(() => {
+        const muatData = async () => {
+            setSedangMemuat(true);
+            try {
+                const respons = await api.get('/super-admin/akun-kafe', {
+                    params: { search: searchQuery }
+                });
+                if (respons.data && respons.data.data) {
+                    setDaftarAdmin(respons.data.data);
+                }
+            } catch (err) {
+                console.error('Gagal memuat akun admin kafe:', err);
+            } finally {
+                setSedangMemuat(false);
+            }
+        };
+
+        const timeoutId = setTimeout(() => {
+            muatData();
+        }, 300); // Debounce 300ms
+
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
+
+    // [UPDATE LOGIC] - Filter data secara lokal untuk filterStatus
     const adminTerfilter = useMemo(() => {
         let hasil = [...daftarAdmin];
-        if (filterStatus !== 'Semua') hasil = hasil.filter(a => a.status === filterStatus);
-        if (kueriPencarian.trim()) {
-            const q = kueriPencarian.toLowerCase();
-            hasil = hasil.filter(a =>
-                a.nama_pengguna.toLowerCase().includes(q) ||
-                a.nama_perusahaan.toLowerCase().includes(q) ||
-                a.email.toLowerCase().includes(q)
-            );
+        if (filterStatus !== 'Semua') {
+            hasil = hasil.filter(a => {
+                if (filterStatus === 'Nonaktif') {
+                    return a.status === 'Nonaktif' || a.status === 'Diblokir';
+                }
+                return a.status === filterStatus;
+            });
         }
         return hasil;
-    }, [daftarAdmin, filterStatus, kueriPencarian]);
+    }, [daftarAdmin, filterStatus]);
 
     const totalAdmin  = daftarAdmin.length;
     const kafeAktif   = daftarAdmin.filter(a => a.status === 'Aktif').length;
@@ -59,11 +72,9 @@ const HalamanKelolaAkun = () => {
     };
 
     const handleSuspend = (admin) => {
-        setDaftarAdmin(prev => prev.map(a => a.id === admin.id ? { ...a, status: 'Nonaktif' } : a));
-        if (adminTerpilihDetail?.id === admin.id) {
-            setAdminTerpilihDetail(prev => prev ? { ...prev, status: 'Nonaktif' } : null);
-        }
-        tampilNotif('sukses', `Akun "${admin.nama_perusahaan}" berhasil disuspend.`);
+        // [UPDATE LOGIC] - Menyimpan ID admin terpilih dan memicu kemunculan modal konfirmasi
+        setAdminIdUntukSuspend(admin.id);
+        setModalKonfirmasiBuka(true);
     };
 
     const handleAktifkan = (admin) => {
@@ -74,12 +85,50 @@ const HalamanKelolaAkun = () => {
         tampilNotif('sukses', `Akun "${admin.nama_perusahaan}" berhasil diaktifkan.`);
     };
 
+    // [UPDATE LOGIC] - Interseptor penonaktifan untuk memicu modal konfirmasi
     const handleUpdateStatus = (admin, statusBaru) => {
-        setDaftarAdmin(prev => prev.map(a => a.id === admin.id ? { ...a, status: statusBaru } : a));
-        if (adminTerpilihDetail?.id === admin.id) {
-            setAdminTerpilihDetail(prev => prev ? { ...prev, status: statusBaru } : null);
+        if (statusBaru === 'Nonaktif') {
+            setAdminIdUntukSuspend(admin.id);
+            setModalKonfirmasiBuka(true);
+        } else {
+            // Jika diubah menjadi Aktif, ubah state secara langsung
+            setDaftarAdmin(prev => prev.map(a => a.id === admin.id ? { ...a, status: 'Aktif' } : a));
+            if (adminTerpilihDetail?.id === admin.id) {
+                setAdminTerpilihDetail(prev => prev ? { ...prev, status: 'Aktif' } : null);
+            }
+            tampilNotif('sukses', `Status akun "${admin.nama_perusahaan}" berhasil diaktifkan.`);
         }
-        tampilNotif('sukses', `Status akun "${admin.nama_perusahaan}" berhasil diubah menjadi ${statusBaru}.`);
+    };
+
+    // [UPDATE LOGIC] - Aksi Konfirmasi Suspend
+    const handleKonfirmasiSuspend = async () => {
+        if (!adminIdUntukSuspend) return;
+        try {
+            // Kirim request PUT ke rute /super-admin/akun-kafe/{id}/suspend
+            const respons = await api.put(`/super-admin/akun-kafe/${adminIdUntukSuspend}/suspend`);
+            if (respons.status === 200) {
+                const adminTarget = daftarAdmin.find(a => a.id === adminIdUntukSuspend);
+                const namaPerusahaan = adminTarget ? adminTarget.nama_perusahaan : '';
+                
+                // Perbarui status secara lokal menjadi "Diblokir"
+                setDaftarAdmin(prev => prev.map(a => a.id === adminIdUntukSuspend ? { ...a, status: 'Diblokir' } : a));
+                
+                // Tutup modal konfirmasi dan detail, tampilkan notifikasi sukses singkat
+                setModalKonfirmasiBuka(false);
+                setAdminTerpilihDetail(null);
+                setAdminIdUntukSuspend(null);
+                tampilNotif('sukses', `Akun "${namaPerusahaan}" berhasil diblokir.`);
+            }
+        } catch (err) {
+            console.error('Gagal menonaktifkan akun:', err);
+            tampilNotif('gagal', 'Gagal menonaktifkan akun admin.');
+        }
+    };
+
+    // [UPDATE LOGIC] - Aksi Batal Suspend
+    const handleBatalSuspend = () => {
+        setModalKonfirmasiBuka(false);
+        setAdminIdUntukSuspend(null);
     };
 
     return (
@@ -126,11 +175,12 @@ const HalamanKelolaAkun = () => {
                         className="absolute"
                         style={{ left: 16, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, opacity: 0.5 }}
                     />
+                    {/* [UPDATE LOGIC] - Bind input value ke searchQuery */}
                     <input
                         type="text"
                         placeholder="Cari nama cafe"
-                        value={kueriPencarian}
-                        onChange={e => setKueriPencarian(e.target.value)}
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
                         style={{
                             width: '100%',
                             background: '#fff',
@@ -203,6 +253,36 @@ const HalamanKelolaAkun = () => {
                     onTutup={() => setAdminTerpilihDetail(null)}
                     onUpdateStatus={handleUpdateStatus}
                 />
+            )}
+
+            {/* [UPDATE LOGIC] - Pop-up modal konfirmasi penonaktifan */}
+            {modalKonfirmasiBuka && (
+                <div className="fixed inset-0 bg-[#1c120e]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#FAF8F6] rounded-[16px] shadow-2xl p-6 w-[400px] border border-[#EAE4DC] flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+                        <h3 className="font-bold text-[18px] text-[#4B2E2B]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            Konfirmasi Penonaktifan
+                        </h3>
+                        <p className="text-[14px] text-[#4B2E2B] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                            Apakah Anda yakin ingin menonaktifkan akun admin kafe ini? Tindakan ini akan memblokir akses login bagi akun ini.
+                        </p>
+                        <div className="flex justify-end gap-3 mt-2">
+                            <button
+                                onClick={handleBatalSuspend}
+                                className="px-4 py-2 bg-[#EAE4DC] hover:bg-[#DED7CE] text-[#4B2E2B] rounded-[8px] font-semibold text-[14px] transition-colors focus:outline-none"
+                                style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleKonfirmasiSuspend}
+                                className="px-4 py-2 bg-[#C98285] hover:bg-[#C27376] text-[#521A1C] rounded-[8px] font-bold text-[14px] transition-colors focus:outline-none"
+                                style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                            >
+                                Ya, Nonaktifkan
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

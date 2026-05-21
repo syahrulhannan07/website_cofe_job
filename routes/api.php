@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\SuperAdminAuthController;
 use App\Http\Controllers\Api\V1\SuperAdmin\VerifikasiPerusahaanController; // [UPDATE LOGIC]
+use App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminKafeController; // [UPDATE LOGIC]
 
 use App\Http\Controllers\Api\V1\Pelamar\ProfilController;
 
@@ -147,6 +148,9 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id}/setuju', [VerifikasiPerusahaanController::class, 'approve']);
             Route::put('/{id}/tolak', [VerifikasiPerusahaanController::class, 'reject']);
         });
+        // [UPDATE LOGIC] - Kelola Akun Admin Perusahaan
+        Route::get('/akun-kafe', [SuperAdminKafeController::class, 'index']);
+        Route::put('/akun-kafe/{id}/suspend', [SuperAdminKafeController::class, 'suspend']);
     });
 
     Route::middleware(['auth:api', 'role:Super_Admin'])->prefix('superadmin')->group(function () {
