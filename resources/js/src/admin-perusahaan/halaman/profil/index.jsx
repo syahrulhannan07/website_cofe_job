@@ -8,8 +8,9 @@ import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 const HalamanProfil = () => {
     const { profilData: profil, fetchProfil, loading } = useAdmin();
 
+    // [UPDATE LOGIC]
     useEffect(() => {
-        fetchProfil();
+        fetchProfil(true);
     }, [fetchProfil]);
 
     // Varian animasi untuk elemen form

@@ -20,7 +20,9 @@ const ModalJadwalWawancara = ({
     formData, 
     setFormData, 
     handleSubmit, 
-    candidates 
+    candidates,
+    errors = {}, // [UPDATE LOGIC]
+    setErrors // [UPDATE LOGIC]
 }) => {
     return (
         <AnimatePresence>
@@ -75,7 +77,7 @@ const ModalJadwalWawancara = ({
                         </div>
 
                         {/* Body - Putih Gading (Node 229:1908) */}
-                        <form onSubmit={handleSubmit} className="p-5 pt-4 bg-[#FDF9F4]">
+                        <form onSubmit={handleSubmit} noValidate className="p-5 pt-4 bg-[#FDF9F4]">
                             <div className="space-y-4">
                                 {/* Pelamar Selection (Node 229:1910) */}
                                 {mode === 'add' && (
@@ -87,9 +89,12 @@ const ModalJadwalWawancara = ({
                                         <div className="relative group">
                                             <select
                                                 required
-                                                className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins"
+                                                className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins ${errors.id_lamaran ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
                                                 value={formData.id_lamaran}
-                                                onChange={(e) => setFormData({...formData, id_lamaran: e.target.value})}
+                                                onChange={(e) => {
+                                                    setFormData({...formData, id_lamaran: e.target.value});
+                                                    if (errors.id_lamaran) setErrors({...errors, id_lamaran: null}); // [UPDATE LOGIC]
+                                                }}
                                             >
                                                 <option value="">Pilih Pelamar</option>
                                                 {candidates.map(c => (
@@ -102,6 +107,9 @@ const ModalJadwalWawancara = ({
                                                 <img src={DropdownIcon} alt="dropdown" className="w-5 h-5" />
                                             </div>
                                         </div>
+                                        {errors.id_lamaran && (
+                                            <p className="text-[12px] text-red-500 font-poppins mt-1">Harap isi bidang ini.</p> // [UPDATE LOGIC]
+                                        )}
                                     </div>
                                 )}
 
@@ -137,10 +145,16 @@ const ModalJadwalWawancara = ({
                                             required
                                             type="text"
                                             placeholder="Online / Alamat Kantor"
-                                            className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins placeholder:text-[#6B7280]/60"
+                                            className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins placeholder:text-[#6B7280]/60 ${errors.lokasi ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
                                             value={formData.lokasi}
-                                            onChange={(e) => setFormData({...formData, lokasi: e.target.value})}
+                                            onChange={(e) => {
+                                                setFormData({...formData, lokasi: e.target.value});
+                                                if (errors.lokasi) setErrors({...errors, lokasi: null}); // [UPDATE LOGIC]
+                                            }}
                                         />
+                                        {errors.lokasi && (
+                                            <p className="text-[12px] text-red-500 font-poppins mt-1">Harap isi bidang ini.</p> // [UPDATE LOGIC]
+                                        )}
                                     </div>
                                 </div>
 
@@ -154,10 +168,16 @@ const ModalJadwalWawancara = ({
                                         <input
                                             required
                                             type="date"
-                                            className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer"
+                                            className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer ${errors.tanggal ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
                                             value={formData.tanggal}
-                                            onChange={(e) => setFormData({...formData, tanggal: e.target.value})}
+                                            onChange={(e) => {
+                                                setFormData({...formData, tanggal: e.target.value});
+                                                if (errors.tanggal) setErrors({...errors, tanggal: null}); // [UPDATE LOGIC]
+                                            }}
                                         />
+                                        {errors.tanggal && (
+                                            <p className="text-[12px] text-red-500 font-poppins mt-1">Harap isi bidang ini.</p> // [UPDATE LOGIC]
+                                        )}
                                     </div>
                                     <div className="flex flex-col gap-[6px]">
                                         <div className="flex items-center gap-2">
@@ -167,10 +187,16 @@ const ModalJadwalWawancara = ({
                                         <input
                                             required
                                             type="time"
-                                            className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer"
+                                            className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer ${errors.jam ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
                                             value={formData.jam}
-                                            onChange={(e) => setFormData({...formData, jam: e.target.value})}
+                                            onChange={(e) => {
+                                                setFormData({...formData, jam: e.target.value});
+                                                if (errors.jam) setErrors({...errors, jam: null}); // [UPDATE LOGIC]
+                                            }}
                                         />
+                                        {errors.jam && (
+                                            <p className="text-[12px] text-red-500 font-poppins mt-1">Harap isi bidang ini.</p> // [UPDATE LOGIC]
+                                        )}
                                     </div>
                                 </div>
 

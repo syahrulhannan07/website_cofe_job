@@ -18,6 +18,8 @@ const TambahLowongan = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [profileIncomplete, setProfileIncomplete] = useState(false);
+    // [UPDATE LOGIC]
+    const [statusVerifikasi, setStatusVerifikasi] = useState('Diterima');
     const [formData, setFormData] = useState({
         posisi: '',
         deskripsi: '',
@@ -110,6 +112,8 @@ const TambahLowongan = () => {
             } else {
                 setProfileIncomplete(false);
             }
+            // [UPDATE LOGIC]
+            setStatusVerifikasi(profil.status_verifikasi || 'Pending');
         } catch (error) {
             console.error("Gagal mengecek status profil:", error);
         }
@@ -170,6 +174,12 @@ const TambahLowongan = () => {
     };
 
     const handleSubmit = async (statusIntent) => {
+        // [UPDATE LOGIC]
+        if (statusIntent === 'Active' && statusVerifikasi !== 'Diterima') {
+            alert("Akun Anda sedang dalam proses verifikasi oleh Super Admin. Harap tunggu persetujuan.");
+            return;
+        }
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const start = formData.batas_awal ? new Date(formData.batas_awal) : null;
@@ -244,6 +254,25 @@ const TambahLowongan = () => {
                     Kembali ke Daftar
                 </button>
             </div>
+
+            {/* [UPDATE LOGIC] */}
+            {statusVerifikasi === 'Pending' && (
+                <div className="w-full max-w-[896px] mb-8 bg-[#FFFBF5] rounded-[16px] p-8 flex items-start gap-6 border border-[#4B2E2B]/10 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="bg-[#FEF3C7] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+                        <svg width="22" height="19" viewBox="0 0 22 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11 0L21.3923 18H0.607696L11 0Z" fill="#B45309"/>
+                            <rect x="10" y="6" width="2" height="7" fill="white"/>
+                            <rect x="10" y="14" width="2" height="2" fill="white"/>
+                        </svg>
+                    </div>
+                    <div className="flex flex-col gap-2 flex-1">
+                        <h3 className="font-jakarta font-semibold text-[16px] text-[#432C23]">Peringatan</h3>
+                        <p className="font-poppins text-[#57534E] text-[14px] leading-[20px]">
+                            Akun Anda sedang dalam proses verifikasi oleh Super Admin. Harap tunggu persetujuan.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Warning Banner (222:1080) - Positioned Above Form */}
             {profileIncomplete && (

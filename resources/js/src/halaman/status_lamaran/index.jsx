@@ -1,46 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // [UPDATE LOGIC]
 import PenyaringStatus from './komponen/PenyaringStatus';
 import GarisWaktuStatus from './komponen/GarisWaktuStatus';
+import api from '../../layanan/api'; // [UPDATE LOGIC]
 
 const StatusLamaran = () => {
     const [statusAktif, setStatusAktif] = useState('Semua');
     const [kataKunci, setKataKunci] = useState('');
+    // [UPDATE LOGIC]
+    const [dataLamaran, setDataLamaran] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Data Mockup untuk pengujian antarmuka dengan 4 status berbeda
-    const dataLamaran = [
-        {
-            id: 1,
-            posisi: 'Senior Barista',
-            nama_perusahaan: 'Indra Coffee Roasters',
-            logo_perusahaan: null,
-            tanggal_lamar: '20 Maret 2026',
-            status: 'Diproses'
-        },
-        {
-            id: 2,
-            posisi: 'Head Roaster',
-            nama_perusahaan: 'Mangga Dua Coffee Hub',
-            logo_perusahaan: null,
-            tanggal_lamar: '22 Maret 2026',
-            status: 'Ditolak'
-        },
-        {
-            id: 3,
-            posisi: 'Service Attendant',
-            nama_perusahaan: 'Cimanuk Brew House',
-            logo_perusahaan: null,
-            tanggal_lamar: '24 Maret 2026',
-            status: 'Diterima'
-        },
-        {
-            id: 4,
-            posisi: 'Outlet Manager',
-            nama_perusahaan: 'Dermayu Beans & Co.',
-            logo_perusahaan: null,
-            tanggal_lamar: '26 Maret 2026',
-            status: 'Wawancara'
-        }
-    ];
+    // [UPDATE LOGIC]
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await api.get('/pelamar/lamaran');
+                if (response.data && response.data.status === 'success') {
+                    const rawData = response.data.data || [];
+                    const mappedData = rawData.map(item => ({
+                        id: item.id_lamaran,
+                        posisi: item.posisi || 'Posisi Tidak Diketahui',
+                        nama_perusahaan: item.nama_kafe || 'Kafe Tidak Diketahui',
+                        logo_perusahaan: item.logo_kafe,
+                        tanggal_lamar: item.dibuat_pada 
+                            ? new Date(item.dibuat_pada).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                            : 'Tanggal tidak tersedia',
+                        status: item.status || 'Diproses'
+                    }));
+                    setDataLamaran(mappedData);
+                } else {
+                    setError('Gagal memuat data lamaran.');
+                }
+            } catch (err) {
+                console.error(err);
+                setError('Terjadi kesalahan saat memuat data lamaran.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     // Fungsi pemfilteran data secara real-time
     const dataTerpilih = dataLamaran.filter(item => {
@@ -67,7 +69,18 @@ const StatusLamaran = () => {
 
                 {/* Bagian Timeline & Kartu Status */}
                 <section className="area-garis-waktu-lamaran mt-4">
-                    <GarisWaktuStatus lamaran={dataTerpilih} />
+                    {/* [UPDATE LOGIC] */}
+                    {loading ? (
+                        <div className="flex justify-center items-center py-20 text-[#4B2E2B]/60 font-medium font-poppins text-lg italic">
+                            Sedang memuat riwayat lamaran...
+                        </div>
+                    ) : error ? (
+                        <div className="flex justify-center items-center py-20 text-[#4B2E2B]/60 font-medium font-poppins text-lg italic">
+                            {error}
+                        </div>
+                    ) : (
+                        <GarisWaktuStatus lamaran={dataTerpilih} />
+                    )}
                 </section>
             </main>
 

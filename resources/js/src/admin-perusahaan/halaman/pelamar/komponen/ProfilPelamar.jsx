@@ -1,3 +1,4 @@
+import React, { useState, useRef, useEffect } from 'react'; // [UPDATE LOGIC]
 import { FileText, Eye, Download, CheckCircle } from 'lucide-react';
 import ArrowRepeatIcon from '../../../aset/pelamar/ArrowRepeat.svg';
 import ChevronDownIcon from '../../../aset/pelamar/ChevronDown.svg';
@@ -16,74 +17,102 @@ import PertanyaanIcon from '../../../aset/pelamar/pertanyaan.svg';
 import SkillIcon from '../../../aset/pelamar/petir.svg';
 import DownloadIcon from '../../../aset/pelamar/Download.svg';
 import PlaceholderProfile from '../../../aset/profil-perusahaan/placeholder_profile.png';
+import api from '../../../../layanan/api'; // [UPDATE LOGIC]
 
 const ProfilPelamar = ({ pelamar }) => {
-    // Dummy detail data
+    // [UPDATE LOGIC] - State untuk status yang dapat diubah secara reaktif
+    const STATUS_OPTIONS = ['Diproses', 'Wawancara', 'Diterima', 'Ditolak'];
+    const [selectedStatus, setSelectedStatus] = useState(pelamar?.status || 'Diproses');
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveMessage, setSaveMessage] = useState(null); // { type: 'success'|'error', text: string }
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // [UPDATE LOGIC] - Tutup dropdown saat klik di luar
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // [UPDATE LOGIC] - Fungsi simpan perubahan status ke API
+    const handleSimpanStatus = async () => {
+        if (selectedStatus === pelamar?.status) {
+            setSaveMessage({ type: 'info', text: 'Status tidak berubah.' });
+            setTimeout(() => setSaveMessage(null), 3000);
+            return;
+        }
+        setIsSaving(true);
+        setSaveMessage(null);
+        try {
+            const response = await api.put(`/admin/lamaran/${pelamar.id_lamaran}/status`, {
+                status: selectedStatus,
+            });
+            // Update state reaktif tanpa refresh halaman
+            const statusTerbaru = response.data?.data?.status || selectedStatus;
+            pelamar.status = statusTerbaru; // mutasi prop untuk sinkronisasi jika diperlukan
+            setSelectedStatus(statusTerbaru);
+            setSaveMessage({ type: 'success', text: 'Status berhasil diperbarui. Notifikasi telah dikirim ke pelamar.' });
+        } catch (error) {
+            const msg = error.response?.data?.message || 'Gagal memperbarui status. Coba lagi.';
+            setSaveMessage({ type: 'error', text: msg });
+        } finally {
+            setIsSaving(false);
+            setTimeout(() => setSaveMessage(null), 4000);
+        }
+    };
+
+    // [UPDATE LOGIC] - Gunakan data real dari props pelamar
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+
     const detail = {
-        ...pelamar,
-        nama: pelamar?.nama || 'Junanti',
-        status: pelamar?.status || 'Diterima',
-        tanggal: pelamar?.tanggal || '19 Maret 2026',
-        tentangSaya: 'Saya adalah seorang barista yang berpengalaman selama 4 tahun dalam industri kopi. Saya memiliki keahlian dalam membuat berbagai jenis minuman kopi, latte art, dan pelayanan pelanggan yang baik. Saya sangat menikmati interaksi dengan pelanggan dan selalu berusaha memberikan pengalaman kopi terbaik. Memiliki pengetahuan mendalam tentang biji kopi nusantara dan teknik brewing manual.',
+        nama:    pelamar?.pelamar?.nama_lengkap || '-',
+        status:  selectedStatus,
+        tanggal: formatDate(pelamar?.tanggal_melamar),
+        tentangSaya: pelamar?.pelamar?.tentang_saya || '-',
         identitas: {
-            jenisKelamin: 'Perempuan',
-            tempatTglLahir: 'Indramayu, 23 Desember 1999',
-            alamatLengkap: 'Jl. Kopi No. 45, Tebet, Jakarta Selatan',
+            jenisKelamin:    '-',
+            tempatTglLahir:  '-',
+            alamatLengkap:   pelamar?.pelamar?.alamat || '-',
         },
         kontak: {
-            email: 'antitwvinterb@gmail.com',
-            telepon: '081234567890',
-            linkedin: 'linkedin.com/in/junanti',
-            portofolio: 'junanti.com'
+            email:       pelamar?.pelamar?.email || '-',
+            telepon:     pelamar?.pelamar?.telepon || '-',
+            linkedin:    '-',
+            portofolio:  '-',
         },
         kualifikasi: {
-            pendidikan: 'Sarjana Pariwisata & Perhotelan',
-            pengalaman: '4 Tahun',
-            keahlian: ['Latte Art', 'Manual Brew (V60, Chemex)', 'Espresso Machine Operation', 'Inventory Management', 'Customer Service', 'Point of Sales (POS)']
+            keahlian: (pelamar?.skill || []).map(s => s.nama_skill || s),
         },
-        pengalamanKerja: [
-            {
-                posisi: 'Senior Barista',
-                perusahaan: 'Senyawa Coffee Co.',
-                tahun: 'Januari 2021 - Sekarang',
-                deskripsi: [
-                    'Mengelola operasional bar harian dan memastikan standar kualitas rasa.',
-                    'Melatih 5 barista junior dalam teknik brewing dan latte art.'
-                ]
-            },
-            {
-                posisi: 'Barista',
-                perusahaan: 'Kopi Kenangan',
-                tahun: '2020 - Januari 2021',
-                deskripsi: [
-                    'Melayani pelanggan dengan standar pelayanan tinggi.',
-                    'Menyiapkan berbagai jenis minuman berbasis espresso.'
-                ]
-            }
-        ],
-        dokumen: [
-            { nama: 'Curriculum Vitae', format: 'PDF • 2.4 MB', tipe: 'cv' },
-            { nama: 'Ijazah', format: 'PDF • 1.8 MB', tipe: 'pendidikan' },
-            { nama: 'Surat Lamaran', format: 'PDF • 0.9 MB', tipe: 'surat' },
-            { nama: 'Sertifikat Pendukung', format: 'ZIP • 5.1 MB', tipe: 'sertifikat' }
-        ],
-        evaluasi: [
-            { 
-                tanya: "Mengapa Anda ingin bergabung dengan kami?", 
-                jawab: "Saya pengagum lama dari BrewHire Network karena fokusnya pada kualitas biji lokal. Saya ingin berkontribusi dalam tim yang mengutamakan edukasi kopi ke pelanggan.",
-                tipe: "panjang"
-            },
-            { 
-                tanya: "Berapa ekspektasi gaji Anda?", 
-                jawab: "Rp 5.500.000 - Rp 6.500.000",
-                tipe: "pendek"
-            },
-            { 
-                tanya: "Apakah bersedia bekerja di hari libur/shift?", 
-                jawab: "Ya, saya bersedia",
-                tipe: "status"
-            }
-        ]
+        pengalamanKerja: (pelamar?.pengalaman || []).map(p => ({
+            posisi:    p.posisi,
+            perusahaan: p.nama_perusahaan,
+            tahun:     `${p.tahun_mulai} - ${p.tahun_selesai || 'Sekarang'}`,
+            deskripsi: p.deskripsi ? [p.deskripsi] : [],
+        })),
+        pendidikan: (pelamar?.pendidikan || []).map(p => ({
+            institusi: p.nama_institusi,
+            jurusan:   `${p.tingkat} ${p.jurusan}`,
+            tahun:     `${p.tahun_mulai} - ${p.tahun_selesai || 'Sekarang'}`,
+        })),
+        dokumen: (pelamar?.dokumen || []).map(d => ({
+            nama:   d.jenis_dokumen?.nama_dokumen || 'Dokumen',
+            format: d.nama_file ? d.nama_file.split('.').pop().toUpperCase() : '-',
+            url:    d.path_file ? `/storage/${d.path_file}` : null,
+            tipe:   d.jenis_dokumen?.kode || 'cv',
+        })),
+        evaluasi: (pelamar?.jawaban_seleksi || []).map(j => ({
+            tanya: j.pertanyaan_lowongan?.pertanyaan || '-',
+            jawab: j.jawaban || '-',
+            tipe:  'panjang',
+        })),
     };
 
     const getStatusStyles = (status) => {
@@ -142,17 +171,56 @@ const ProfilPelamar = ({ pelamar }) => {
 
                 {/* Right side: Buttons - Aligned to Bottom */}
                 <div className="flex flex-col sm:flex-row items-center gap-[8px] mt-6 md:mt-0 md:self-end shrink-0 w-full md:w-auto">
-                    <button className="flex items-center justify-between w-full md:w-[141px] h-[40px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] px-4 cursor-pointer hover:bg-[#EAE4DC]/80 transition-colors shrink-0">
-                        <span className="font-poppins font-semibold text-[15px] text-[#4B2E2B]">{detail.status}</span>
-                        <img src={ChevronDownIcon} alt="Dropdown" className="w-[16px] object-contain" />
-                    </button>
+                    {/* [UPDATE LOGIC] - Dropdown status yang dapat berinteraksi */}
+                    <div className="relative w-full md:w-[141px]" ref={dropdownRef}>
+                        <button
+                            onClick={() => setDropdownOpen(!dropdownOpen)}
+                            disabled={isSaving}
+                            className="flex items-center justify-between w-full h-[40px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] px-4 cursor-pointer hover:bg-[#EAE4DC]/80 transition-colors shrink-0 disabled:opacity-60"
+                        >
+                            <span className="font-poppins font-semibold text-[15px] text-[#4B2E2B]">{selectedStatus}</span>
+                            <img src={ChevronDownIcon} alt="Dropdown" className={`w-[16px] object-contain transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {/* [UPDATE LOGIC] - List opsi status */}
+                        {dropdownOpen && (
+                            <div className="absolute z-50 top-[44px] left-0 w-full bg-white border border-[#CCCCCC]/80 rounded-[10px] shadow-md overflow-hidden">
+                                {STATUS_OPTIONS.map((opt) => (
+                                    <button
+                                        key={opt}
+                                        onClick={() => { setSelectedStatus(opt); setDropdownOpen(false); }}
+                                        className={`w-full text-left px-4 py-2 font-poppins text-[14px] transition-colors hover:bg-[#F4ECE9] ${selectedStatus === opt ? 'font-semibold text-[#4B2E2B]' : 'text-[#504440]'}`}
+                                    >
+                                        {opt}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     
-                    <button className="flex items-center justify-center gap-[8px] w-full md:w-[262px] h-[40px] bg-[#F7B750] rounded-[10px] cursor-pointer hover:bg-[#F7B750]/90 transition-colors shrink-0">
-                        <img src={ArrowRepeatIcon} alt="Sync" className="w-[19px] object-contain" />
-                        <span className="font-poppins font-semibold text-[15px] text-[#4B2E2B] whitespace-nowrap">Simpan Perubahan Status</span>
+                    {/* [UPDATE LOGIC] - Tombol simpan yang memanggil handleSimpanStatus */}
+                    <button
+                        onClick={handleSimpanStatus}
+                        disabled={isSaving}
+                        className="flex items-center justify-center gap-[8px] w-full md:w-[262px] h-[40px] bg-[#F7B750] rounded-[10px] cursor-pointer hover:bg-[#F7B750]/90 transition-colors shrink-0 disabled:opacity-60"
+                    >
+                        <img src={ArrowRepeatIcon} alt="Sync" className={`w-[19px] object-contain ${isSaving ? 'animate-spin' : ''}`} />
+                        <span className="font-poppins font-semibold text-[15px] text-[#4B2E2B] whitespace-nowrap">
+                            {isSaving ? 'Menyimpan...' : 'Simpan Perubahan Status'}
+                        </span>
                     </button>
                 </div>
             </div>
+
+            {/* [UPDATE LOGIC] - Pesan feedback sukses / error setelah simpan */}
+            {saveMessage && (
+                <div className={`mb-4 px-4 py-3 rounded-[10px] text-[14px] font-poppins font-medium border ${
+                    saveMessage.type === 'success' ? 'bg-[#DBFEE6] text-[#509564] border-[#509564]/30' :
+                    saveMessage.type === 'error'   ? 'bg-[#FEEBEB] text-[#A04A4A] border-[#A04A4A]/30' :
+                                                     'bg-[#DBEAFE] text-[#496B99] border-[#496B99]/30'
+                }`}>
+                    {saveMessage.text}
+                </div>
+            )}
 
             {/* 2. Main Content Grid - (160:812) */}
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,691px)_332px] gap-8 w-full items-start">

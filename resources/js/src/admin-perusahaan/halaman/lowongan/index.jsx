@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../layanan/api';
 import LoadingKopi from '../../../komponen/umum/LoadingKopi';
+// [UPDATE LOGIC]
+import { useAdmin } from '../../konteks/AdminContext';
 
 // Icons
 import PlusIcon from '../../aset/lowongan/Plus.svg';
@@ -11,6 +13,8 @@ import SearchIcon from '../../aset/pelamar/Search.svg'; // Reusing search icon f
 
 const HalamanLowongan = () => {
     const navigate = useNavigate();
+    // [UPDATE LOGIC]
+    const { identitas } = useAdmin();
     const [vacancies, setVacancies] = useState([]);
     const [stats, setStats] = useState({ total: 0, active: 0, draft: 0, closed: 0 });
     const [loading, setLoading] = useState(true);
@@ -84,6 +88,7 @@ const HalamanLowongan = () => {
             fetchData(); // Refresh list and stats
         } catch (error) {
             console.error("Gagal mengubah status:", error);
+            // [UPDATE LOGIC]
             alert(error.response?.data?.message || "Gagal mengubah status.");
         }
     };
@@ -134,6 +139,25 @@ const HalamanLowongan = () => {
                     </div>
                 </div>
             </div>
+
+            {/* [UPDATE LOGIC] */}
+            {identitas?.status_verifikasi === 'Pending' && (
+                <div className="w-full mb-8 bg-[#FFFBF5] rounded-[16px] p-8 flex items-start gap-6 border border-[#4B2E2B]/10 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="bg-[#FEF3C7] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+                        <svg width="22" height="19" viewBox="0 0 22 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11 0L21.3923 18H0.607696L11 0Z" fill="#B45309"/>
+                            <rect x="10" y="6" width="2" height="7" fill="white"/>
+                            <rect x="10" y="14" width="2" height="2" fill="white"/>
+                        </svg>
+                    </div>
+                    <div className="flex flex-col gap-2 flex-1">
+                        <h3 className="font-jakarta font-semibold text-[16px] text-[#432C23]">Peringatan</h3>
+                        <p className="font-poppins text-[#57534E] text-[14px] leading-[20px]">
+                            Akun Anda sedang dalam proses verifikasi oleh Super Admin. Harap tunggu persetujuan.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">

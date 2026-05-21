@@ -28,6 +28,7 @@ const HalamanWawancara = () => {
         status: 'Terjadwal',
         catatan: ''
     });
+    const [validationErrors, setValidationErrors] = useState({}); // [UPDATE LOGIC]
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -73,6 +74,7 @@ const HalamanWawancara = () => {
     const handleOpenAddModal = () => {
         setModalMode('add');
         setFormData({ id_lamaran: '', tanggal: '', jam: '', lokasi: '', status: 'Terjadwal', catatan: '' });
+        setValidationErrors({}); // [UPDATE LOGIC]
         fetchCandidates();
         setShowModal(true);
     };
@@ -89,12 +91,32 @@ const HalamanWawancara = () => {
             status: item.status || 'Terjadwal',
             catatan: item.catatan || ''
         });
+        setValidationErrors({}); // [UPDATE LOGIC]
         setShowModal(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // [UPDATE LOGIC] - Validasi Lokal
+        const errors = {};
+        if (!formData.tanggal) errors.tanggal = 'Harap isi bidang ini.';
+        if (!formData.jam) errors.jam = 'Harap isi bidang ini.';
+        if (!formData.lokasi) errors.lokasi = 'Harap isi bidang ini.';
+        if (modalMode === 'add' && !formData.id_lamaran) {
+            errors.id_lamaran = 'Harap isi bidang ini.';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return;
+        }
+
+        // [UPDATE LOGIC] - Payload yang dikirim ke backend
         const payload = {
+            tanggal: formData.tanggal,
+            waktu: formData.jam,
+            tempat_link: formData.lokasi,
             tanggal_wawancara: `${formData.tanggal} ${formData.jam}`,
             lokasi: formData.lokasi,
             status: formData.status,
@@ -104,9 +126,12 @@ const HalamanWawancara = () => {
         try {
             if (modalMode === 'add') {
                 await api.post(`/admin/lamaran/${formData.id_lamaran}/wawancara`, payload);
+                alert('Undangan wawancara berhasil dikirim!'); // [UPDATE LOGIC]
             } else {
                 await api.put(`/admin/wawancara/${selectedId}`, payload);
+                alert('Jadwal wawancara berhasil diperbarui!'); // [UPDATE LOGIC]
             }
+            setValidationErrors({}); // [UPDATE LOGIC]
             setShowModal(false);
             fetchData();
         } catch (error) {
@@ -155,12 +180,17 @@ const HalamanWawancara = () => {
 
             <ModalJadwalWawancara 
                 isOpen={showModal}
-                onClose={() => setShowModal(false)}
+                onClose={() => {
+                    setShowModal(false);
+                    setValidationErrors({}); // [UPDATE LOGIC]
+                }}
                 mode={modalMode}
                 formData={formData}
                 setFormData={setFormData}
                 handleSubmit={handleSubmit}
                 candidates={candidates}
+                errors={validationErrors} // [UPDATE LOGIC]
+                setErrors={setValidationErrors} // [UPDATE LOGIC]
             />
         </div>
     );
