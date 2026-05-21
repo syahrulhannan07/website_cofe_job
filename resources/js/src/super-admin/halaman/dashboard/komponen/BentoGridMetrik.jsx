@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-// Import Ikon
 import ikonCafe from '../../../aset/dashboard/Icon cafe.svg';
 import ikonGrup from '../../../aset/dashboard/Icon grup.svg';
 import ikonCentang from '../../../aset/dashboard/Icon centang.svg';
@@ -9,7 +8,7 @@ import ikonCentang from '../../../aset/dashboard/Icon centang.svg';
 const KartuBento = ({ judul, nilai, ikon, varian = 'standar', labelTambahan = '' }) => {
     if (varian === 'gelap') {
         return (
-            <div className="flex flex-col justify-between p-6 bg-[#432C23] rounded-[12px] h-[151px] shadow-sm">
+            <div className="kartu-bento-gelap flex flex-col justify-between p-6 bg-[#432C23] rounded-[12px] h-[151px] shadow-sm">
                 <div className="flex justify-between items-start">
                     <div className="w-[46px] h-[45px] bg-white/10 rounded-[8px] flex items-center justify-center">
                         <img 
@@ -32,7 +31,7 @@ const KartuBento = ({ judul, nilai, ikon, varian = 'standar', labelTambahan = ''
 
     if (varian === 'aksen') {
         return (
-            <div className="flex flex-col justify-between p-6 bg-white rounded-[12px] h-[151px] shadow-sm border border-[#D3C3BE] border-l-[4px]" style={{ borderLeftColor: '#FEAE2C' }}>
+            <div className="kartu-bento-aksen flex flex-col justify-between p-6 bg-white rounded-[12px] h-[151px] shadow-sm border border-[#D3C3BE] border-l-[4px]" style={{ borderLeftColor: '#FEAE2C' }}>
                 <div className="flex justify-between items-start">
                     <div className="w-[44px] h-[42px] bg-[#FFE1B4] rounded-[8px] flex items-center justify-center">
                         <img src={ikon} alt="Icon" className="w-[24px] h-[12px] object-contain" />
@@ -47,7 +46,7 @@ const KartuBento = ({ judul, nilai, ikon, varian = 'standar', labelTambahan = ''
     }
 
     return (
-        <div className="flex flex-col justify-between p-6 bg-white rounded-[12px] h-[151px] shadow-sm border border-[#D3C3BE]">
+        <div className="kartu-bento-standar flex flex-col justify-between p-6 bg-white rounded-[12px] h-[151px] shadow-sm border border-[#D3C3BE]">
             <div className="flex justify-between items-start">
                 <div className={`w-[44px] h-[42px] rounded-[8px] flex items-center justify-center ${judul.includes('KAFE') ? 'bg-[#FFDCC5]' : 'bg-[#FFDBC1]'}`}>
                     <img src={ikon} alt="Icon" className="w-[24px] h-[12px] object-contain" />
@@ -61,29 +60,36 @@ const KartuBento = ({ judul, nilai, ikon, varian = 'standar', labelTambahan = ''
     );
 };
 
-const BentoGridMetrik = () => {
+// Helper format angka: 1284 → "1,284"
+const formatAngka = (angka) => {
+    if (angka == null) return '—';
+    return Number(angka).toLocaleString('id-ID');
+};
+
+const BentoGridMetrik = ({ statistik, sedangMemuat }) => {
+    // Mapping data API ke konfigurasi kartu metrik
     const metrik = [
         {
             judul: 'TOTAL KAFE TERDAFTAR',
-            nilai: '1,284',
+            nilai: sedangMemuat ? '...' : formatAngka(statistik?.total_kafe_terdaftar),
             ikon: ikonCafe,
             varian: 'standar'
         },
         {
             judul: 'TOTAL PELAMAR TERDAFTAR',
-            nilai: '45,920',
+            nilai: sedangMemuat ? '...' : formatAngka(statistik?.total_pelamar),
             ikon: ikonGrup,
             varian: 'standar'
         },
         {
             judul: 'KAFE AKTIF',
-            nilai: '3,412',
+            nilai: sedangMemuat ? '...' : formatAngka(statistik?.kafe_aktif),
             ikon: ikonCafe,
             varian: 'aksen'
         },
         {
             judul: 'VERIFIKASI KAFE',
-            nilai: '42',
+            nilai: sedangMemuat ? '...' : formatAngka(statistik?.kafe_pending),
             labelTambahan: 'PENDING',
             ikon: ikonCentang,
             varian: 'gelap'
@@ -91,7 +97,7 @@ const BentoGridMetrik = () => {
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+        <div className="grid-metrik-bento grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
             {metrik.map((m, index) => (
                 <motion.div
                     key={index}

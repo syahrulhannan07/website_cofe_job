@@ -155,12 +155,87 @@ class SuperAdminController extends Controller
 
     public function dashboard()
     {
+        $totalKafeTerdaftar = ProfilPerusahaan::count();
+        $totalPelamar = ProfilPelamar::count();
+        $kafeAktif = ProfilPerusahaan::where('status_verifikasi', 'Diterima')->count();
+        $kafePending = ProfilPerusahaan::where('status_verifikasi', 'Pending')->count();
+
+        // Tren pertumbuhan 30 hari terakhir — hitung pendaftar per hari
+        $awalRentang = now()->subDays(29)->startOfDay();
+        $trenPerusahaan = ProfilPerusahaan::where('created_at', '>=', $awalRentang)
+            ->selectRaw('DATE(created_at) as tanggal, COUNT(*) as jumlah')
+            ->groupBy('tanggal')
+            ->orderBy('tanggal')
+            ->get()
+            ->keyBy('tanggal');
+
+        $trenPelamar = ProfilPelamar::where('created_at', '>=', $awalRentang)
+            ->selectRaw('DATE(created_at) as tanggal, COUNT(*) as jumlah')
+            ->groupBy('tanggal')
+            ->orderBy('tanggal')
+            ->get()
+            ->keyBy('tanggal');
+
+        $dataTren = [];
+        for ($i = 0; $i < 30; $i++) {
+            $tgl = now()->subDays(29 - $i)->format('Y-m-d');
+            $dataTren[] = [
+                'tanggal'    => $tgl,
+                'perusahaan' => $trenPerusahaan->has($tgl) ? (int) $trenPerusahaan[$tgl]->jumlah : 0,
+                'pelamar'    => $trenPelamar->has($tgl) ? (int) $trenPelamar[$tgl]->jumlah : 0,
+            ];
+        }
+
+        // 15 pendaftar terbaru (gabungan pelamar + perusahaan)
+        $pelamarTerbaru = \App\Models\Pengguna::where('peran', 'Pelamar')
+            ->orderByDesc('created_at')
+            ->limit(15)
+            ->get()
+            ->map(fn ($p) => [
+                'nama'          => $p->nama_pengguna,
+                'role'          => 'Pelamar',
+                'tanggal_daftar'=> $p->created_at?->toDateTimeString(),
+                'status'        => $p->status_akun,
+            ]);
+
+        $perusahaanTerbaru = \App\Models\Pengguna::where('peran', 'Admin_Perusahaan')
+            ->with('profilPerusahaan')
+            ->orderByDesc('created_at')
+            ->limit(15)
+            ->get()
+            ->map(fn ($p) => [
+                'nama'          => $p->profilPerusahaan?->nama_perusahaan ?? $p->nama_pengguna,
+                'role'          => 'Perusahaan',
+                'tanggal_daftar'=> $p->created_at?->toDateTimeString(),
+                'status'        => $p->profilPerusahaan?->status_verifikasi ?? $p->status_akun,
+            ]);
+
+        $pendaftarTerbaru = $pelamarTerbaru->merge($perusahaanTerbaru)
+            ->sortByDesc('tanggal_daftar')
+            ->take(15)
+            ->values();
+
+        // 4 kafe pending paling lama (FIFO — urut created_at ASC)
+        $antrianVerifikasi = ProfilPerusahaan::where('status_verifikasi', 'Pending')
+            ->orderBy('created_at', 'asc')
+            ->limit(4)
+            ->get()
+            ->map(fn ($k) => [
+                'id'     => $k->id_perusahaan,
+                'nama'   => $k->nama_perusahaan,
+                'lokasi' => $k->kecamatan ?? $k->alamat_perusahaan ?? '-',
+            ]);
+
         return $this->successResponse([
-            'total_kafe_aktif'              => ProfilPerusahaan::where('status_verifikasi', 'Diterima')->count(),
-            'total_kafe_pending_verifikasi' => ProfilPerusahaan::where('status_verifikasi', 'Pending')->count(),
-            'total_pelamar'                 => ProfilPelamar::count(),
-            'total_lowongan_aktif'          => Lowongan::where('status', 'Aktif')->count(),
-            'total_lamaran_bulan_ini'       => Lamaran::whereMonth('created_at', now()->month)->count(),
+            'statistik' => [
+                'total_kafe_terdaftar' => $totalKafeTerdaftar,
+                'total_pelamar'        => $totalPelamar,
+                'kafe_aktif'           => $kafeAktif,
+                'kafe_pending'         => $kafePending,
+            ],
+            'tren_pertumbuhan'    => $dataTren,
+            'pendaftar_terbaru'   => $pendaftarTerbaru,
+            'antrian_verifikasi'  => $antrianVerifikasi,
         ]);
     }
 }
