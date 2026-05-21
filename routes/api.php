@@ -149,7 +149,10 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id}/tolak', [VerifikasiPerusahaanController::class, 'reject']);
         });
         Route::get('/akun-kafe', [SuperAdminKafeController::class, 'index']);
+        Route::get('/akun-kafe/{id}', [SuperAdminKafeController::class, 'show']);         // Detail kafe + lowongan
         Route::put('/akun-kafe/{id}/suspend', [SuperAdminKafeController::class, 'suspend']);
+        Route::get('/lowongan/{id}', [SuperAdminKafeController::class, 'showLowongan']); // Detail satu lowongan
+        Route::put('/lowongan/{id}/status', [SuperAdminKafeController::class, 'updateLowonganStatus']); // Update status lowongan
     });
 
     Route::middleware(['auth:api', 'role:Super_Admin'])->prefix('superadmin')->group(function () {

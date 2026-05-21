@@ -14,17 +14,17 @@ import ikonSearch from '../../aset/akun admin/search.svg';
 const HalamanKelolaAkun = () => {
     const [daftarAdmin, setDaftarAdmin]       = useState([]);
     const [sedangMemuat, setSedangMemuat]     = useState(true);
-    // [UPDATE LOGIC] - Menggunakan state searchQuery menggantikan kueriPencarian
     const [searchQuery, setSearchQuery]       = useState('');
-    const [filterStatus, setFilterStatus]     = useState('Semua');
+    // Default fokus ke akun Aktif sesuai instruksi monitoring
+    const [filterStatus, setFilterStatus]     = useState('Aktif');
     const [notifikasi, setNotifikasi]         = useState(null);
     const [adminTerpilihDetail, setAdminTerpilihDetail] = useState(null);
+    const [sedangMuatDetail, setSedangMuatDetail] = useState(false);
 
-    // [UPDATE LOGIC] - State untuk konfirmasi modal penonaktifan
     const [modalKonfirmasiBuka, setModalKonfirmasiBuka] = useState(false);
     const [adminIdUntukSuspend, setAdminIdUntukSuspend] = useState(null);
 
-    // [UPDATE LOGIC] - Mengambil data secara dinamis dari API berdasarkan searchQuery
+    // Fetch daftar admin dengan debounce 300ms pada search query
     useEffect(() => {
         const muatData = async () => {
             setSedangMemuat(true);
@@ -32,7 +32,7 @@ const HalamanKelolaAkun = () => {
                 const respons = await api.get('/super-admin/akun-kafe', {
                     params: { search: searchQuery }
                 });
-                if (respons.data && respons.data.data) {
+                if (respons.data?.data) {
                     setDaftarAdmin(respons.data.data);
                 }
             } catch (err) {
@@ -42,29 +42,23 @@ const HalamanKelolaAkun = () => {
             }
         };
 
-        const timeoutId = setTimeout(() => {
-            muatData();
-        }, 300); // Debounce 300ms
-
+        const timeoutId = setTimeout(muatData, 300);
         return () => clearTimeout(timeoutId);
     }, [searchQuery]);
 
-    // [UPDATE LOGIC] - Filter data secara lokal untuk filterStatus
+    // Filter lokal untuk tab status — terpisah dari stats agar angka tetap akurat
     const adminTerfilter = useMemo(() => {
-        let hasil = [...daftarAdmin];
-        if (filterStatus !== 'Semua') {
-            hasil = hasil.filter(a => {
-                if (filterStatus === 'Nonaktif') {
-                    return a.status === 'Nonaktif' || a.status === 'Diblokir';
-                }
-                return a.status === filterStatus;
-            });
-        }
-        return hasil;
+        if (filterStatus === 'Semua') return daftarAdmin;
+        return daftarAdmin.filter(a => {
+            if (filterStatus === 'Nonaktif') return a.status === 'Nonaktif' || a.status === 'Diblokir';
+            return a.status === filterStatus;
+        });
     }, [daftarAdmin, filterStatus]);
 
-    const totalAdmin  = daftarAdmin.length;
-    const kafeAktif   = daftarAdmin.filter(a => a.status === 'Aktif').length;
+    // Stats dihitung dari data penuh (sebelum filter tab), tidak bergantung filter aktif
+    const totalAdmin = daftarAdmin.length;
+    const kafeAktif  = daftarAdmin.filter(a => a.status === 'Aktif').length;
+
 
     const tampilNotif = (tipe, pesan) => {
         setNotifikasi({ tipe, pesan });
@@ -72,7 +66,6 @@ const HalamanKelolaAkun = () => {
     };
 
     const handleSuspend = (admin) => {
-        // [UPDATE LOGIC] - Menyimpan ID admin terpilih dan memicu kemunculan modal konfirmasi
         setAdminIdUntukSuspend(admin.id);
         setModalKonfirmasiBuka(true);
     };
@@ -85,13 +78,11 @@ const HalamanKelolaAkun = () => {
         tampilNotif('sukses', `Akun "${admin.nama_perusahaan}" berhasil diaktifkan.`);
     };
 
-    // [UPDATE LOGIC] - Interseptor penonaktifan untuk memicu modal konfirmasi
     const handleUpdateStatus = (admin, statusBaru) => {
         if (statusBaru === 'Nonaktif') {
             setAdminIdUntukSuspend(admin.id);
             setModalKonfirmasiBuka(true);
         } else {
-            // Jika diubah menjadi Aktif, ubah state secara langsung
             setDaftarAdmin(prev => prev.map(a => a.id === admin.id ? { ...a, status: 'Aktif' } : a));
             if (adminTerpilihDetail?.id === admin.id) {
                 setAdminTerpilihDetail(prev => prev ? { ...prev, status: 'Aktif' } : null);
@@ -100,20 +91,31 @@ const HalamanKelolaAkun = () => {
         }
     };
 
-    // [UPDATE LOGIC] - Aksi Konfirmasi Suspend
+    // Fetch detail lengkap satu kafe (profil + lowongan) lalu buka modal
+    const fetchDetailAdmin = async (adminRingkas) => {
+        setSedangMuatDetail(true);
+        try {
+            const respons = await api.get(`/super-admin/akun-kafe/${adminRingkas.id}`);
+            if (respons.data?.data) {
+                setAdminTerpilihDetail(respons.data.data);
+            }
+        } catch (err) {
+            console.error('Gagal memuat detail admin kafe:', err);
+            // Fallback: buka modal dengan data ringkas dari tabel
+            setAdminTerpilihDetail(adminRingkas);
+        } finally {
+            setSedangMuatDetail(false);
+        }
+    };
+
     const handleKonfirmasiSuspend = async () => {
         if (!adminIdUntukSuspend) return;
         try {
-            // Kirim request PUT ke rute /super-admin/akun-kafe/{id}/suspend
             const respons = await api.put(`/super-admin/akun-kafe/${adminIdUntukSuspend}/suspend`);
             if (respons.status === 200) {
                 const adminTarget = daftarAdmin.find(a => a.id === adminIdUntukSuspend);
                 const namaPerusahaan = adminTarget ? adminTarget.nama_perusahaan : '';
-                
-                // Perbarui status secara lokal menjadi "Diblokir"
                 setDaftarAdmin(prev => prev.map(a => a.id === adminIdUntukSuspend ? { ...a, status: 'Diblokir' } : a));
-                
-                // Tutup modal konfirmasi dan detail, tampilkan notifikasi sukses singkat
                 setModalKonfirmasiBuka(false);
                 setAdminTerpilihDetail(null);
                 setAdminIdUntukSuspend(null);
@@ -125,7 +127,6 @@ const HalamanKelolaAkun = () => {
         }
     };
 
-    // [UPDATE LOGIC] - Aksi Batal Suspend
     const handleBatalSuspend = () => {
         setModalKonfirmasiBuka(false);
         setAdminIdUntukSuspend(null);
@@ -243,7 +244,8 @@ const HalamanKelolaAkun = () => {
                     data={adminTerfilter}
                     onSuspend={handleSuspend}
                     onAktifkan={handleAktifkan}
-                    onLihatDetail={(admin) => setAdminTerpilihDetail(admin)}
+                    onLihatDetail={fetchDetailAdmin}
+                    sedangMuatDetail={sedangMuatDetail}
                 />
             )}
 
