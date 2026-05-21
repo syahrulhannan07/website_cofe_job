@@ -28,7 +28,7 @@
         <p>Pendaftaran Perusahaan Ditolak</p>
     </div>
     <div class="body">
-        <p class="greeting">Halo, {{ $profilPerusahaan->pengguna??->nama_pengguna ?? 'Admin Kafe' }}!</p>
+        <p class="greeting">Halo, {{ optional($profilPerusahaan->pengguna)->nama_pengguna ?? 'Admin Kafe' }}!</p>
         <p>Terima kasih telah mendaftarkan kafe Anda <strong>{{ $profilPerusahaan->nama_perusahaan }}</strong> pada platform C.A.F.E. E-Recruitment.</p>
         
         <p>Mohon maaf, setelah melakukan verifikasi berkas dan profil kafe, Super Admin memutuskan untuk <strong>menolak</strong> pendaftaran akun Anda.</p>

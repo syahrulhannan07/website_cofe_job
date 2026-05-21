@@ -44,9 +44,9 @@ echo "--- STARTING AUTOMATED API TEST ---\n\n";
 
 // --- 1. AUTH TEST (Login as Super Admin) ---
 echo "Testing Authentication...\n";
-$login = request('POST', '/auth/login', [
-    'email' => 'superadmin@cofejob.id',
-    'kata_sandi' => 'password'
+$login = request('POST', '/auth/portal-pusat/login', [
+    'username_email' => 'syahrulhannan07@gmail.com',
+    'kata_sandi' => 'cofe-job-spsyahrul'
 ]);
 logTest("Login Super Admin", $login);
 $superToken = $login['data']['data']['token'] ?? null;
@@ -65,7 +65,7 @@ logTest("Get List Admin Kafe", request('GET', '/superadmin/admin', null, $superT
 // --- 3. ADMIN KAFE TEST ---
 echo "\nTesting Admin Kafe Features...\n";
 $loginKafe = request('POST', '/auth/login', [
-    'email' => 'admin@teraskulon.com',
+    'email' => 'cafe1@gmail.com',
     'kata_sandi' => 'password'
 ]);
 $kafeToken = $loginKafe['data']['data']['token'] ?? null;
@@ -89,7 +89,7 @@ if ($kafeToken) {
 // --- 4. NOTIFIKASI TEST (Login as Pelamar) ---
 echo "\nTesting Pelamar Features...\n";
 $loginPelamar = request('POST', '/auth/login', [
-    'email' => 'budi@gmail.com',
+    'email' => 'pelamar_cafe1_1@gmail.com',
     'kata_sandi' => 'password'
 ]);
 $pelamarToken = $loginPelamar['data']['data']['token'] ?? null;

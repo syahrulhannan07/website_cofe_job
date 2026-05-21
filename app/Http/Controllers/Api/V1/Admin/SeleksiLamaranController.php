@@ -65,7 +65,7 @@ class SeleksiLamaranController extends Controller
             'profil.skills',
             'profil.pengalamanKerja',
             'lamaranDokumen.jenisDokumen',
-            'jawabanPertanyaan.pertanyaanLowongan',
+            'jawabanPertanyaan.pertanyaan',
             'lowongan'
         ]);
 

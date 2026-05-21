@@ -24,7 +24,7 @@ class MulaiLamaranRequest extends FormRequest
                     if (!$lowongan) return;
 
                     // 1. Cek status aktif dan batas akhir
-                    if ($lowongan->status !== 'Aktif' || $lowongan->batas_akhir < now()->toDateString()) {
+                    if ($lowongan->status !== 'Active' || $lowongan->batas_akhir < now()->toDateString()) {
                         $fail('Lowongan ini sudah tidak aktif atau sudah melewati batas akhir pendaftaran.');
                     }
 
