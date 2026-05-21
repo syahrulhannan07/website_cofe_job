@@ -76,7 +76,7 @@ const ruter = createBrowserRouter([
 
     // --- Rute Super Admin (UC-10, UC-11, UC-12) ---
     // Halaman Tanpa Layout Sidebar/Topbar
-    { path: '/super-admin/masuk', element: <LoginSuperAdmin /> },
+    { path: '/auth/portal-pusat/login', element: <LoginSuperAdmin /> }, // [UPDATE LOGIC]
     { path: '/super-admin/kelola-akun/lowongan/:id', element: <HalamanDetailLowonganSuperAdmin /> },
 
     // Panel terproteksi — dengan layout sidebar Super Admin

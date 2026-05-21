@@ -42,7 +42,8 @@ const ModalDetailKafe = ({ kafeAktif, onTutup, onBerhasilVerifikasi }) => {
         setSedangProses(true);
         setPesanError('');
         try {
-            await api.post(`/super-admin/verifikasi/${kafeAktif.id}/setujui`);
+            // [UPDATE LOGIC] - Ubah ke PUT request /super-admin/verifikasi/{id}/setuju
+            await api.put(`/super-admin/verifikasi/${kafeAktif.id}/setuju`);
             onBerhasilVerifikasi(kafeAktif.id, 'Aktif');
             onTutup();
         } catch (err) {
@@ -60,7 +61,8 @@ const ModalDetailKafe = ({ kafeAktif, onTutup, onBerhasilVerifikasi }) => {
         setSedangProses(true);
         setPesanError('');
         try {
-            await api.post(`/super-admin/verifikasi/${kafeAktif.id}/tolak`, {
+            // [UPDATE LOGIC] - Ubah ke PUT request /super-admin/verifikasi/{id}/tolak
+            await api.put(`/super-admin/verifikasi/${kafeAktif.id}/tolak`, {
                 alasan: alasanTolak,
             });
             onBerhasilVerifikasi(kafeAktif.id, 'Ditolak');
@@ -72,8 +74,10 @@ const ModalDetailKafe = ({ kafeAktif, onTutup, onBerhasilVerifikasi }) => {
         }
     };
 
-    const urlDokumen = kafeAktif.dokumen_izin
-        ? `/storage/${kafeAktif.dokumen_izin}`
+    // [UPDATE LOGIC] - Sinkronkan dokumen_izin atau dokumen_legalitas
+    const fileDokumen = kafeAktif.dokumen_izin || kafeAktif.dokumen_legalitas;
+    const urlDokumen = fileDokumen
+        ? `/storage/${fileDokumen}`
         : null;
 
     const ekstensiDokumen = urlDokumen ? urlDokumen.split('.').pop().toLowerCase() : '';

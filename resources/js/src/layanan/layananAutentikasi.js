@@ -14,6 +14,15 @@ const layananAutentikasi = {
     },
 
     /**
+     * Masuk khusus untuk Super Admin (UC-10).
+     * [UPDATE LOGIC]
+     */
+    masukSuperAdmin: async (dataKredensial) => {
+        const respons = await api.post('/auth/portal-pusat/login', dataKredensial);
+        return respons.data;
+    },
+
+    /**
      * Keluar dari aplikasi.
      */
     keluar: async () => {

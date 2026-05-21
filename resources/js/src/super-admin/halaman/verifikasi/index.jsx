@@ -9,28 +9,8 @@ import ModalDetailKafe from './komponen/ModalDetailKafe';
  * dan memungkinkan Super Admin menyetujui atau menolak pendaftaran.
  */
 
-// ─── Data Mock (Simulasi Respons Laravel API) ─────────────────────────────────
-const DATA_KAFE_MOCK = [
-    {
-        id: 1, nama_perusahaan: 'Kopi Nusantara', nama_pengguna: 'Budi Santoso',
-        email: 'budi@kopinusantara.id', kecamatan: 'Indramayu', alamat_perusahaan: 'Jl. Raya Indramayu No. 45',
-        deskripsi: 'Kedai kopi dengan cita rasa lokal Indramayu yang kuat.', dokumen_izin: null,
-        created_at: '2026-05-10T08:30:00Z', status: 'Menunggu Verifikasi',
-    },
-    {
-        id: 2, nama_perusahaan: 'Arabika Corner', nama_pengguna: 'Siti Rahayu',
-        email: 'siti@arabikacorner.id', kecamatan: 'Haurgeulis', alamat_perusahaan: 'Jl. Merdeka No. 12',
-        deskripsi: 'Spesialis biji kopi arabika single origin dari Jawa Barat.', dokumen_izin: null,
-        created_at: '2026-05-09T14:00:00Z', status: 'Menunggu Verifikasi',
-    },
-    {
-        id: 3, nama_perusahaan: 'Roastery Indra', nama_pengguna: 'Ahmad Fauzi',
-        email: 'ahmad@roasteryindra.id', kecamatan: 'Jatibarang', alamat_perusahaan: 'Jl. Veteran No. 88',
-        deskripsi: 'Workshop roasting dan brewing untuk para coffee enthusiast.', dokumen_izin: null,
-        created_at: '2026-05-08T10:15:00Z', status: 'Menunggu Verifikasi',
-    },
-];
-// ─────────────────────────────────────────────────────────────────────────────
+// [UPDATE LOGIC] - DATA_KAFE_MOCK dihapus sepenuhnya karena menggunakan data real dari API
+
 
 import { ChevronRight } from 'lucide-react'; // Keeping Chevron if needed, but we have view.svg
 import ikonSearch from '../../aset/verifikasi/Search.svg';
@@ -46,14 +26,20 @@ const HalamanVerifikasi = () => {
     const [kataKunci, setKataKunci] = useState('');
     const [notifikasi, setNotifikasi] = useState(null); // { tipe: 'sukses'|'gagal', pesan: '' }
 
-    // Ambil data kafe dari API Laravel
+    // [UPDATE LOGIC] - Ambil data kafe dari API Laravel secara dinamis
     useEffect(() => {
         const ambilDataVerifikasi = async () => {
             setSedangMemuat(true);
             try {
-                // TODO: Hubungkan ke endpoint Laravel — GET /api/v1/super-admin/verifikasi
-                await new Promise((r) => setTimeout(r, 1000));
-                setDaftarKafe(DATA_KAFE_MOCK);
+                const respons = await api.get('/super-admin/verifikasi');
+                if (respons.data && respons.data.data) {
+                    // Pemetaan (mapping) id_perusahaan ke id jika komponen anak membutuhkannya
+                    const dataReal = respons.data.data.map((item) => ({
+                        ...item,
+                        id: item.id || item.id_perusahaan
+                    }));
+                    setDaftarKafe(dataReal);
+                }
             } catch (err) {
                 console.error('Gagal mengambil data verifikasi:', err);
             } finally {

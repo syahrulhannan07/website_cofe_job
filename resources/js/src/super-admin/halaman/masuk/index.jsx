@@ -23,8 +23,9 @@ const HalamanLoginSuperAdmin = () => {
     const tanganiKirim = async (e) => {
         e.preventDefault();
 
+        // [UPDATE LOGIC]
         if (!formLogin.email.trim() || !formLogin.password) {
-            setPesanError('Email dan password wajib diisi.');
+            setPesanError('Email / Username dan password wajib diisi.');
             return;
         }
 
@@ -32,31 +33,31 @@ const HalamanLoginSuperAdmin = () => {
         setPesanError('');
 
         try {
-            const respons = await layananAutentikasi.masuk({
-                email: formLogin.email,
+            // [UPDATE LOGIC] - Panggil API masukSuperAdmin yang mengirim username_email & kata_sandi
+            const respons = await layananAutentikasi.masukSuperAdmin({
+                username_email: formLogin.email,
                 kata_sandi: formLogin.password
             });
 
             if (respons.data && respons.data.token) {
-                // Pastikan yang login adalah Super Admin
-                if (respons.data.pengguna.peran !== 'Super_Admin') {
-                    setPesanError('Akses ditolak. Akun ini bukan Super Admin.');
-                    localStorage.removeItem('token');
-                    setSedangMemuat(false);
-                    return;
-                }
-
+                // [UPDATE LOGIC]
                 localStorage.setItem('token', respons.data.token);
                 localStorage.setItem('peran', respons.data.pengguna.peran);
                 localStorage.setItem('pengguna', JSON.stringify(respons.data.pengguna));
 
-                // Arahkan ke dashboard verifikasi
-                window.location.href = '/super-admin/verifikasi';
+                // Arahkan ke dashboard utama pusat
+                window.location.href = '/super-admin/dashboard';
             }
         } catch (error) {
-            setPesanError(error.response?.data?.message || 'Email atau password salah. Silakan coba lagi.');
+            // [UPDATE LOGIC] - Tangkap respons error 401 dan tampilkan pesan presisi
+            if (error.response?.status === 401) {
+                setPesanError('Username atau password salah');
+            } else {
+                setPesanError(error.response?.data?.message || 'Terjadi kesalahan. Silakan coba lagi.');
+            }
         } finally {
-            if (window.location.pathname === '/super-admin/masuk') {
+            // [UPDATE LOGIC]
+            if (window.location.pathname === '/auth/portal-pusat/login') {
                 setSedangMemuat(false);
             }
         }
@@ -107,10 +108,10 @@ const HalamanLoginSuperAdmin = () => {
 
                             <form onSubmit={tanganiKirim} className="form-utama space-y-5">
                                 <div className="grup-input">
-                                    <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="email">Email</label>
+                                    <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="email">Email / Username</label>
                                     <input
                                         id="email"
-                                        type="email"
+                                        type="text"
                                         value={formLogin.email}
                                         onChange={ubahInput}
                                         className="input-field w-full px-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"

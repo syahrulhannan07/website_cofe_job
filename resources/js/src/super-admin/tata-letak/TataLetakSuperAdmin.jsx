@@ -16,7 +16,7 @@ const TataLetakSuperAdmin = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('peran');
         localStorage.removeItem('pengguna');
-        navigate('/super-admin/masuk');
+        navigate('/auth/portal-pusat/login'); // [UPDATE LOGIC]
     };
 
     // Update menu aktif berdasarkan path

@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
+use App\Http\Controllers\Api\V1\Auth\SuperAdminAuthController;
+use App\Http\Controllers\Api\V1\SuperAdmin\VerifikasiPerusahaanController; // [UPDATE LOGIC]
 
 use App\Http\Controllers\Api\V1\Pelamar\ProfilController;
 
@@ -14,6 +16,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/daftar-perusahaan', [RegisterController::class, 'daftarPerusahaan']);
         Route::post('/register/perusahaan', [RegisterController::class, 'registrasiPerusahaan']);
         Route::post('/login', [LoginController::class, 'login']);
+        Route::post('/portal-pusat/login', [SuperAdminAuthController::class, 'login']); // [UPDATE LOGIC]
 
         Route::middleware('auth:api')->group(function () {
             Route::post('/logout', [LoginController::class, 'logout']);
@@ -134,6 +137,15 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id_wawancara}', [\App\Http\Controllers\Api\V1\Admin\WawancaraController::class, 'update']);
             Route::delete('/{id_wawancara}', [\App\Http\Controllers\Api\V1\Admin\WawancaraController::class, 'destroy']);
             Route::post('/{id_wawancara}/selesai', [\App\Http\Controllers\Api\V1\Admin\WawancaraController::class, 'selesai']);
+        });
+    });
+
+    // [UPDATE LOGIC] - Rute verifikasi dengan prefix super-admin untuk diselaraskan dengan React
+    Route::middleware(['auth:api', 'role:Super_Admin'])->prefix('super-admin')->group(function () {
+        Route::prefix('verifikasi')->group(function () {
+            Route::get('/', [VerifikasiPerusahaanController::class, 'index']);
+            Route::put('/{id}/setuju', [VerifikasiPerusahaanController::class, 'approve']);
+            Route::put('/{id}/tolak', [VerifikasiPerusahaanController::class, 'reject']);
         });
     });
 
