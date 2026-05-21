@@ -17,35 +17,50 @@ class VerifikasiPerusahaanController extends Controller
     /**
      * Tampilkan daftar perusahaan yang berstatus 'Pending'.
      */
+    /**
+     * Kembalikan 4 angka statistik untuk kartu metrik di halaman verifikasi.
+     */
+    public function statistik()
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'total_perusahaan' => ProfilPerusahaan::count(),
+                'pending'          => ProfilPerusahaan::where('status_verifikasi', 'Pending')->count(),
+                'ditolak'          => ProfilPerusahaan::where('status_verifikasi', 'Ditolak')->count(),
+                'diterima'         => ProfilPerusahaan::where('status_verifikasi', 'Diterima')->count(),
+            ]
+        ], 200);
+    }
+
     public function index()
     {
-        // [UPDATE LOGIC] - Mengambil data kafe dengan status 'Pending' beserta data pengguna (admin kafe)
+        // Ambil semua kafe Pending, urut dari yang terlama (FIFO/ASC) agar antrian verifikasi terasa adil
         $pendingPerusahaan = ProfilPerusahaan::with('pengguna')
             ->where('status_verifikasi', 'Pending')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'asc')
             ->get();
 
-        // Pemetaan data agar formatnya sesuai dengan kebutuhan tabel di frontend
+        // Pemetaan data agar formatnya sesuai kebutuhan tabel frontend
         $data = $pendingPerusahaan->map(function ($p) {
             return [
-                'id' => $p->id_perusahaan, // key id dipetakan dari id_perusahaan
-                'id_perusahaan' => $p->id_perusahaan,
-                'nama_perusahaan' => $p->nama_perusahaan,
-                'nama_pengguna' => $p->pengguna?->nama_pengguna,
-                'email' => $p->pengguna?->email,
-                'alamat_perusahaan' => $p->alamat_perusahaan,
-                'kecamatan' => $p->kecamatan,
-                'deskripsi' => $p->deskripsi,
-                'dokumen_izin' => $p->dokumen_izin,
-                'dokumen_legalitas' => $p->dokumen_legalitas,
-                'created_at' => $p->created_at?->toIso8601String(),
-                'status_verifikasi' => $p->status_verifikasi,
+                'id'               => $p->id_perusahaan,
+                'id_perusahaan'    => $p->id_perusahaan,
+                'nama_perusahaan'  => $p->nama_perusahaan,
+                'nama_pengguna'    => $p->pengguna?->nama_pengguna,
+                'email'            => $p->pengguna?->email,
+                'alamat_perusahaan'=> $p->alamat_perusahaan,
+                'kecamatan'        => $p->kecamatan,
+                'deskripsi'        => $p->deskripsi,
+                'dokumen_izin'     => $p->dokumen_izin,
+                'created_at'       => $p->created_at?->toIso8601String(),
+                'status_verifikasi'=> $p->status_verifikasi,
             ];
         });
 
         return response()->json([
             'status' => 'success',
-            'data' => $data
+            'data'   => $data
         ], 200);
     }
 

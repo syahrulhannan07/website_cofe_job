@@ -141,14 +141,13 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    // [UPDATE LOGIC] - Rute verifikasi dengan prefix super-admin untuk diselaraskan dengan React
     Route::middleware(['auth:api', 'role:Super_Admin'])->prefix('super-admin')->group(function () {
         Route::prefix('verifikasi')->group(function () {
+            Route::get('/statistik', [VerifikasiPerusahaanController::class, 'statistik']); // Statistik kartu metrik
             Route::get('/', [VerifikasiPerusahaanController::class, 'index']);
             Route::put('/{id}/setuju', [VerifikasiPerusahaanController::class, 'approve']);
             Route::put('/{id}/tolak', [VerifikasiPerusahaanController::class, 'reject']);
         });
-        // [UPDATE LOGIC] - Kelola Akun Admin Perusahaan
         Route::get('/akun-kafe', [SuperAdminKafeController::class, 'index']);
         Route::put('/akun-kafe/{id}/suspend', [SuperAdminKafeController::class, 'suspend']);
     });

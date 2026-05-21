@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ikonView from '../../../aset/verifikasi/view.svg';
 
-/**
- * TabelVerifikasi — Komponen tabel yang menampilkan daftar kafe
- * dengan status "Menunggu Verifikasi".
- */
+const BARIS_PER_HALAMAN = 10;
+
+// Format tanggal ISO → "21 - 4 - 2026"
+const formatTanggal = (isoStr) => {
+    if (!isoStr) return '—';
+    const d = new Date(isoStr);
+    return `${d.getDate()} - ${d.getMonth() + 1} - ${d.getFullYear()}`;
+};
+
 const TabelVerifikasi = ({ dataKafe = [], sedangMemuat, onLihatDetail }) => {
+    const [halamanAktif, setHalamanAktif] = useState(1);
+
+    // Reset ke halaman 1 setiap kali data (hasil filter) berubah
+    useEffect(() => {
+        setHalamanAktif(1);
+    }, [dataKafe.length]);
 
     // --- Skeleton Loading ---
     if (sedangMemuat) {
@@ -46,6 +57,13 @@ const TabelVerifikasi = ({ dataKafe = [], sedangMemuat, onLihatDetail }) => {
         );
     }
 
+    const totalHalaman  = Math.max(1, Math.ceil(dataKafe.length / BARIS_PER_HALAMAN));
+    const indeksAwal    = (halamanAktif - 1) * BARIS_PER_HALAMAN;
+    const dataHalaman   = dataKafe.slice(indeksAwal, indeksAwal + BARIS_PER_HALAMAN);
+
+    const keHalamanSebelum = () => setHalamanAktif((p) => Math.max(1, p - 1));
+    const keHalamanBerikut = () => setHalamanAktif((p) => Math.min(totalHalaman, p + 1));
+
     return (
         <div className="wadah-tabel-verifikasi rounded-[15px] overflow-hidden bg-white shadow-md border border-[#EAE4DC] mt-6">
             {/* Header Tabel */}
@@ -57,15 +75,15 @@ const TabelVerifikasi = ({ dataKafe = [], sedangMemuat, onLihatDetail }) => {
                 ))}
             </div>
 
-            {/* Baris Data */}
+            {/* Baris Data — hanya tampil 10 baris sesuai halaman aktif */}
             <div className="area-baris-tabel flex flex-col divide-y divide-[#EAE4DC]">
-                {dataKafe.map((kafe) => (
+                {dataHalaman.map((kafe) => (
                     <div
                         key={kafe.id}
                         className="baris-kafe grid grid-cols-[1.5fr_1.2fr_1.2fr_1fr_0.8fr] gap-4 items-center px-12 py-5 hover:bg-[#F3EDE6]/30 transition-colors"
                     >
                         {/* Nama Perusahaan */}
-                        <div className="flex items-center gap-5">
+                        <div className="sel-nama-perusahaan flex items-center gap-5">
                             <div className="w-[40px] h-[40px] bg-[#C69C6D] rounded-[6px] flex items-center justify-center flex-shrink-0">
                                 <span className="font-poppins font-bold text-[14px] text-white">
                                     {kafe.nama_perusahaan?.charAt(0).toUpperCase() || '?'}
@@ -77,46 +95,89 @@ const TabelVerifikasi = ({ dataKafe = [], sedangMemuat, onLihatDetail }) => {
                         </div>
 
                         {/* Nama Pengelola */}
-                        <div className="text-center">
+                        <div className="sel-nama-pengelola text-center">
                             <span className="font-poppins font-bold text-[15px] text-[#4B2E2B]">
-                                {kafe.nama_pengguna || 'Admin-Fore'}
+                                {kafe.nama_pengguna || '—'}
                             </span>
                         </div>
 
                         {/* Tanggal Registrasi */}
-                        <div className="text-center">
+                        <div className="sel-tanggal-registrasi text-center">
                             <span className="font-poppins font-bold text-[15px] text-[#4B2E2B]">
-                                {kafe.created_at
-                                    ? new Date(kafe.created_at).toLocaleDateString('id-ID', {
-                                          day: 'numeric', month: 'numeric', year: 'numeric',
-                                      }).replace(/\//g, ' - ')
-                                    : '21 - 4 - 2026'}
+                                {formatTanggal(kafe.created_at)}
                             </span>
                         </div>
 
                         {/* Lokasi */}
-                        <div className="text-center">
+                        <div className="sel-lokasi text-center">
                             <span className="font-poppins font-bold text-[15px] text-[#4B2E2B]">
-                                {kafe.kecamatan || 'Jatibarang'}
+                                {kafe.kecamatan || '—'}
                             </span>
                         </div>
 
-                        {/* Aksi */}
-                        <div className="flex justify-center">
+                        {/* Aksi — event handler onClick siap dihubungkan ke modal */}
+                        <div className="sel-aksi flex justify-center">
                             <button
                                 onClick={() => onLihatDetail(kafe)}
-                                className="w-[36px] h-[36px] flex items-center justify-center hover:bg-[#EAE4DC]/50 rounded-full transition-all focus:outline-none hover:scale-105"
+                                className="tombol-lihat-detail w-[36px] h-[36px] flex items-center justify-center hover:bg-[#EAE4DC]/50 rounded-full transition-all focus:outline-none hover:scale-105"
                                 title="Lihat Detail"
+                                aria-label={`Lihat detail ${kafe.nama_perusahaan}`}
                             >
-                                <img 
-                                    src={ikonView} 
-                                    alt="View" 
-                                    className="w-[24px] h-[24px]" 
+                                <img
+                                    src={ikonView}
+                                    alt="View"
+                                    className="w-[24px] h-[24px]"
                                 />
                             </button>
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Footer Paginasi */}
+            <div className="area-paginasi flex items-center justify-between px-12 py-4 border-t border-[#EAE4DC] bg-[#F9F6F3]">
+                <span className="info-paginasi font-poppins text-[13px] text-[#4B2E2B]/60">
+                    Menampilkan {indeksAwal + 1}–{Math.min(indeksAwal + BARIS_PER_HALAMAN, dataKafe.length)} dari {dataKafe.length} data
+                </span>
+
+                <div className="kontrol-paginasi flex items-center gap-2">
+                    {/* Tombol Sebelumnya */}
+                    <button
+                        onClick={keHalamanSebelum}
+                        disabled={halamanAktif <= 1}
+                        className="tombol-halaman-sebelum w-[32px] h-[32px] flex items-center justify-center rounded-[6px] border border-[#4B2E2B]/20 bg-white font-poppins text-[13px] text-[#4B2E2B] hover:bg-[#EAE4DC] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        aria-label="Halaman sebelumnya"
+                    >
+                        ‹
+                    </button>
+
+                    {/* Nomor-nomor halaman */}
+                    {Array.from({ length: totalHalaman }, (_, i) => i + 1).map((nomor) => (
+                        <button
+                            key={nomor}
+                            onClick={() => setHalamanAktif(nomor)}
+                            className={`tombol-nomor-halaman w-[32px] h-[32px] flex items-center justify-center rounded-[6px] font-poppins text-[13px] font-semibold transition-colors ${
+                                halamanAktif === nomor
+                                    ? 'bg-[#4B2E2B] text-white'
+                                    : 'border border-[#4B2E2B]/20 bg-white text-[#4B2E2B] hover:bg-[#EAE4DC]'
+                            }`}
+                            aria-label={`Halaman ${nomor}`}
+                            aria-current={halamanAktif === nomor ? 'page' : undefined}
+                        >
+                            {nomor}
+                        </button>
+                    ))}
+
+                    {/* Tombol Berikutnya */}
+                    <button
+                        onClick={keHalamanBerikut}
+                        disabled={halamanAktif >= totalHalaman}
+                        className="tombol-halaman-berikut w-[32px] h-[32px] flex items-center justify-center rounded-[6px] border border-[#4B2E2B]/20 bg-white font-poppins text-[13px] text-[#4B2E2B] hover:bg-[#EAE4DC] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        aria-label="Halaman berikutnya"
+                    >
+                        ›
+                    </button>
+                </div>
             </div>
         </div>
     );
