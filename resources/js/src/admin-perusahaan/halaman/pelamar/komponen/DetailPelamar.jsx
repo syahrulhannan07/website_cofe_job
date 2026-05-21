@@ -267,8 +267,13 @@ const DetailPelamar = ({ lowongan, onBack, onSelectPelamar }) => {
                                 </div>
                             ))
                         ) : (
+                            // [UPDATE LOGIC] - Empty state sesuai SRS: teks khusus saat belum ada lamaran masuk
                             <div className="flex flex-col items-center justify-center py-20">
-                                <p className="font-poppins text-[#4B2E2B]/50 italic">Tidak ada pelamar ditemukan</p>
+                                <p className="font-poppins text-[#4B2E2B]/50 italic">
+                                    {search
+                                        ? `Tidak ada pelamar ditemukan untuk pencarian "${search}"`
+                                        : "Belum ada lamaran masuk untuk posisi ini"}
+                                </p>
                             </div>
                         )}
                     </div>

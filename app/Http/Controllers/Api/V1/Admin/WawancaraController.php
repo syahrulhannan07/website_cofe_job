@@ -42,7 +42,11 @@ class WawancaraController extends Controller
         $profil = auth('api')->user()->profilPerusahaan;
         if (!$profil) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
 
+        // [UPDATE LOGIC] - Terapkan validasi required untuk tanggal, waktu, dan tempat_link
         $validator = Validator::make($request->all(), [
+            'tanggal'           => 'required',
+            'waktu'             => 'required',
+            'tempat_link'       => 'required',
             'tanggal_wawancara' => 'required|date_format:Y-m-d H:i|after:now',
             'lokasi'            => 'required|string|max:500',
             'catatan'           => 'nullable|string|max:500',
@@ -50,13 +54,18 @@ class WawancaraController extends Controller
 
         if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
 
-        $lamaran = Lamaran::with(['profil', 'lowongan'])
+        // [UPDATE LOGIC] - Eager load profil.pengguna untuk keperluan pengiriman email
+        $lamaran = Lamaran::with(['profil.pengguna', 'lowongan'])
             ->whereHas('lowongan', fn($q) => $q->where('id_perusahaan', $profil->id_perusahaan))
             ->where('id_lamaran', $id_lamaran)
             ->first();
 
         if (!$lamaran) return $this->errorResponse('Lamaran tidak ditemukan', 404);
-        if ($lamaran->status !== 'Wawancara') return $this->errorResponse('Status lamaran harus Wawancara', 422);
+
+        // [UPDATE LOGIC] - Jika status lamaran sebelumnya belum berstatus "Wawancara", otomatis update status lamarannya menjadi "Wawancara"
+        if ($lamaran->status !== 'Wawancara') {
+            $lamaran->update(['status' => 'Wawancara']);
+        }
 
         try {
             $data = $request->all();

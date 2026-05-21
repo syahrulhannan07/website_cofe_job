@@ -42,6 +42,11 @@ const FotoProfil = ({ variants, data, onUpdate }) => {
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
+            // [UPDATE LOGIC]
+            if (file.size > 10 * 1024 * 1024) {
+                alert("Gagal mengunggah: Ukuran gambar terlalu besar");
+                return;
+            }
             const reader = new FileReader();
             reader.onload = () => {
                 setImageToCrop(reader.result);
@@ -55,6 +60,12 @@ const FotoProfil = ({ variants, data, onUpdate }) => {
         try {
             setIsUploading(true);
             const croppedImageBlob = await getCroppedImgBlob(imageToCrop, croppedAreaPixels);
+            
+            // [UPDATE LOGIC]
+            if (croppedImageBlob.size > 10 * 1024 * 1024) {
+                alert("Gagal mengunggah: Ukuran gambar terlalu besar");
+                return;
+            }
             
             // Create a preview immediately
             const previewUrl = URL.createObjectURL(croppedImageBlob);
@@ -74,7 +85,9 @@ const FotoProfil = ({ variants, data, onUpdate }) => {
             }
         } catch (error) {
             console.error('Gagal memproses gambar:', error);
-            alert('Gagal memproses gambar. Silakan coba lagi.');
+            // [UPDATE LOGIC]
+            const errorMessage = error.response?.data?.message || 'Gagal memproses gambar. Silakan coba lagi.';
+            alert(errorMessage);
         } finally {
             setIsUploading(false);
             setImageToCrop(null);

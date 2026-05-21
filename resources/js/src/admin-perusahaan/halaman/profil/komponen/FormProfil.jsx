@@ -24,6 +24,14 @@ const FormProfil = ({ variants, data, onUpdate }) => {
     const [nibFileName, setNibFileName] = useState("");
     const nibInputRef = useRef(null);
 
+    // [UPDATE LOGIC]
+    // Helper to remove timestamp prefix from document filename
+    const cleanFileName = (path) => {
+        if (!path) return "";
+        const fileName = path.split('/').pop();
+        return fileName.replace(/^\d+_(izin|dokumen)_/, '');
+    };
+
     // Sync data from props
     useEffect(() => {
         if (data) {
@@ -35,7 +43,7 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                 kecamatan: data.kecamatan || "",
                 deskripsi: data.deskripsi || ""
             });
-            setNibFileName(data.dokumen_izin ? data.dokumen_izin.split('/').pop() : "");
+            setNibFileName(cleanFileName(data.dokumen_izin));
         }
     }, [data]);
 
@@ -53,7 +61,7 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                     deskripsi: data.deskripsi || ""
                 });
                 setNibFile(null);
-                setNibFileName(data.dokumen_izin ? data.dokumen_izin.split('/').pop() : "");
+                setNibFileName(cleanFileName(data.dokumen_izin));
             }
         }
         setIsEditing(!isEditing);
@@ -66,12 +74,33 @@ const FormProfil = ({ variants, data, onUpdate }) => {
 
     // Fungsi trigger upload NIB
     const handleNibUploadClick = () => {
-        if (isEditing) nibInputRef.current.click();
+        if (isEditing) {
+            nibInputRef.current.click();
+        } else {
+            // [UPDATE LOGIC]
+            if (data?.dokumen_izin) {
+                const url = data.dokumen_izin.startsWith('http') 
+                    ? data.dokumen_izin 
+                    : `/storage/${data.dokumen_izin}`;
+                window.open(url, '_blank');
+            }
+        }
     };
 
     const handleNibChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // [UPDATE LOGIC]
+            if (file.size > 10 * 1024 * 1024) {
+                alert("Gagal mengunggah: Ukuran dokumen terlalu besar");
+                return;
+            }
+            const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            if (!allowedExtensions.includes(fileExtension)) {
+                alert("Format file dokumen tidak valid");
+                return;
+            }
             setNibFile(file);
             setNibFileName(file.name);
         }
@@ -99,6 +128,8 @@ const FormProfil = ({ variants, data, onUpdate }) => {
             });
 
             if (response.data.status === 'success') {
+                // [UPDATE LOGIC]
+                alert("Profil Perusahaan Berhasil Diperbarui");
                 setIsEditing(false);
                 onUpdate();
             }
@@ -279,11 +310,27 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                         className={`input-profil w-full h-[38px] px-[16px] bg-[#F3EDE6] border border-[#CCCCCC]/80 rounded-[5px] font-poppins text-[14px] text-[#4B2E2B] flex items-center justify-between cursor-pointer transition-all ${
                             isEditing 
                             ? 'hover:border-[#F7B750] bg-white/50' 
-                            : 'cursor-not-allowed opacity-90'
+                            : (data?.dokumen_izin ? 'hover:bg-[#EAE4DC] hover:border-[#4B2E2B]/30' : 'cursor-not-allowed opacity-90')
                         }`}
                     >
-                        <span className="truncate">
-                            {nibFileName || "Belum ada file yang diunggah"}
+                        <span className="truncate flex items-center">
+                            {/* [UPDATE LOGIC] - tampilkan nama file lokal segera setelah dipilih */}
+                            {nibFile ? nibFile.name : (nibFileName || "Belum ada file yang diunggah")}
+                            {/* Tampilkan link (Lihat) jika ada file baru dipilih ATAU ada dokumen tersimpan */}
+                            {(nibFile || data?.dokumen_izin) && (
+                                <span 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const url = nibFile 
+                                            ? URL.createObjectURL(nibFile) 
+                                            : (data.dokumen_izin.startsWith('http') ? data.dokumen_izin : `/storage/${data.dokumen_izin}`);
+                                        window.open(url, '_blank');
+                                    }}
+                                    className="ml-2 text-[12px] text-[#F7B750] hover:text-[#4B2E2B] underline font-medium cursor-pointer shrink-0"
+                                >
+                                    (Lihat)
+                                </span>
+                            )}
                         </span>
                         {isEditing && (
                             <span className="text-[12px] bg-[#4B2E2B] text-white px-3 py-1 rounded-full shrink-0">

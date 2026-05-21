@@ -88,12 +88,19 @@ class SeleksiLamaranController extends Controller
 
         if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
 
-        $lamaran = $this->repository->findByIdAndPerusahaan($id_lamaran, $profil->id_perusahaan, ['lowongan', 'profil']);
+        $lamaran = $this->repository->findByIdAndPerusahaan($id_lamaran, $profil->id_perusahaan, ['lowongan', 'profil', 'profil.pengguna']);
         if (!$lamaran) return $this->errorResponse('Lamaran tidak ditemukan', 404);
 
         try {
             $this->service->updateStatus($lamaran, $request->status, $profil->nama_perusahaan);
-            return $this->successResponse(null, 'Status lamaran berhasil diperbarui');
+
+            // [UPDATE LOGIC] - Refresh lamaran dari DB dan kembalikan data terbaru agar frontend dapat update state reaktif
+            $lamaran->refresh();
+
+            return $this->successResponse([
+                'id_lamaran' => $lamaran->id_lamaran,
+                'status'     => $lamaran->status,  // [UPDATE LOGIC]
+            ], 'Status lamaran berhasil diperbarui');
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat memperbarui status', 500, $e->getMessage());
         }

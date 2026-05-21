@@ -55,13 +55,24 @@ class ProfilPerusahaanController extends Controller
             'dokumen_izin' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ], [
             'logo.max' => 'Gagal mengunggah: Ukuran gambar terlalu besar',
+            'logo.mimes' => 'Format file logo tidak valid',
+            'logo.image' => 'Format file logo tidak valid',
             'dokumen_izin.max' => 'Gagal mengunggah: Ukuran dokumen terlalu besar',
+            'dokumen_izin.mimes' => 'Format file dokumen tidak valid',
+            'dokumen_izin.file' => 'Format file dokumen tidak valid',
         ]);
 
         if ($validator->fails()) {
+            // [UPDATE LOGIC]
+            $message = 'Validasi gagal';
+            if ($validator->errors()->has('logo')) {
+                $message = $validator->errors()->first('logo');
+            } elseif ($validator->errors()->has('dokumen_izin')) {
+                $message = $validator->errors()->first('dokumen_izin');
+            }
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validasi gagal',
+                'message' => $message,
                 'errors' => $validator->errors()
             ], 422);
         }

@@ -30,6 +30,20 @@ class WawancaraService
                 "Anda dijadwalkan wawancara untuk {$posisi} di {$namaKafe}. Tanggal: {$data['tanggal_wawancara']}. Lokasi: {$data['lokasi']}."
             );
 
+            // [UPDATE LOGIC] - Kirim email detail jadwal wawancara ke kandidat secara synchronous
+            try {
+                $wawancara->load(['lamaran.profil.pengguna', 'lamaran.lowongan']);
+                $emailKandidat = $wawancara->lamaran->profil->pengguna->email;
+                if ($emailKandidat) {
+                    \Illuminate\Support\Facades\Mail::to($emailKandidat)->send(
+                        new \App\Mail\UndanganWawancaraMail($wawancara, $namaKafe)
+                    );
+                }
+            } catch (\Exception $e) {
+                // Log pesan error ke system log tetapi JANGAN me-rollback transaksi database
+                \Illuminate\Support\Facades\Log::error('Gagal mengirim email undangan wawancara: ' . $e->getMessage());
+            }
+
             return $wawancara;
         });
     }

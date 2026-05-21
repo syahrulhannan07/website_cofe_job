@@ -65,6 +65,11 @@ class LowonganController extends Controller
         $profil = auth('api')->user()->profilPerusahaan;
         if (!$profil) return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu', 403);
 
+        // [UPDATE LOGIC]
+        if ($request->status === 'Active' && $profil->status_verifikasi !== 'Diterima') {
+            return $this->errorResponse('Akun Anda sedang dalam proses verifikasi oleh Super Admin. Harap tunggu persetujuan.', 403);
+        }
+
         if ($request->status === 'Active' && !$this->isProfileComplete($profil)) {
             return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu sebelum memposting', 422);
         }
@@ -134,6 +139,11 @@ class LowonganController extends Controller
 
         if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
 
+        // [UPDATE LOGIC]
+        if ($request->status === 'Active' && $lowongan->status !== 'Active' && $profil->status_verifikasi !== 'Diterima') {
+            return $this->errorResponse('Akun Anda sedang dalam proses verifikasi oleh Super Admin. Harap tunggu persetujuan.', 403);
+        }
+
         if ($request->status === 'Active' && $lowongan->status !== 'Active' && !$this->isProfileComplete($profil)) {
             return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu sebelum memposting', 422);
         }
@@ -178,6 +188,12 @@ class LowonganController extends Controller
         if (!$lowongan) return $this->errorResponse('Lowongan tidak ditemukan', 404);
 
         if ($lowongan->status === 'Active') return $this->errorResponse('Lowongan sudah dalam status Active', 422);
+
+        // [UPDATE LOGIC]
+        if ($profil->status_verifikasi !== 'Diterima') {
+            return $this->errorResponse('Akun Anda sedang dalam proses verifikasi oleh Super Admin. Harap tunggu persetujuan.', 403);
+        }
+
         if (!$this->isProfileComplete($profil)) return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu', 422);
 
         $this->repository->update($lowongan, ['status' => 'Active']);
