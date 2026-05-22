@@ -31,11 +31,12 @@ class MulaiLamaranRequest extends FormRequest
                     // 2. Cek apakah sudah pernah melamar
                     $profil = auth('api')->user()->profilPelamar;
                     if ($profil) {
-                        $exists = Lamaran::where('id_lowongan', $value)
+                        $lamaranExisting = Lamaran::where('id_lowongan', $value)
                             ->where('id_profil', $profil->id_profil)
-                            ->exists();
+                            ->first();
                         
-                        if ($exists) {
+                        // Jika sudah ada lamaran dan statusnya BUKAN 'Diproses' (artinya sudah disubmit/ditolak dsb)
+                        if ($lamaranExisting && $lamaranExisting->status !== 'Diproses') {
                             $fail('Anda sudah pernah melamar pada lowongan ini.');
                         }
                     }

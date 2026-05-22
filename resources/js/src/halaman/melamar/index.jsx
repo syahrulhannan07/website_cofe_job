@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProgressBar from './komponen/ProgressBar';
@@ -9,30 +9,18 @@ import Step4Review from './komponen/Step4Review';
 import iconKembali from '../../aset/melamar/iconkembali.svg';
 import iconLanjut from '../../aset/melamar/iconlanjut.svg';
 import iconSent from '../../aset/melamar/Sent.png';
-import api from '../../layanan/api';
+import layananLamaran from '../../layanan/layananLamaran';
 
 /**
  * SIPEKA — Sistem Pelamaran Kerja
  * Wrapper utama yang mengatur state dan navigasi 4 tahap lamaran.
- * State Management: formData dipecah per seksi agar mudah dikelola.
+ * Mengintegrasikan endpoint backend secara sekuensial.
  */
 const STATE_AWAL = {
-    upload: {
-        cv: null,
-        ijazah: null,
-        suratLamaran: null,
-        dokumenPendukung: null,
-    },
-    pertanyaan: {
-        gajiDiinginkan: '',
-        kualifikasi: '',
-        pengalamanKerja: '',
-    },
+    upload: {}, // Akan menyimpan mapping { id_jenis_dokumen: File }
+    pertanyaan: [], // Akan menyimpan array { id_pertanyaan, jawaban }
     profil: {
         tentangSaya: '',
-        pendidikan: '',
-        keahlian: '',
-        pengalamanKerjaDetail: '',
     },
 };
 
@@ -48,7 +36,7 @@ const Melamar = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Ambil info lowongan dari state navigasi (opsional)
+    // Ambil info lowongan dari state navigasi
     const infoLowongan = location.state?.lowongan || null;
 
     const [stepSaatIni, setStepSaatIni] = useState(1);
@@ -57,6 +45,55 @@ const Melamar = () => {
     const [galat, setGalat] = useState('');
     const [sedangMengirim, setSedangMengirim] = useState(false);
     const [lamaranTerkirim, setLamaranTerkirim] = useState(false);
+
+    // State Integrasi API
+    const [isLoadingInit, setIsLoadingInit] = useState(true);
+    const [idLamaran, setIdLamaran] = useState(null);
+    const [dokumenWajib, setDokumenWajib] = useState([]);
+    const [pertanyaanSeleksi, setPertanyaanSeleksi] = useState([]);
+
+    useEffect(() => {
+        if (!infoLowongan?.id) {
+            alert('Akses tidak valid. Tidak ada data lowongan.');
+            navigate('/');
+            return;
+        }
+
+        const inisialisasiLamaran = async () => {
+            try {
+                // 1. Mulai lamaran untuk mendapatkan ID dan dokumen wajib
+                const resMulai = await layananLamaran.mulaiLamaran(infoLowongan.id);
+                if (resMulai.status === 'success') {
+                    setIdLamaran(resMulai.data.id_lamaran);
+                    setDokumenWajib(resMulai.data.dokumen_wajib || []);
+                }
+
+                // 2. Ambil detail lowongan untuk mendapatkan pertanyaan seleksi
+                const resDetail = await layananLamaran.getDetailLowongan(infoLowongan.id);
+                if (resDetail.status === 'success') {
+                    setPertanyaanSeleksi(resDetail.data.pertanyaan_seleksi || []);
+                    
+                    // Inisialisasi state pertanyaan
+                    if (resDetail.data.pertanyaan_seleksi) {
+                        const initPertanyaan = resDetail.data.pertanyaan_seleksi.map(p => ({
+                            id_pertanyaan: p.id_pertanyaan,
+                            jawaban: ''
+                        }));
+                        setFormData(prev => ({ ...prev, pertanyaan: initPertanyaan }));
+                    }
+                }
+            } catch (err) {
+                console.error('Gagal inisialisasi lamaran:', err);
+                const pesan = err.response?.data?.message || 'Gagal memulai lamaran. Pastikan profil Anda lengkap.';
+                alert(pesan);
+                navigate('/profil'); // Redirect ke profil jika profil belum lengkap
+            } finally {
+                setIsLoadingInit(false);
+            }
+        };
+
+        inisialisasiLamaran();
+    }, [infoLowongan, navigate]);
 
     // ─── Handlers State Per Seksi ────────────────────────────────────────────
     const updateUpload = (data) => setFormData((prev) => ({ ...prev, upload: data }));
@@ -67,27 +104,22 @@ const Melamar = () => {
     const validasiStep = () => {
         setGalat('');
         if (stepSaatIni === 1) {
-            if (!formData.upload.cv) {
-                setGalat('CV wajib diunggah sebelum melanjutkan.');
-                return false;
-            }
-            if (!formData.upload.suratLamaran) {
-                setGalat('Surat Lamaran wajib diunggah sebelum melanjutkan.');
-                return false;
+            // Cek semua dokumen yang statusnya wajib
+            for (let doc of dokumenWajib) {
+                if (doc.wajib && !formData.upload[doc.id_jenis_dokumen]) {
+                    setGalat(`Dokumen ${doc.nama_dokumen} wajib diunggah sebelum melanjutkan.`);
+                    return false;
+                }
             }
         }
         if (stepSaatIni === 2) {
-            if (!formData.pertanyaan.gajiDiinginkan.trim()) {
-                setGalat('Harap isi gaji yang diinginkan sebelum melanjutkan.');
-                return false;
-            }
-            if (!formData.pertanyaan.kualifikasi.trim()) {
-                setGalat('Harap isi kualifikasi yang Anda miliki.');
-                return false;
-            }
-            if (!formData.pertanyaan.pengalamanKerja.trim()) {
-                setGalat('Harap isi jawaban pengalaman kerja sebelum melanjutkan.');
-                return false;
+            // Cek semua pertanyaan
+            for (let q of pertanyaanSeleksi) {
+                const jawabanItem = formData.pertanyaan.find(p => p.id_pertanyaan === q.id_pertanyaan);
+                if (!jawabanItem || !jawabanItem.jawaban.trim()) {
+                    setGalat('Harap jawab semua pertanyaan dari perusahaan sebelum melanjutkan.');
+                    return false;
+                }
             }
         }
         return true;
@@ -117,31 +149,28 @@ const Melamar = () => {
         setSedangMengirim(true);
         setGalat('');
         try {
-            const payload = new FormData();
-
-            // Dokumen
-            if (formData.upload.cv) payload.append('cv', formData.upload.cv);
-            if (formData.upload.ijazah) payload.append('ijazah', formData.upload.ijazah);
-            if (formData.upload.suratLamaran) payload.append('surat_lamaran', formData.upload.suratLamaran);
-            if (formData.upload.dokumenPendukung) payload.append('dokumen_pendukung', formData.upload.dokumenPendukung);
-
-            // Pertanyaan
-            payload.append('gaji_diinginkan', formData.pertanyaan.gajiDiinginkan);
-            payload.append('kualifikasi', formData.pertanyaan.kualifikasi);
-            payload.append('pengalaman_kerja', formData.pertanyaan.pengalamanKerja);
-
-            // Profil
-            payload.append('tentang_saya', formData.profil.tentangSaya);
-            payload.append('pendidikan', formData.profil.pendidikan);
-            payload.append('keahlian', formData.profil.keahlian);
-            payload.append('pengalaman_detail', formData.profil.pengalamanKerjaDetail);
-
-            // ID Lowongan jika ada
-            if (infoLowongan?.id) payload.append('id_lowongan', infoLowongan.id);
-
-            await api.post('/lamaran', payload, {
-                headers: { 'Content-Type': 'multipart/form-data' },
+            // 1. Upload Dokumen
+            const payloadUpload = new FormData();
+            let hasFiles = false;
+            Object.keys(formData.upload).forEach((id_jenis_dokumen) => {
+                if (formData.upload[id_jenis_dokumen]) {
+                    payloadUpload.append('dokumen[]', formData.upload[id_jenis_dokumen]);
+                    payloadUpload.append('id_jenis_dokumen[]', id_jenis_dokumen);
+                    hasFiles = true;
+                }
             });
+
+            if (hasFiles) {
+                await layananLamaran.uploadDokumen(idLamaran, payloadUpload);
+            }
+
+            // 2. Simpan Jawaban Pertanyaan
+            if (formData.pertanyaan && formData.pertanyaan.length > 0) {
+                await layananLamaran.simpanJawaban(idLamaran, formData.pertanyaan);
+            }
+
+            // 3. Finalisasi / Kirim Lamaran
+            await layananLamaran.kirimLamaran(idLamaran);
 
             setLamaranTerkirim(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -156,18 +185,47 @@ const Melamar = () => {
     // ─── Render Komponen Per Step ────────────────────────────────────────────
     const renderStep = () => {
         switch (stepSaatIni) {
-            case 1: return <Step1Upload data={formData.upload} onChange={updateUpload} />;
-            case 2: return <Step2Pertanyaan data={formData.pertanyaan} onChange={updatePertanyaan} />;
-            case 3: return <Step3Profile data={formData.profil} onChange={updateProfil} />;
-            case 4: return <Step4Review formData={formData} onKirim={kirimLamaran} sedangMengirim={sedangMengirim} />;
+            case 1: 
+                return <Step1Upload 
+                    data={formData.upload} 
+                    onChange={updateUpload} 
+                    dokumenWajib={dokumenWajib}
+                />;
+            case 2: 
+                return <Step2Pertanyaan 
+                    data={formData.pertanyaan} 
+                    onChange={updatePertanyaan} 
+                    pertanyaanSeleksi={pertanyaanSeleksi}
+                />;
+            case 3: 
+                return <Step3Profile 
+                    data={formData.profil} 
+                    onChange={updateProfil} 
+                />;
+            case 4: 
+                return <Step4Review 
+                    formData={formData} 
+                    onKirim={kirimLamaran} 
+                    sedangMengirim={sedangMengirim} 
+                    dokumenWajib={dokumenWajib}
+                    pertanyaanSeleksi={pertanyaanSeleksi}
+                />;
             default: return null;
         }
     };
 
+    if (isLoadingInit) {
+        return (
+            <div className="w-full flex items-center justify-center min-h-screen bg-[#F3EDE6]">
+                <p className="font-poppins font-bold text-xl text-[#4B2E2B]">Menyiapkan lamaran Anda...</p>
+            </div>
+        );
+    }
+
     // ─── Halaman Sukses ──────────────────────────────────────────────────────
     if (lamaranTerkirim) {
         return (
-            <div className="flex-1 flex items-center justify-center p-8 min-h-[60vh]">
+            <div className="flex-1 flex items-center justify-center p-8 min-h-[60vh] pembungkus-utama-melamar">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -201,9 +259,9 @@ const Melamar = () => {
 
     // ─── Render Utama ────────────────────────────────────────────────────────
     return (
-        <div className="w-full flex flex-col bg-[#F3EDE6] min-h-screen">
+        <div className="pembungkus-utama-melamar w-full flex flex-col bg-[#F3EDE6] min-h-screen">
 
-            {/* Header Banner (Figma Node 53:2950) */}
+            {/* Header Banner */}
             <div className="w-full bg-[#4B2E2B] py-12 px-6">
                 <div className="max-w-[1300px] mx-auto text-center flex flex-col items-center">
                     <h1 className="font-poppins font-bold text-[36px] text-white leading-tight">

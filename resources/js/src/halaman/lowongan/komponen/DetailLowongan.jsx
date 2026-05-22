@@ -56,7 +56,7 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
     const handleLamar = () => {
         const token = localStorage.getItem('token');
         if (token) {
-            navigate('/melamar');
+            navigate('/melamar', { state: { lowongan: dataLowongan } });
         } else {
             // Jika belum login, arahkan ke login
             navigate('/masuk');

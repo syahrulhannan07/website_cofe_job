@@ -27,11 +27,15 @@ class LamaranController extends Controller
             ], 403);
         }
 
-        $lamaran = Lamaran::create([
-            'id_lowongan' => $request->id_lowongan,
-            'id_profil' => $profil->id_profil,
-            'status' => 'Diproses'
-        ]);
+        $lamaran = Lamaran::firstOrCreate(
+            [
+                'id_lowongan' => $request->id_lowongan,
+                'id_profil' => $profil->id_profil,
+            ],
+            [
+                'status' => 'Diproses'
+            ]
+        );
 
         $lowongan = Lowongan::with('dokumenDibutuhkan.jenisDokumen')->find($request->id_lowongan);
         
