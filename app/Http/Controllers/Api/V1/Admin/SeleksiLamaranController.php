@@ -71,6 +71,11 @@ class SeleksiLamaranController extends Controller
 
         if (!$lamaran) return $this->errorResponse('Lamaran tidak ditemukan', 404);
 
+        if ($lamaran->status === 'Diproses') {
+            $lamaran->status = 'Dalam Review';
+            $lamaran->save();
+        }
+
         return $this->successResponse(new LamaranResource($lamaran));
     }
 

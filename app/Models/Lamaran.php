@@ -73,8 +73,9 @@ class Lamaran extends Model
     private static function getKeteranganStatus($status)
     {
         return match ($status) {
-            'Diproses' => 'Lamaran sedang ditinjau oleh pihak kafe.',
-            'Wawancara' => 'Selamat! Anda diundang untuk mengikuti sesi wawancara.',
+            'Diproses' => 'Lamaran dikirim.',
+            'Dalam Review' => 'Dalam review.',
+            'Wawancara' => 'Lamaran diterima, tinggal menunggu jadwal wawancara.',
             'Diterima' => 'Selamat! Anda diterima bekerja di kafe ini.',
             'Ditolak' => 'Mohon maaf, lamaran Anda belum dapat diproses lebih lanjut.',
             default => 'Status lamaran diperbarui.',

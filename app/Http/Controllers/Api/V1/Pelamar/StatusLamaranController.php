@@ -64,7 +64,7 @@ class StatusLamaranController extends Controller
     {
         $profil = auth('api')->user()->profilPelamar;
         
-        $lamaran = Lamaran::with(['lowongan.perusahaan', 'logStatus', 'wawancara'])
+        $lamaran = Lamaran::with(['lowongan.perusahaan', 'logStatus', 'wawancara', 'profil.pengguna'])
             ->where('id_lamaran', $id_lamaran)
             ->where('id_profil', $profil->id_profil)
             ->firstOrFail();
@@ -75,6 +75,8 @@ class StatusLamaranController extends Controller
                 'id_lamaran' => $lamaran->id_lamaran,
                 'posisi' => $lamaran->lowongan->posisi ?? null,
                 'nama_kafe' => $lamaran->lowongan->perusahaan->nama_perusahaan ?? null,
+                'logo_kafe' => $lamaran->lowongan->perusahaan->logo_perusahaan ?? null,
+                'nama_pelamar' => $lamaran->profil->pengguna->nama_lengkap ?? null,
                 'status_saat_ini' => $lamaran->status,
                 'timeline' => $lamaran->logStatus()
                     ->orderBy('dibuat_pada', 'desc')

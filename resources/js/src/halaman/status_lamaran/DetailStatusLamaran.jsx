@@ -1,42 +1,98 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import coffeeBeansIcon from '../../aset/status_lamaran/Coffee Beans.png';
+import placeholderProfile from '../../aset/profil/placeholder_profil.jpg';
+import api from '../../layanan/api'; // Pastikan path ini sesuai untuk memanggil axios instance
 
 const DetailStatusLamaran = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
+    
+    const [data, setData] = useState(null);
+    const [wawancara, setWawancara] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Data Mockup Detail (Diperbarui untuk visual yang lebih kaya sesuai gambar)
-    const dataMockup = {
-        1: {
-            posisi: 'Senior Barista',
-            nama_perusahaan: 'Indra Coffee Roasters',
-            tanggal_lamar: '20 Maret 2026',
-            status: 'Diproses',
-            timeline: [
-                { judul: 'Lamaran Dikirim', waktu: '20 Maret 2026 - 10:50', deskripsi: 'Lamaran Anda telah berhasil diterima oleh tim rekrutmen Indra Coffee Roasters.', selesai: true },
-                { judul: 'Dalam Review', waktu: '21 Maret 2026 - 14:30', deskripsi: 'Tim HRD sedang meninjau portofolio dan pengalaman kerja Anda.', selesai: true },
-                { judul: 'Proses Seleksi', waktu: 'Sedang Berlangsung', deskripsi: 'Lamaran Anda sedang dalam tahap tinjauan internal.', selesai: false },
-            ]
-        },
-        4: {
-            posisi: 'Outlet Manager',
-            nama_perusahaan: 'Dermayu Beans & Co.',
-            tanggal_lamar: '23 Maret 2026',
-            status: 'Wawancara',
-            timeline: [
-                { judul: 'Lamaran Dikirim', waktu: '23 Maret 2026 - 10:50', deskripsi: 'Lamaran Anda telah berhasil diterima oleh tim rekrutmen Dermayu Beans & Co.', selesai: true },
-                { judul: 'Dalam Review', waktu: '23 Maret 2026 - 10:50', deskripsi: 'Tim HRD sedang meninjau portofolio dan pengalaman kerja Anda.', selesai: true },
-                { judul: 'Lamaran Diterima', waktu: '24 Maret 2026 - 13:20', deskripsi: 'Lamaran anda lolos seleksi, selanjutnya tunggu informasi jadwal wawancara Anda.', selesai: true },
-                { judul: 'Jadwal Wawancara', waktu: '25 Maret 2026 - 10:07', deskripsi: 'Anda diundang untuk sesi wawancara.', selesai: true, hasButton: true },
-            ]
-        }
-    };
+    useEffect(() => {
+        const fetchDetail = async () => {
+            try {
+                const response = await api.get(`/pelamar/lamaran/${id}`);
+                if (response.data.status === 'success') {
+                    const apiData = response.data.data;
+                    
+                    const mappedData = {
+                        posisi: apiData.posisi,
+                        nama_perusahaan: apiData.nama_kafe,
+                        logo_perusahaan: apiData.logo_kafe,
+                        nama_pelamar: apiData.nama_pelamar,
+                        tanggal_lamar: apiData.timeline[apiData.timeline.length - 1]?.waktu 
+                            ? new Date(apiData.timeline[apiData.timeline.length - 1].waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
+                            : 'Tanggal tidak tersedia',
+                        status: apiData.status_saat_ini,
+                        timeline: apiData.timeline.map((log) => {
+                            let judul = log.status;
+                            let deskripsi = log.keterangan;
+                            
+                            if (log.status === 'Diproses') {
+                                judul = 'Lamaran Dikirim';
+                                deskripsi = `Lamaran Anda telah berhasil diterima oleh tim rekrutmen ${apiData.nama_kafe}.`;
+                            } else if (log.status === 'Dalam Review') {
+                                judul = 'Dalam Review';
+                                deskripsi = 'Tim HRD sedang meninjau portofolio dan pengalaman kerja Anda.';
+                            } else if (log.status === 'Wawancara') {
+                                if (log.keterangan === 'Jadwal wawancara telah dibuat.') {
+                                    judul = 'Jadwal Wawancara';
+                                    deskripsi = 'Anda diundang untuk sesi wawancara.';
+                                } else {
+                                    judul = 'Lamaran Diterima';
+                                    deskripsi = 'Lamaran anda lolos seleksi, selanjutnya tunggu informasi jadwal wawancara Anda.';
+                                }
+                            }
+                            
+                            return {
+                                judul: judul,
+                                waktu: new Date(log.waktu).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' }).replace(' pukul ', ' - '),
+                                deskripsi: deskripsi,
+                                selesai: true,
+                                hasButton: log.keterangan === 'Jadwal wawancara telah dibuat.'
+                            };
+                        }).reverse() // Reverse karena API return DESC (terbaru di atas), sedangkan timeline butuh ASC (dari awal mula)
+                    };
 
-    const data = dataMockup[id] || dataMockup[4];
+                    setData(mappedData);
+                    
+                    if (apiData.wawancara) {
+                        setWawancara(apiData.wawancara);
+                    }
+                }
+            } catch (error) {
+                console.error("Gagal memuat detail lamaran:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDetail();
+    }, [id]);
+
     const warnaGold = '#FBB041';
     const warnaCokelat = '#3D2722';
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#F6F1EE]/50">
+                <p className="font-poppins font-medium text-[#3D2722]/60">Memuat detail lamaran...</p>
+            </div>
+        );
+    }
+
+    if (!data) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#F6F1EE]/50">
+                <p className="font-poppins font-medium text-[#3D2722]/60">Data lamaran tidak ditemukan.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="halaman-detail-status min-h-screen py-12 px-4 md:px-8">
@@ -61,10 +117,13 @@ const DetailStatusLamaran = () => {
                 <div className="header-detail-premium relative rounded-[40px] bg-[#3D2722] overflow-hidden mb-16 shadow-xl border-b-[12px] border-[#FBB041]">
                     <div className="p-8 md:p-12 flex flex-col md:flex-row items-center gap-10">
                         {/* Logo Perusahaan */}
-                        <div className="wadah-logo w-[110px] h-[110px] bg-[#C69C6D] rounded-[20px] flex items-center justify-center shadow-lg flex-shrink-0">
-                            <div className="text-center font-serif text-[14px] leading-tight text-[#3D2722] font-bold">
-                                COFFEE<br/>HOUSE
-                            </div>
+                        <div className="wadah-logo w-[110px] h-[110px] bg-[#C69C6D] rounded-[20px] flex items-center justify-center shadow-lg flex-shrink-0 overflow-hidden">
+                            <img 
+                                src={data.logo_perusahaan ? (data.logo_perusahaan.startsWith('http') || data.logo_perusahaan.startsWith('/') ? data.logo_perusahaan : `/storage/${data.logo_perusahaan}`) : placeholderProfile}
+                                alt="Logo Perusahaan"
+                                className="w-full h-full object-cover"
+                                onError={(e) => { e.target.onerror = null; e.target.src = placeholderProfile; }}
+                            />
                         </div>
 
                         {/* Info Utama */}
@@ -174,76 +233,78 @@ const DetailStatusLamaran = () => {
 
                         {/* Body Modal - Padat & Proporsional */}
                         <div className="p-6 md:p-7 bg-[#FFFBF8] space-y-4">
-                            <div className="flex flex-col md:flex-row gap-6">
-                                {/* Nama Pelamar */}
-                                <div className="flex-grow space-y-1.5">
-                                    <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Nama Pelamar</label>
-                                    <div className="flex items-center bg-[#F8F4F1] rounded-[10px] px-4 py-2.5">
-                                        <svg className="w-4 h-4 text-[#8B5E3C] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                        <span className="font-poppins font-semibold text-[15px] text-[#2D1B18]">Aditya Nugraha</span>
+                            {wawancara ? (
+                                <>
+                                    <div className="flex flex-col md:flex-row gap-6">
+                                        {/* Nama Pelamar */}
+                                        <div className="flex-grow space-y-1.5">
+                                            <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Nama Pelamar</label>
+                                            <div className="flex items-center bg-[#F8F4F1] rounded-[10px] px-4 py-2.5">
+                                                <svg className="w-4 h-4 text-[#8B5E3C] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                                <span className="font-poppins font-semibold text-[15px] text-[#2D1B18]">{data.nama_pelamar || 'Pelamar'}</span>
+                                            </div>
+                                        </div>
+                                        {/* Status */}
+                                        <div className="space-y-1.5">
+                                            <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Status</label>
+                                            <div className="bg-[#FBB041] text-[#2D1B18] font-poppins font-bold px-4 py-2 rounded-full flex items-center shadow-sm text-[12px]">
+                                                <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                {wawancara.status_jadwal || 'Terjadwal'}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                {/* Status */}
-                                <div className="space-y-1.5">
-                                    <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Status</label>
-                                    <div className="bg-[#FBB041] text-[#2D1B18] font-poppins font-bold px-4 py-2 rounded-full flex items-center shadow-sm text-[12px]">
-                                        <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        Terjadwal
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* Lokasi */}
-                            <div className="space-y-1.5">
-                                <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Lokasi / Link Pertemuan</label>
-                                <div className="bg-[#F8F4F1] rounded-[14px] p-4 flex gap-4 items-center">
-                                    <div className="w-[44px] h-[44px] bg-[#805000] rounded-[10px] flex items-center justify-center flex-shrink-0">
-                                        <svg className="w-5 h-5 text-[#FBB041]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
+                                    {/* Lokasi */}
+                                    <div className="space-y-1.5">
+                                        <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Lokasi / Link Pertemuan</label>
+                                        <div className="bg-[#F8F4F1] rounded-[14px] p-4 flex gap-4 items-center">
+                                            <div className="w-[44px] h-[44px] bg-[#805000] rounded-[10px] flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-5 h-5 text-[#FBB041]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-poppins font-bold text-[16px] text-[#2D1B18]">{data.nama_perusahaan}</h4>
+                                                <p className="font-poppins text-[12.5px] text-[#2D1B18]/60 leading-tight mt-1">{wawancara.lokasi}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 className="font-poppins font-bold text-[16px] text-[#2D1B18]">Kopi Kenangan - Hargeulis</h4>
-                                        <p className="font-poppins text-[12.5px] text-[#2D1B18]/60 leading-tight">Lantai 3A, West Mall. Temui Bpk. Doni di bar utama.</p>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-6">
-                                {/* Tanggal */}
-                                <div className="space-y-1.5">
-                                    <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Tanggal</label>
-                                    <div className="flex items-center bg-[#F8F4F1] rounded-[10px] px-4 py-2.5">
-                                        <svg className="w-4 h-4 text-[#8B5E3C] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <span className="font-poppins font-semibold text-[14px] text-[#2D1B18]">01 April 2026</span>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {/* Tanggal */}
+                                        <div className="space-y-1.5">
+                                            <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Tanggal & Waktu</label>
+                                            <div className="flex items-center bg-[#F8F4F1] rounded-[10px] px-4 py-2.5">
+                                                <svg className="w-4 h-4 text-[#8B5E3C] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <span className="font-poppins font-semibold text-[14px] text-[#2D1B18]">
+                                                    {new Date(wawancara.tanggal).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' }).replace(' pukul ', ' - ')}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                {/* Waktu */}
-                                <div className="space-y-1.5">
-                                    <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Waktu (WIB)</label>
-                                    <div className="flex items-center bg-[#F8F4F1] rounded-[10px] px-4 py-2.5">
-                                        <svg className="w-4 h-4 text-[#8B5E3C] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span className="font-poppins font-semibold text-[14px] text-[#2D1B18]">10:00 - 11:00</span>
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* Catatan */}
-                            <div className="space-y-1.5">
-                                <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Catatan Tambahan</label>
-                                <div className="bg-[#F8F4F1] rounded-[14px] p-4 leading-relaxed text-[#2D1B18]/70 font-poppins text-[13px]">
-                                    "Mohon membawa CV cetak dan berpakaian rapi sesuai standar barista (kemeja putih/hitam polos). Datang 15 menit sebelum jadwal untuk verifikasi berkas."
+                                    {/* Catatan */}
+                                    {wawancara.catatan && (
+                                        <div className="space-y-1.5">
+                                            <label className="font-poppins font-semibold text-[12px] text-[#2D1B18]/60 ml-1">Catatan Tambahan</label>
+                                            <div className="bg-[#F8F4F1] rounded-[14px] p-4 leading-relaxed text-[#2D1B18]/70 font-poppins text-[13px]">
+                                                "{wawancara.catatan}"
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="text-center py-6">
+                                    <p className="font-poppins text-[#2D1B18]/60">Data jadwal wawancara belum tersedia.</p>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         {/* Footer Modal - Beige Lebih Gelap */}

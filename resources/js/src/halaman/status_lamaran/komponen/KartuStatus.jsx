@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import placeholderProfile from '../../../aset/profil/placeholder_profil.jpg';
 
 const KartuStatus = ({ data }) => {
     const navigate = useNavigate();
+    const [imgError, setImgError] = useState(false);
     // Warna sesuai Gambar 2
     const warnaAksen = '#FBB041'; // Kuning/Gold
     const warnaLatar = '#3D2722'; // Cokelat Gelap
@@ -21,10 +23,15 @@ const KartuStatus = ({ data }) => {
             <div className="flex items-center flex-grow w-full md:w-auto mb-4 md:mb-0 ml-4 md:ml-6">
                 {/* Logo Perusahaan (Kotak dengan rounded kecil sesuai Gambar 2) */}
                 <div className="wadah-logo w-[70px] h-[70px] md:w-[85px] md:h-[85px] bg-[#1A1110] rounded-[16px] flex items-center justify-center mr-6 shadow-lg border border-white/5 flex-shrink-0">
-                    {data.logo_perusahaan ? (
-                        <img src={data.logo_perusahaan} alt={data.nama_perusahaan} className="w-full h-full object-cover rounded-[16px]" />
+                    {data.logo_perusahaan && !imgError ? (
+                        <img 
+                            src={data.logo_perusahaan.startsWith('http') || data.logo_perusahaan.startsWith('/') ? data.logo_perusahaan : `/storage/${data.logo_perusahaan}`} 
+                            alt={data.nama_perusahaan} 
+                            className="w-full h-full object-cover rounded-[16px]" 
+                            onError={() => setImgError(true)}
+                        />
                     ) : (
-                        <div className="ikon-dummy opacity-30 text-[32px]">☕</div>
+                        <img src={placeholderProfile} alt="Placeholder" className="w-full h-full object-cover rounded-[16px]" />
                     )}
                 </div>
 

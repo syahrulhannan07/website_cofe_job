@@ -77,6 +77,15 @@ class WawancaraController extends Controller
                 $lamaran->lowongan->posisi, 
                 $lamaran->profil->id_pengguna
             );
+
+            // [UPDATE LOGIC] - Buat log manual untuk jadwal wawancara
+            \App\Models\LogStatusLamaran::create([
+                'id_lamaran' => $id_lamaran,
+                'status_lama' => 'Wawancara',
+                'status_baru' => 'Wawancara',
+                'keterangan' => 'Jadwal wawancara telah dibuat.',
+            ]);
+
             return $this->successResponse(new WawancaraResource($wawancara), 'Jadwal wawancara berhasil dibuat', 201);
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat menyimpan jadwal', 500, $e->getMessage());
