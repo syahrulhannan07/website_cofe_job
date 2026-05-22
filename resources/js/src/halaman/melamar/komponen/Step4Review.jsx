@@ -8,7 +8,13 @@ import iconDocCV from '../../../aset/melamar/iconcv.svg';
 import iconDocIjazah from '../../../aset/melamar/ikonijazah.svg';
 import iconDocSurat from '../../../aset/melamar/iconsuratlamaran.svg';
 import iconDocOther from '../../../aset/melamar/icondokumenlain.svg';
+import placeholderProfile from '../../../aset/profil/placeholder_profil.jpg';
+import iconEdu from '../../../aset/profil/Graduation Cap.png';
+import iconExp from '../../../aset/profil/Building.png';
 import layananProfil from '../../../layanan/layananProfil';
+
+const iconCalendar = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%234B2E2B"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`;
+const iconGender = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%234B2E2B"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>`;
 
 const getIconForDoc = (nama_dokumen) => {
     const name = (nama_dokumen || '').toLowerCase();
@@ -27,9 +33,15 @@ const ReviewCard = ({ title, children, className = "" }) => (
 
 const InfoItem = ({ icon, label, value }) => (
     <div className="flex items-start gap-4">
-        <div className="w-8 h-8 flex items-center justify-center shrink-0 mt-1">
-            <img src={icon} alt={label} className="w-6 h-6 object-contain" />
-        </div>
+        {icon ? (
+            <div className="w-8 h-8 flex items-center justify-center shrink-0 mt-1">
+                <img src={icon} alt={label} className="w-6 h-6 object-contain" />
+            </div>
+        ) : (
+            <div className="w-8 h-8 flex items-center justify-center shrink-0 mt-1">
+                <div className="w-3 h-3 bg-[#4B2E2B]/30 rounded-full" />
+            </div>
+        )}
         <div className="flex flex-col">
             <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">{label}</span>
             <span className="font-poppins font-medium text-[16px] text-[#4B2E2B]/70">{value || '-'}</span>
@@ -44,14 +56,20 @@ const QuestionBox = ({ question, answer }) => (
     </div>
 );
 
-const DocumentItem = ({ icon, name, category, size }) => (
+const DocumentItem = ({ icon, name, category, size, onClick }) => (
     <div className="pembungkus-item-dokumen bg-white rounded-[12px] p-4 border border-[#C5C8B5]/20 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-[#79582E]/10 rounded-[8px] flex items-center justify-center">
                 <img src={icon} alt="doc" className="w-6 h-6 object-contain" style={{ filter: 'invert(75%) sepia(18%) saturate(913%) hue-rotate(345deg) brightness(87%) contrast(85%)' }} />
             </div>
             <div className="flex flex-col">
-                <span className="font-poppins font-bold text-[16px] text-[#4B2E2B] truncate max-w-[300px] md:max-w-md">{name}</span>
+                <span 
+                    onClick={onClick}
+                    className="font-poppins font-bold text-[16px] text-[#4B2E2B] truncate max-w-[300px] md:max-w-md cursor-pointer hover:underline hover:text-blue-600 transition-colors"
+                    title="Klik untuk meninjau dokumen"
+                >
+                    {name}
+                </span>
                 <span className="font-poppins font-bold text-[12px] text-[#4B2E2B]/40 uppercase tracking-widest">{category} {size ? `• ${size}` : ''}</span>
             </div>
         </div>
@@ -59,7 +77,7 @@ const DocumentItem = ({ icon, name, category, size }) => (
     </div>
 );
 
-const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [] }) => {
+const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [], onEditProfil }) => {
     const { upload = {}, pertanyaan = [], profil = {} } = formData || {};
     const [profilData, setProfilData] = useState(null);
     const [loadingProfil, setLoadingProfil] = useState(true);
@@ -101,10 +119,14 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [] }) =>
                 {/* Kartu Profil */}
                 <ReviewCard className="relative min-h-[480px]">
                     <div className="flex items-center gap-6 mb-8">
-                        <div className="w-[100px] h-[100px] rounded-full bg-[#D9D9D9] overflow-hidden border-2 border-[#4B2E2B]/10">
-                            {profilData?.foto_profil && (
-                                <img src={profilData.foto_profil.startsWith('http') ? profilData.foto_profil : `/storage/${profilData.foto_profil}`} alt="Avatar" className="w-full h-full object-cover" />
-                            )}
+                        <div className="w-[100px] h-[100px] rounded-full bg-[#F3EDE6] overflow-hidden border-2 border-[#4B2E2B]/10 flex items-center justify-center">
+                            <img 
+                                src={profilData?.foto_profil 
+                                    ? (profilData.foto_profil.startsWith('http') ? profilData.foto_profil : `/storage/${profilData.foto_profil}`)
+                                    : placeholderProfile} 
+                                alt="Avatar" 
+                                className="w-full h-full object-cover" 
+                            />
                         </div>
                         <h2 className="font-poppins font-bold text-[40px] text-[#4B2E2B] leading-tight">{profilData?.nama_lengkap || 'User'}</h2>
                     </div>
@@ -112,25 +134,87 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [] }) =>
                     <div className="flex flex-col gap-6">
                         <div className="flex flex-col gap-2">
                             <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">Tentang Saya</span>
-                            <p className="font-poppins font-medium text-[16px] text-[#4B2E2B]/80 leading-relaxed">
+                            <p className="font-poppins font-medium text-[15px] text-[#4B2E2B]/80 leading-relaxed">
                                 {profilData?.tentang_saya || profil.tentangSaya || 'Tidak ada deskripsi.'}
                             </p>
                         </div>
 
-                        <div className="flex flex-col gap-4 mt-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 border-t border-[#4B2E2B]/10 pt-6">
                             <InfoItem icon={iconLocation} label="Alamat" value={profilData?.alamat} />
-                            <InfoItem icon={iconEmail} label="Email" value={profilData?.email} />
+                            <InfoItem icon={iconEmail} label="Email" value={profilData?.pengguna?.email} />
                             <InfoItem icon={iconPhone} label="No Telephone" value={profilData?.nomor_telepon} />
+                            <InfoItem icon={iconCalendar} label="Tanggal Lahir" value={profilData?.tanggal_lahir ? new Date(profilData.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : ''} />
+                            <InfoItem icon={iconGender} label="Jenis Kelamin" value={profilData?.jenis_kelamin} />
+                        </div>
+
+                        {/* Pendidikan */}
+                        <div className="flex flex-col gap-3 mt-4 border-t border-[#4B2E2B]/10 pt-6">
+                            <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">Pendidikan</span>
+                            {profilData?.pendidikan?.length > 0 ? (
+                                <div className="flex flex-col gap-2">
+                                    {profilData.pendidikan.map(p => (
+                                        <div key={p.id_pendidikan} className="flex items-start gap-3">
+                                            <img src={iconEdu} alt="Pendidikan" className="w-5 h-5 object-contain shrink-0" />
+                                            <p className="font-poppins text-[15px] text-[#4B2E2B] leading-snug">
+                                                {p.institusi} - {p.tingkat} {p.jurusan ? `- ${p.jurusan}` : ''}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : <p className="font-poppins text-[14px] text-[#4B2E2B]/60">Belum ada data pendidikan.</p>}
+                        </div>
+
+                        {/* Pengalaman Kerja */}
+                        <div className="flex flex-col gap-3 mt-2">
+                            <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">Pengalaman Kerja</span>
+                            {profilData?.pengalaman_kerja?.length > 0 ? (
+                                <div className="flex flex-col gap-4">
+                                    {profilData.pengalaman_kerja.map(p => {
+                                        const tglMulai = p.tanggal_mulai ? new Date(p.tanggal_mulai).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '';
+                                        const tglSelesai = p.tanggal_selesai ? new Date(p.tanggal_selesai).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : 'Sekarang';
+                                        return (
+                                            <div key={p.id_pengalaman} className="flex items-start gap-3">
+                                                <img src={iconExp} alt="Pengalaman" className="w-5 h-5 object-contain shrink-0 mt-0.5" />
+                                                <div className="flex flex-col gap-1">
+                                                    <p className="font-poppins text-[15px] text-[#4B2E2B] leading-snug font-bold">
+                                                        {p.nama_perusahaan} - <span className="font-semibold">{p.posisi}</span>
+                                                    </p>
+                                                    <span className="font-poppins text-[13px] text-[#4B2E2B]/70">{tglMulai} - {tglSelesai}</span>
+                                                    {p.deskripsi && (
+                                                        <p className="font-poppins text-[14px] text-[#4B2E2B]/90 mt-1 leading-relaxed">
+                                                            {p.deskripsi}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : <p className="font-poppins text-[14px] text-[#4B2E2B]/60">Belum ada data pengalaman kerja.</p>}
+                        </div>
+
+                        {/* Keahlian (Skill) */}
+                        <div className="flex flex-col gap-3 mt-2">
+                            <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">Keahlian (Skill)</span>
+                            {profilData?.skills?.length > 0 ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {profilData.skills.map(s => (
+                                        <span key={s.id_skill} className="px-4 py-1.5 bg-[#4B2E2B]/5 text-[#4B2E2B] rounded-full text-[14px] font-semibold border border-[#4B2E2B]/10">
+                                            {s.nama_skill}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : <p className="font-poppins text-[14px] text-[#4B2E2B]/60">Belum ada data keahlian.</p>}
                         </div>
                     </div>
 
-                    <a href="/profil" target="_blank" rel="noreferrer" className="absolute bottom-6 right-6 w-10 h-10 bg-white rounded-full flex items-center justify-center border border-[#4B2E2B]/10 hover:bg-gray-50 transition-all shadow-sm">
+                    <button onClick={onEditProfil} className="absolute bottom-6 right-6 w-10 h-10 bg-white rounded-full flex items-center justify-center border border-[#4B2E2B]/10 hover:bg-gray-50 transition-all shadow-sm cursor-pointer" title="Kembali Edit Profil">
                         <img src={iconEdit} alt="edit" className="w-5 h-5" />
-                    </a>
+                    </button>
                 </ReviewCard>
 
                 {/* Kartu Pertanyaan */}
-                <ReviewCard title="Pertanyaan Perusahaan" className="flex flex-col gap-6">
+                <ReviewCard title="Pertanyaan Perusahaan" className="flex flex-col gap-6 h-fit">
                     {pertanyaanSeleksi.length === 0 ? (
                         <p className="font-poppins text-[#4B2E2B] opacity-70">Tidak ada pertanyaan khusus.</p>
                     ) : (
@@ -160,6 +244,10 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [] }) =>
                             name={file.name} 
                             category={doc.nama_dokumen} 
                             size={formatSize(file)} 
+                            onClick={() => {
+                                const url = URL.createObjectURL(file);
+                                window.open(url, '_blank');
+                            }}
                         />
                     );
                 })}

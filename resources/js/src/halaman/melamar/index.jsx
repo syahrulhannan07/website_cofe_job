@@ -209,10 +209,26 @@ const Melamar = () => {
                     sedangMengirim={sedangMengirim} 
                     dokumenWajib={dokumenWajib}
                     pertanyaanSeleksi={pertanyaanSeleksi}
+                    onEditProfil={() => {
+                        setArahAnimasi(-1);
+                        setStepSaatIni(3);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                 />;
             default: return null;
         }
     };
+
+    // ─── Efek Sembunyikan Footer di Halaman Sukses ───────────────────────────
+    useEffect(() => {
+        const footer = document.querySelector('.wadah-footer');
+        if (lamaranTerkirim && footer) {
+            footer.style.display = 'none';
+        }
+        return () => {
+            if (footer) footer.style.display = '';
+        };
+    }, [lamaranTerkirim]);
 
     if (isLoadingInit) {
         return (

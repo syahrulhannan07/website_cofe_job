@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import iconEdit from '../../../aset/melamar/PencilSquare (3).svg';
 import placeholderProfile from '../../../aset/profil/placeholder_profil.jpg';
 import layananProfil from '../../../layanan/layananProfil';
@@ -20,11 +20,11 @@ const FieldTextarea = ({ label, field, value, onChange, onBlur, placeholder, row
     </div>
 );
 
-const FieldInput = ({ label, field, value, isEditing, onChange, placeholder }) => (
+const FieldInput = ({ label, field, value, isEditing, onChange, placeholder, type = "text" }) => (
     <div className="flex flex-col gap-2 w-full">
         <label className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">{label}</label>
         <input
-            type="text"
+            type={type}
             value={value || ''}
             onChange={(e) => isEditing && onChange(field, e.target.value)}
             placeholder={placeholder}
@@ -44,6 +44,9 @@ const Step3Profile = ({ data, onChange }) => {
 
     const [isEditingDasar, setIsEditingDasar] = useState(false);
     const [editData, setEditData] = useState({});
+
+    const fileInputRef = useRef(null);
+    const [uploadingFoto, setUploadingFoto] = useState(false);
 
     const fetchProfil = async () => {
         try {
@@ -83,10 +86,11 @@ const Step3Profile = ({ data, onChange }) => {
         if (!isEditingDasar) {
             setEditData({
                 nama_lengkap: profilData?.nama_lengkap || '',
-                ttl: profilData?.ttl || '',
+                tanggal_lahir: profilData?.tanggal_lahir || '',
                 jenis_kelamin: profilData?.jenis_kelamin || '',
                 nomor_telepon: profilData?.nomor_telepon || '',
-                alamat: profilData?.alamat || ''
+                alamat: profilData?.alamat || '',
+                email: profilData?.pengguna?.email || ''
             });
             setIsEditingDasar(true);
         } else {
@@ -107,6 +111,49 @@ const Step3Profile = ({ data, onChange }) => {
         } catch (error) {
             console.error("Gagal update info dasar:", error);
             alert("Gagal menyimpan data.");
+        }
+    };
+
+    const handleCameraClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                alert("Ukuran file terlalu besar! Maksimal 2MB.");
+                return;
+            }
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!allowedTypes.includes(file.type)) {
+                alert("Format file tidak didukung! Gunakan JPG atau PNG.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('foto_profil', file);
+            
+            setUploadingFoto(true);
+            try {
+                const respons = await layananProfil.updateProfil(formData);
+                if (respons.status === 'success') {
+                    setProfilData(prev => ({
+                        ...prev,
+                        foto_profil: respons.data.foto_profil
+                    }));
+                    alert("Foto profil berhasil diperbarui!");
+                }
+            } catch (error) {
+                console.error("Gagal mengunggah foto profil:", error);
+                alert("Gagal mengunggah foto profil ke server. Pastikan koneksi stabil.");
+            } finally {
+                setUploadingFoto(false);
+                e.target.value = '';
+            }
         }
     };
 
@@ -160,18 +207,45 @@ const Step3Profile = ({ data, onChange }) => {
                     {/* Avatar Section */}
                     <div className="flex justify-center mb-2">
                         <div className="relative">
-                            <div className="w-[158px] h-[158px] rounded-full border-4 border-[#4B2E2B]/20 overflow-hidden flex items-center justify-center bg-[#F3EDE6]">
+                            <div 
+                                onClick={() => { if (isEditingDasar && !uploadingFoto) handleCameraClick() }}
+                                className={`w-[158px] h-[158px] rounded-full border-4 border-[#4B2E2B]/20 overflow-hidden flex items-center justify-center bg-[#F3EDE6] relative group ${uploadingFoto ? 'opacity-50' : ''} ${isEditingDasar && !uploadingFoto ? 'cursor-pointer hover:border-[#4B2E2B]/40' : ''} transition-all`}
+                            >
                                 <img 
                                     src={profilData?.foto_profil 
                                         ? (profilData.foto_profil.startsWith('http') ? profilData.foto_profil : `/storage/${profilData.foto_profil}`)
                                         : placeholderProfile}
                                     alt="Foto" 
-                                    className="w-full h-full object-cover" 
+                                    className="w-full h-full object-cover transition-opacity duration-300" 
                                 />
+                                {isEditingDasar && !uploadingFoto && (
+                                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <span className="text-white font-poppins text-[12px] font-semibold text-center">Ubah Foto</span>
+                                    </div>
+                                )}
+                                {uploadingFoto && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                                    </div>
+                                )}
                             </div>
+
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                className="hidden" 
+                                accept="image/png, image/jpeg, image/jpg"
+                                onChange={handleFileChange}
+                            />
+
+                            {/* Tombol Pensil untuk Info Dasar */}
                             <button 
                                 onClick={toggleEditDasar}
-                                className="absolute bottom-1 right-1 bg-white p-2 rounded-full border border-[#4B2E2B]/10 hover:bg-gray-50 transition-colors shadow-sm cursor-pointer z-10"
+                                className={`absolute bottom-1 right-1 bg-white p-2.5 rounded-full border hover:bg-gray-50 transition-colors shadow-sm cursor-pointer z-10 ${isEditingDasar ? 'border-[#4B2E2B] bg-gray-50' : 'border-[#4B2E2B]/10'}`}
                                 title="Edit Info Dasar"
                             >
                                 <img src={iconEdit} alt="edit" className="w-5 h-5" />
@@ -190,12 +264,13 @@ const Step3Profile = ({ data, onChange }) => {
                             placeholder="Nama belum diisi" 
                         />
                         <FieldInput 
-                            label="Tempat, tanggal lahir" 
-                            field="ttl"
-                            value={isEditingDasar ? editData.ttl : profilData?.ttl} 
+                            label="Tanggal Lahir" 
+                            field="tanggal_lahir"
+                            value={isEditingDasar ? editData.tanggal_lahir : profilData?.tanggal_lahir} 
                             isEditing={isEditingDasar}
                             onChange={handleEditDasarChange}
-                            placeholder="Tempat, Tgl lahir belum diisi" 
+                            placeholder="Tanggal lahir belum diisi"
+                            type="date"
                         />
                         <FieldInput 
                             label="Jenis Kelamin" 
@@ -220,6 +295,14 @@ const Step3Profile = ({ data, onChange }) => {
                             isEditing={isEditingDasar}
                             onChange={handleEditDasarChange}
                             placeholder="Alamat belum diisi" 
+                        />
+                        <FieldInput 
+                            label="Email" 
+                            field="email"
+                            value={isEditingDasar ? editData.email : profilData?.pengguna?.email} 
+                            isEditing={isEditingDasar}
+                            onChange={handleEditDasarChange}
+                            placeholder="Email belum diisi" 
                         />
                     </div>
 
