@@ -51,6 +51,7 @@ class ProfilPerusahaanController extends Controller
             'alamat_perusahaan' => 'nullable|string',
             'kecamatan' => 'nullable|string|max:255',
             'deskripsi' => 'nullable|string',
+            'tanggal_berdiri' => 'nullable|date',
             'logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'dokumen_izin' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ], [
@@ -64,7 +65,7 @@ class ProfilPerusahaanController extends Controller
 
         if ($validator->fails()) {
             // [UPDATE LOGIC]
-            $message = 'Validasi gagal';
+            $message = $validator->errors()->first();
             if ($validator->errors()->has('logo')) {
                 $message = $validator->errors()->first('logo');
             } elseif ($validator->errors()->has('dokumen_izin')) {
@@ -98,6 +99,9 @@ class ProfilPerusahaanController extends Controller
         }
         if ($request->has('deskripsi')) {
             $profil->deskripsi = $request->deskripsi;
+        }
+        if ($request->has('tanggal_berdiri')) {
+            $profil->tanggal_berdiri = $request->tanggal_berdiri;
         }
 
         // Handle logo upload

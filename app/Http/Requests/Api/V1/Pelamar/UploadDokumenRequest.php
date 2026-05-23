@@ -15,7 +15,7 @@ class UploadDokumenRequest extends FormRequest
     {
         return [
             'dokumen' => 'required|array|min:1',
-            'dokumen.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'dokumen.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
             'id_jenis_dokumen' => 'required|array|min:1',
             'id_jenis_dokumen.*' => 'required|exists:jenis_dokumen,id_jenis_dokumen',
         ];
@@ -25,7 +25,7 @@ class UploadDokumenRequest extends FormRequest
     {
         return [
             'dokumen.*.mimes' => 'Format file harus pdf, jpg, jpeg, atau png.',
-            'dokumen.*.max' => 'Ukuran file maksimal 5MB.',
+            'dokumen.*.max' => 'Ukuran file maksimal 20MB.',
         ];
     }
 }

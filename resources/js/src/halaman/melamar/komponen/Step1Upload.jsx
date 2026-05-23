@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import iconCV from '../../../aset/melamar/iconcv.svg';
 import iconIjazah from '../../../aset/melamar/ikonijazah.svg';
 import iconSurat from '../../../aset/melamar/iconsuratlamaran.svg';
 import iconDocOther from '../../../aset/melamar/icondokumenlain.svg';
 import iconUpload from '../../../aset/melamar/Vector.svg';
 import iconCeklis from '../../../aset/melamar/cirkelcek.svg';
+import layananLamaran from '../../../layanan/layananLamaran';
 
 const getIconForDoc = (nama_dokumen) => {
     const name = (nama_dokumen || '').toLowerCase();
@@ -14,9 +15,9 @@ const getIconForDoc = (nama_dokumen) => {
     return iconDocOther; // default fallback icon
 };
 
-const AreaUpload = ({ config, file, onChange, isWide = false }) => {
+const AreaUpload = ({ config, file, onChange, statusUpload, pesanGalat, isWide = false }) => {
     const inputRef = useRef(null);
-    const sudahUpload = !!file;
+    const sudahUpload = !!file && statusUpload !== 'uploading';
 
     return (
         <div className={`pembungkus-area-upload flex bg-white rounded-[20px] border-2 border-[#C69C6D] p-8 transition-all duration-300 ${isWide ? 'flex-col md:flex-row md:items-center md:gap-12' : 'flex-col gap-6'} ${isWide ? 'md:col-span-2' : ''}`}>
@@ -25,7 +26,7 @@ const AreaUpload = ({ config, file, onChange, isWide = false }) => {
                 <div className="w-[60px] h-[60px] bg-[#4B2E2B] rounded-[8px] flex items-center justify-center shrink-0">
                     <img src={getIconForDoc(config.nama_dokumen)} alt={config.nama_dokumen} className="w-7 h-7 object-contain" style={{ filter: 'invert(75%) sepia(18%) saturate(913%) hue-rotate(345deg) brightness(87%) contrast(85%)' }} />
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col text-left">
                     <h3 className="font-poppins font-semibold text-[18px] text-[#4B2E2B] leading-tight">{config.nama_dokumen}</h3>
                     {config.wajib && <p className="font-poppins text-[14px] text-[#4B2E2B] opacity-60 mt-1 font-medium">Dibutuhkan</p>}
                 </div>
@@ -33,21 +34,34 @@ const AreaUpload = ({ config, file, onChange, isWide = false }) => {
 
             {/* Dashed Upload Area */}
             <div
-                onClick={() => inputRef.current.click()}
+                onClick={() => { if (statusUpload !== 'uploading') inputRef.current.click() }}
                 className={`relative flex flex-col items-center justify-center rounded-[10px] border-2 border-dashed cursor-pointer transition-all duration-300 py-8 px-6 flex-1
-                    ${sudahUpload ? 'border-[#6B8E23] bg-[#6B8E23]/5' : 'border-[#4B2E2B] border-opacity-30 bg-[#F8E8D5] bg-opacity-50 hover:bg-opacity-80'}`}
+                    ${sudahUpload ? 'border-[#6B8E23] bg-[#6B8E23]/5' : 'border-[#4B2E2B] border-opacity-30 bg-[#F8E8D5] bg-opacity-50 hover:bg-opacity-80'}
+                    ${statusUpload === 'uploading' ? 'border-[#F7B750] bg-[#F7B750]/5 cursor-wait' : ''}`}
             >
-                <input ref={inputRef} type="file" className="hidden" accept=".pdf" onChange={(e) => { if (e.target.files[0]) onChange(config.id_jenis_dokumen, e.target.files[0]); }} />
-                {sudahUpload ? (
+                <input ref={inputRef} type="file" className="hidden" accept=".pdf" onChange={(e) => { if (e.target.files[0]) onChange(config.id_jenis_dokumen, e.target.files[0], e.target); }} />
+                
+                {statusUpload === 'uploading' ? (
+                    <div className="flex flex-col items-center gap-3">
+                        <svg className="w-10 h-10 animate-spin text-[#F7B750]" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                        <p className="font-poppins text-[14px] text-[#4B2E2B] font-semibold text-center animate-pulse">Mengunggah file...</p>
+                    </div>
+                ) : sudahUpload ? (
                     <div className="flex flex-col items-center gap-3">
                         <img src={iconCeklis} alt="uploaded" className="w-10 h-10" />
-                        <p className="font-poppins text-[14px] text-[#6B8E23] font-bold text-center truncate max-w-full">{file.name}</p>
-                        <button onClick={(e) => { e.stopPropagation(); onChange(config.id_jenis_dokumen, null); }} className="text-[12px] text-red-500 font-bold hover:underline bg-red-50 px-3 py-1 rounded-full">Hapus File</button>
+                        <p className="font-poppins text-[14px] text-[#6B8E23] font-bold text-center truncate max-w-full" title={file.name}>{file.name}</p>
+                        <button onClick={(e) => { e.stopPropagation(); onChange(config.id_jenis_dokumen, null); }} className="text-[12px] text-red-500 font-bold hover:underline bg-red-50 px-3 py-1 rounded-full cursor-pointer">Hapus File</button>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center gap-3">
                         <img src={iconUpload} alt="upload" className="w-8 h-8 opacity-80" />
                         <p className="font-poppins font-medium text-[13px] text-[#4B2E2B] opacity-80 text-center">Upload dengan format PDF (max 10mb)</p>
+                        {statusUpload === 'error' && pesanGalat && (
+                            <p className="font-poppins text-[12px] text-red-600 font-semibold text-center mt-1">{pesanGalat}</p>
+                        )}
                     </div>
                 )}
             </div>
@@ -55,35 +69,78 @@ const AreaUpload = ({ config, file, onChange, isWide = false }) => {
     );
 };
 
-const BoxPendukung = ({ config, file, onChange }) => {
+const BoxPendukung = ({ config, file, onChange, statusUpload }) => {
     const inputRef = useRef(null);
-    const sudahUpload = !!file;
+    const sudahUpload = !!file && statusUpload !== 'uploading';
 
     return (
         <div 
-            onClick={() => inputRef.current.click()}
+            onClick={() => { if (statusUpload !== 'uploading') inputRef.current.click() }}
             className={`pembungkus-box-pendukung flex items-center gap-3 p-4 bg-[#F8E8D5] bg-opacity-50 rounded-[10px] border-2 border-dashed border-[#4B2E2B] border-opacity-30 cursor-pointer hover:bg-opacity-80 transition-all
-                ${sudahUpload ? 'border-[#6B8E23] bg-[#6B8E23]/5' : ''}`}
+                ${sudahUpload ? 'border-[#6B8E23] bg-[#6B8E23]/5' : ''}
+                ${statusUpload === 'uploading' ? 'border-[#F7B750] bg-[#F7B750]/5 cursor-wait' : ''}`}
         >
-            <input ref={inputRef} type="file" className="hidden" accept=".pdf" onChange={(e) => { if (e.target.files[0]) onChange(config.id_jenis_dokumen, e.target.files[0]); }} />
-            <div className={`w-10 h-10 rounded-[5px] flex items-center justify-center shrink-0 ${sudahUpload ? 'bg-[#6B8E23]' : 'bg-[#4B2E2B]'}`}>
-                {sudahUpload ? (
+            <input ref={inputRef} type="file" className="hidden" accept=".pdf" onChange={(e) => { if (e.target.files[0]) onChange(config.id_jenis_dokumen, e.target.files[0], e.target); }} />
+            
+            <div className={`w-10 h-10 rounded-[5px] flex items-center justify-center shrink-0 ${statusUpload === 'uploading' ? 'bg-[#F7B750]' : sudahUpload ? 'bg-[#6B8E23]' : 'bg-[#4B2E2B]'}`}>
+                {statusUpload === 'uploading' ? (
+                    <svg className="w-5 h-5 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                ) : sudahUpload ? (
                     <img src={iconCeklis} alt="check" className="w-6 h-6 invert" />
                 ) : (
                     <span className="text-white text-2xl font-bold">+</span>
                 )}
             </div>
-            <div className="flex flex-col min-w-0">
-                <span className="font-poppins font-semibold text-[13px] text-[#4B2E2B] truncate">{sudahUpload ? file.name : config.nama_dokumen}</span>
+            <div className="flex flex-col min-w-0 text-left">
+                <span className="font-poppins font-semibold text-[13px] text-[#4B2E2B] truncate">{statusUpload === 'uploading' ? 'Mengunggah...' : sudahUpload ? file.name : config.nama_dokumen}</span>
                 <span className="font-poppins text-[11px] text-[#4B2E2B] opacity-40 uppercase font-bold">opsional</span>
             </div>
         </div>
     );
 };
 
-const Step1Upload = ({ data, onChange, dokumenWajib = [] }) => {
-    const handleFileChange = (id_jenis_dokumen, file) => {
-        onChange({ ...data, [id_jenis_dokumen]: file });
+const Step1Upload = ({ data, onChange, dokumenWajib = [], idLamaran }) => {
+    const [statusUpload, setStatusUpload] = useState({});
+    const [pesanGalat, setPesanGalat] = useState({});
+
+    const handleFileChange = async (id_jenis_dokumen, file, target) => {
+        if (!file) {
+            onChange({ ...data, [id_jenis_dokumen]: null });
+            setStatusUpload(prev => ({ ...prev, [id_jenis_dokumen]: 'idle' }));
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            alert('dokumen melebihi ukuran maksimal');
+            if (target) target.value = '';
+            return;
+        }
+
+        setStatusUpload(prev => ({ ...prev, [id_jenis_dokumen]: 'uploading' }));
+        setPesanGalat(prev => ({ ...prev, [id_jenis_dokumen]: '' }));
+
+        try {
+            const payload = new FormData();
+            payload.append('dokumen[]', file);
+            payload.append('id_jenis_dokumen[]', id_jenis_dokumen);
+
+            const res = await layananLamaran.uploadDokumen(idLamaran, payload);
+            if (res.status === 'success') {
+                onChange({ ...data, [id_jenis_dokumen]: file });
+                setStatusUpload(prev => ({ ...prev, [id_jenis_dokumen]: 'success' }));
+            } else {
+                throw new Error(res.message || 'Gagal mengunggah file.');
+            }
+        } catch (error) {
+            console.error('Gagal mengunggah dokumen:', error);
+            const msg = error.response?.data?.message || 'Gagal mengunggah file. Silakan periksa ukuran file (maksimal 10MB) atau format PDF.';
+            setPesanGalat(prev => ({ ...prev, [id_jenis_dokumen]: msg }));
+            setStatusUpload(prev => ({ ...prev, [id_jenis_dokumen]: 'error' }));
+            alert(msg);
+        }
     };
 
     const docWajib = dokumenWajib.filter(d => d.wajib);
@@ -108,6 +165,8 @@ const Step1Upload = ({ data, onChange, dokumenWajib = [] }) => {
                             config={config} 
                             file={data[config.id_jenis_dokumen]} 
                             onChange={handleFileChange} 
+                            statusUpload={statusUpload[config.id_jenis_dokumen]}
+                            pesanGalat={pesanGalat[config.id_jenis_dokumen]}
                             isWide={index === docWajib.length - 1 && docWajib.length % 2 !== 0} 
                         />
                     ))}
@@ -130,6 +189,7 @@ const Step1Upload = ({ data, onChange, dokumenWajib = [] }) => {
                                 config={item} 
                                 file={data[item.id_jenis_dokumen]} 
                                 onChange={handleFileChange} 
+                                statusUpload={statusUpload[item.id_jenis_dokumen]}
                             />
                         ))}
                     </div>

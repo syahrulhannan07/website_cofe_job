@@ -116,7 +116,7 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
                                 <div className="flex items-center gap-[6px]">
                                     <img src={iconLokasiMini} alt="Location" className="w-[10px] h-[12px] object-contain" />
                                     <span className="font-inter font-normal text-[12px] text-[#4B2E2B] leading-[1]">
-                                        {lowongan.kecamatan}
+                                        {lowongan.lokasi}
                                     </span>
                                 </div>
                             </div>

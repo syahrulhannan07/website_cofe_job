@@ -152,12 +152,22 @@ const DetailPerusahaan = () => {
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 md:gap-8 items-start">
+                            <span className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">Email Bisnis</span>
+                            <span className="font-poppins font-regular text-[20px] text-[#4B2E2B]">{perusahaan.email || "-"}</span>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 md:gap-8 items-start">
                             <span className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">Alamat</span>
                             <span className="font-poppins font-regular text-[20px] text-[#4B2E2B]">
                                 {perusahaan.alamat_perusahaan}
                                 {perusahaan.kecamatan && !perusahaan.alamat_perusahaan.includes(perusahaan.kecamatan) && `, ${perusahaan.kecamatan}`}
                                 {", Indramayu"}
                             </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 md:gap-8 items-start">
+                            <span className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">Tanggal Berdiri</span>
+                            <span className="font-poppins font-regular text-[20px] text-[#4B2E2B]">{perusahaan.tanggal_berdiri || "-"}</span>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 md:gap-8 items-start">

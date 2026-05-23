@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../../../layanan/api';
 import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
@@ -9,6 +10,7 @@ import WawancaraTable from './komponen/WawancaraTable';
 import ModalJadwalWawancara from './komponen/ModalJadwalWawancara';
 
 const HalamanWawancara = () => {
+    const location = useLocation();
     const [interviews, setInterviews] = useState([]);
     const [stats, setStats] = useState({ total_pelamar: 0, lamaran_diterima: 0 });
     const [loading, setLoading] = useState(true);
@@ -29,6 +31,7 @@ const HalamanWawancara = () => {
         catatan: ''
     });
     const [validationErrors, setValidationErrors] = useState({}); // [UPDATE LOGIC]
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -71,6 +74,23 @@ const HalamanWawancara = () => {
         fetchData();
     }, [fetchData]);
 
+    // Jika diarahkan dari halaman pelamar setelah ubah status ke Wawancara,
+    // otomatis buka modal tambah jadwal dengan kandidat yang sudah dipilih
+    useEffect(() => {
+        if (location.state?.bukaModal) {
+            const idLamaran = location.state.idLamaran;
+            setModalMode('add');
+            setFormData({ id_lamaran: idLamaran ? String(idLamaran) : '', tanggal: '', jam: '', lokasi: '', status: 'Terjadwal', catatan: '' });
+            setValidationErrors({});
+            // Muat daftar kandidat, kemudian tampilkan modal
+            fetchCandidates().then(() => {
+                setShowModal(true);
+            });
+            // Bersihkan state navigasi agar tidak terbuka lagi saat refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
+
     const handleOpenAddModal = () => {
         setModalMode('add');
         setFormData({ id_lamaran: '', tanggal: '', jam: '', lokasi: '', status: 'Terjadwal', catatan: '' });
@@ -98,6 +118,8 @@ const HalamanWawancara = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
+        if (isSubmitting) return;
+
         // [UPDATE LOGIC] - Validasi Lokal
         const errors = {};
         if (!formData.tanggal) errors.tanggal = 'Harap isi bidang ini.';
@@ -123,6 +145,7 @@ const HalamanWawancara = () => {
             catatan: formData.catatan
         };
 
+        setIsSubmitting(true);
         try {
             if (modalMode === 'add') {
                 await api.post(`/admin/lamaran/${formData.id_lamaran}/wawancara`, payload);
@@ -136,6 +159,8 @@ const HalamanWawancara = () => {
             fetchData();
         } catch (error) {
             alert(error.response?.data?.message || 'Gagal menyimpan jadwal');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -191,6 +216,7 @@ const HalamanWawancara = () => {
                 candidates={candidates}
                 errors={validationErrors} // [UPDATE LOGIC]
                 setErrors={setValidationErrors} // [UPDATE LOGIC]
+                isSubmitting={isSubmitting}
             />
         </div>
     );

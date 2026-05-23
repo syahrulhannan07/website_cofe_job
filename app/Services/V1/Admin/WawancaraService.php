@@ -26,9 +26,22 @@ class WawancaraService
 
             $this->notifikasiService->kirim(
                 $idPengguna,
-                'Jadwal Wawancara 🗓️',
-                "Anda dijadwalkan wawancara untuk {$posisi} di {$namaKafe}. Tanggal: {$data['tanggal_wawancara']}. Lokasi: {$data['lokasi']}."
+                'Panggilan Wawancara! 📞',
+                "Selamat! Anda mendapat panggilan wawancara untuk posisi {$posisi} di {$namaKafe}. Jadwal wawancara sudah tersedia, silakan cek menu Status Lamaran."
             );
+
+            // Dispatch event real-time ke channel private pelamar
+            try {
+                event(new \App\Events\StatusLamaranDiperbarui(
+                    idPengguna:     $idPengguna,
+                    statusBaru:     'Wawancara',
+                    idLowongan:     $wawancara->lamaran?->id_lowongan ?? $data['id_lowongan'] ?? 0,
+                    posisi:         $posisi,
+                    namaPerusahaan: $namaKafe,
+                ));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Gagal broadcast event status lamaran: ' . $e->getMessage());
+            }
 
             // [UPDATE LOGIC] - Kirim email detail jadwal wawancara ke kandidat secara synchronous
             try {

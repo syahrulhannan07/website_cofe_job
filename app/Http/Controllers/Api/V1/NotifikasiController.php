@@ -28,7 +28,7 @@ class NotifikasiController extends Controller
             'judul'       => $n->judul,
             'pesan'       => $n->pesan,
             'dibaca'      => $n->dibaca,
-            'dibuat_pada' => $n->created_at?->toDateTimeString(),
+            'dibuat_pada' => $n->created_at?->toIso8601String(),
         ]);
 
         return $this->successResponse($items, null, 200, [

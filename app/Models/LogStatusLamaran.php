@@ -17,6 +17,10 @@ class LogStatusLamaran extends Model
         'dibuat_pada',
     ];
 
+    protected $casts = [
+        'dibuat_pada' => 'datetime',
+    ];
+
     public function lamaran()
     {
         return $this->belongsTo(Lamaran::class, 'id_lamaran', 'id_lamaran');

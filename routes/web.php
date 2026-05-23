@@ -7,6 +7,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/storage/lamaran_dokumen/{id_lamaran}/{filename}', function ($id_lamaran, $filename) {
+    $path = "lamaran_dokumen/{$id_lamaran}/{$filename}";
+    if (!Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+        abort(404);
+    }
+    return Illuminate\Support\Facades\Storage::disk('local')->response($path);
+});
+
 // Tangkap semua rute frontend — biarkan React Router yang menangani navigasi
 // Pola regex mengecualikan rute yang dimulai dengan 'api'
 Route::get('/{rute}', function () {

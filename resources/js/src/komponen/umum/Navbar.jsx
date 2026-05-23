@@ -85,6 +85,8 @@ const Navbar = () => {
 
     if (token) {
       fetchNotifications();
+      const intervalId = setInterval(fetchNotifications, 10000);
+      return () => clearInterval(intervalId);
     }
   }, [location]);
 

@@ -11,7 +11,8 @@ const HalamanProfil = () => {
     // [UPDATE LOGIC]
     useEffect(() => {
         fetchProfil(true);
-    }, [fetchProfil]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Varian animasi untuk elemen form
     const containerVariants = {

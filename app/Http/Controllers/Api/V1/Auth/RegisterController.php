@@ -218,7 +218,7 @@ class RegisterController extends Controller
                 'nama_perusahaan' => $request->nama_kafe,
                 'alamat_perusahaan' => $request->alamat,
                 'deskripsi' => $request->deskripsi,
-                'dokumen_legalitas' => $path,
+                'dokumen_izin' => $path,
                 'status_verifikasi' => 'Pending',
             ]);
 

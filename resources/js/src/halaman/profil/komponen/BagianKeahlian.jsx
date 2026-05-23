@@ -90,7 +90,6 @@ const BagianKeahlian = ({ initialData, onRefresh }) => {
                             value={newSkill}
                             onChange={(e) => setNewSkill(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleTambah()}
-                            onBlur={handleTambah}
                             autoFocus
                         />
                         <button onClick={handleTambah} className="ml-2 bg-[#4B2E2B] text-[#C69C6D] px-3 py-1 rounded-full text-[14px] font-bold hover:bg-[#3d2523] transition-colors">

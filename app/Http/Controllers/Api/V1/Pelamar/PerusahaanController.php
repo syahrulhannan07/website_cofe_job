@@ -30,7 +30,7 @@ class PerusahaanController extends Controller
 
     public function show($id)
     {
-        $perusahaan = ProfilPerusahaan::with(['lowongan' => function ($query) {
+        $perusahaan = ProfilPerusahaan::with(['pengguna', 'lowongan' => function ($query) {
                 $query->where('status', 'Active')
                       ->where('batas_akhir', '>=', now()->toDateString());
             }])

@@ -67,8 +67,8 @@ class LamaranService
         $posisi = $posisi ?? 'posisi yang dilamar';
         
         return match ($status) {
-            'Diproses'  => ['Lamaran Diproses 📂', "Lamaran Anda untuk posisi {$posisi} di {$namaKafe} sedang ditinjau oleh tim kami."],
-            'Wawancara' => ['Panggilan Wawancara! 📞', "Selamat! Anda terpilih untuk tahap wawancara posisi {$posisi} di {$namaKafe}. Cek jadwal segera."],
+            'Diproses'  => ['Lamaran Sedang Diproses 📂', "Lamaran Anda untuk posisi {$posisi} di {$namaKafe} sedang ditinjau oleh tim kami."],
+            'Wawancara' => ['Lamaran Anda Lolos Seleksi 🎯', "Selamat! Lamaran Anda untuk posisi {$posisi} di {$namaKafe} sudah ditinjau. Harap menunggu jadwal wawancara dari kami."],
             'Diterima'  => ['Selamat! Anda Diterima 🎉', "Hore! Anda dinyatakan DITERIMA untuk posisi {$posisi} di {$namaKafe}. Selamat bergabung!"],
             'Ditolak'   => ['Update Status Lamaran ✉️', "Terima kasih telah melamar posisi {$posisi} di {$namaKafe}. Mohon maaf, lamaran Anda belum dapat kami proses ke tahap selanjutnya."],
             default     => ['Update Lamaran', "Status lamaran Anda di {$namaKafe} telah diperbarui menjadi {$status}."],

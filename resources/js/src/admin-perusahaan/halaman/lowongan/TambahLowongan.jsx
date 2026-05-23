@@ -256,7 +256,7 @@ const TambahLowongan = () => {
             </div>
 
             {/* [UPDATE LOGIC] */}
-            {statusVerifikasi === 'Pending' && (
+            {statusVerifikasi === 'Pending' && isEdit && (
                 <div className="w-full max-w-[896px] mb-8 bg-[#FFFBF5] rounded-[16px] p-8 flex items-start gap-6 border border-[#4B2E2B]/10 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
                     <div className="bg-[#FEF3C7] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
                         <svg width="22" height="19" viewBox="0 0 22 19" fill="none" xmlns="http://www.w3.org/2000/svg">

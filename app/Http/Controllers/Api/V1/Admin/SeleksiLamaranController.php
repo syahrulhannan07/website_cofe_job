@@ -66,14 +66,33 @@ class SeleksiLamaranController extends Controller
             'profil.pengalamanKerja',
             'lamaranDokumen.jenisDokumen',
             'jawabanPertanyaan.pertanyaan',
-            'lowongan'
+            'lowongan',
+            'lowongan.dokumenDibutuhkan.jenisDokumen'
         ]);
 
         if (!$lamaran) return $this->errorResponse('Lamaran tidak ditemukan', 404);
 
         if ($lamaran->status === 'Diproses') {
-            $lamaran->status = 'Dalam Review';
-            $lamaran->save();
+            $exists = \App\Models\LogStatusLamaran::where('id_lamaran', $lamaran->id_lamaran)
+                ->where('status_baru', 'Dalam Review')
+                ->exists();
+            if (!$exists) {
+                \App\Models\LogStatusLamaran::create([
+                    'id_lamaran' => $lamaran->id_lamaran,
+                    'status_lama' => 'Diproses',
+                    'status_baru' => 'Dalam Review',
+                    'keterangan' => 'Dalam review.',
+                ]);
+
+                // Dispatch event real-time ke pelamar agar timeline-nya terupdate otomatis
+                broadcast(new \App\Events\StatusLamaranDiperbarui(
+                    idPengguna: $lamaran->profil->pengguna->id_pengguna,
+                    statusBaru: 'Dalam Review',
+                    idLowongan: $lamaran->id_lowongan,
+                    posisi: $lamaran->lowongan->posisi,
+                    namaPerusahaan: $profil->nama_perusahaan
+                ))->toOthers();
+            }
         }
 
         return $this->successResponse(new LamaranResource($lamaran));

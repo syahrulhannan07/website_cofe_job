@@ -17,7 +17,8 @@ const FormProfil = ({ variants, data, onUpdate }) => {
         email: "",
         alamat_perusahaan: "",
         kecamatan: "",
-        deskripsi: ""
+        deskripsi: "",
+        tanggal_berdiri: ""
     });
 
     const [nibFile, setNibFile] = useState(null);
@@ -34,14 +35,15 @@ const FormProfil = ({ variants, data, onUpdate }) => {
 
     // Sync data from props
     useEffect(() => {
-        if (data) {
+        if (data && !isEditing) {
             setFormData({
                 nama_perusahaan: data.nama_perusahaan || "",
                 nama_pengguna: data.nama_pengguna || "",
                 email: data.email || "",
                 alamat_perusahaan: data.alamat_perusahaan || "",
                 kecamatan: data.kecamatan || "",
-                deskripsi: data.deskripsi || ""
+                deskripsi: data.deskripsi || "",
+                tanggal_berdiri: data.tanggal_berdiri || ""
             });
             setNibFileName(cleanFileName(data.dokumen_izin));
         }
@@ -58,7 +60,8 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                     email: data.email || "",
                     alamat_perusahaan: data.alamat_perusahaan || "",
                     kecamatan: data.kecamatan || "",
-                    deskripsi: data.deskripsi || ""
+                    deskripsi: data.deskripsi || "",
+                    tanggal_berdiri: data.tanggal_berdiri || ""
                 });
                 setNibFile(null);
                 setNibFileName(cleanFileName(data.dokumen_izin));
@@ -116,6 +119,9 @@ const FormProfil = ({ variants, data, onUpdate }) => {
             submissionData.append('alamat_perusahaan', formData.alamat_perusahaan);
             submissionData.append('kecamatan', formData.kecamatan);
             submissionData.append('deskripsi', formData.deskripsi);
+            if (formData.tanggal_berdiri) {
+                submissionData.append('tanggal_berdiri', formData.tanggal_berdiri);
+            }
             
             if (nibFile) {
                 submissionData.append('dokumen_izin', nibFile);
@@ -248,9 +254,9 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                 {/* SPACER 6px */}
                 <div className="h-0" />
 
-                {/* BARIS 3: ALAMAT */}
+                {/* BARIS 3: ALAMAT & TANGGAL BERDIRI */}
                 <div className="flex flex-col md:flex-row gap-[14px] w-full items-end">
-                    <div className="grup-input flex-1 flex flex-col gap-[6px]">
+                    <div className="grup-input flex-[2] flex flex-col gap-[6px]">
                         <label className="label-input font-poppins font-semibold text-[16px] text-[#4B2E2B]">
                             Alamat
                         </label>
@@ -258,6 +264,24 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                             type="text" 
                             name="alamat_perusahaan"
                             value={formData.alamat_perusahaan}
+                            onChange={handleInputChange}
+                            disabled={!isEditing || isSaving}
+                            className={`input-profil w-full h-[38px] px-[16px] bg-[#F3EDE6] border border-[#CCCCCC]/80 rounded-[5px] font-poppins text-[14px] text-[#4B2E2B] transition-all ${
+                                isEditing 
+                                ? 'focus:outline-none focus:border-[#F7B750] ring-1 ring-[#F7B750]/20' 
+                                : 'cursor-not-allowed opacity-90'
+                            }`}
+                        />
+                    </div>
+
+                    <div className="grup-input flex-1 flex flex-col gap-[6px]">
+                        <label className="label-input font-poppins font-semibold text-[16px] text-[#4B2E2B]">
+                            Tanggal Berdiri
+                        </label>
+                        <input 
+                            type="date" 
+                            name="tanggal_berdiri"
+                            value={formData.tanggal_berdiri ? formData.tanggal_berdiri.substring(0, 10) : ''}
                             onChange={handleInputChange}
                             disabled={!isEditing || isSaving}
                             className={`input-profil w-full h-[38px] px-[16px] bg-[#F3EDE6] border border-[#CCCCCC]/80 rounded-[5px] font-poppins text-[14px] text-[#4B2E2B] transition-all ${

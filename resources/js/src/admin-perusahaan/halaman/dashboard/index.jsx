@@ -24,7 +24,8 @@ const HalamanDashboardAdmin = () => {
 
     useEffect(() => {
         fetchDashboard();
-    }, [fetchDashboard]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Tampilkan Loading Kopi tematik saat pertama kali memuat data (data masih kosong)
     if (loading && !dashboardData) {

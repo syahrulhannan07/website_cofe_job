@@ -22,7 +22,8 @@ const ModalJadwalWawancara = ({
     handleSubmit, 
     candidates,
     errors = {}, // [UPDATE LOGIC]
-    setErrors // [UPDATE LOGIC]
+    setErrors, // [UPDATE LOGIC]
+    isSubmitting
 }) => {
     return (
         <AnimatePresence>
@@ -33,7 +34,7 @@ const ModalJadwalWawancara = ({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={onClose}
+                        onClick={!isSubmitting ? onClose : undefined}
                         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
                     />
 
@@ -62,7 +63,8 @@ const ModalJadwalWawancara = ({
                                 <button 
                                     type="button"
                                     onClick={onClose} 
-                                    className="p-1 hover:bg-white/10 rounded-full transition-all group"
+                                    disabled={isSubmitting}
+                                    className="p-1 hover:bg-white/10 rounded-full transition-all group disabled:opacity-50"
                                 >
                                     <img 
                                         src={XIcon} 
@@ -89,7 +91,8 @@ const ModalJadwalWawancara = ({
                                         <div className="relative group">
                                             <select
                                                 required
-                                                className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins ${errors.id_lamaran ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
+                                                disabled={isSubmitting}
+                                                className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins disabled:opacity-70 ${errors.id_lamaran ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
                                                 value={formData.id_lamaran}
                                                 onChange={(e) => {
                                                     setFormData({...formData, id_lamaran: e.target.value});
@@ -123,7 +126,8 @@ const ModalJadwalWawancara = ({
                                         <div className="relative group">
                                             <select
                                                 required
-                                                className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins"
+                                                disabled={isSubmitting}
+                                                className="w-full h-[48px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 appearance-none transition-all cursor-pointer font-poppins disabled:opacity-70"
                                                 value={formData.status || 'Terjadwal'}
                                                 onChange={(e) => setFormData({...formData, status: e.target.value})}
                                             >
@@ -144,8 +148,9 @@ const ModalJadwalWawancara = ({
                                         <input
                                             required
                                             type="text"
+                                            disabled={isSubmitting}
                                             placeholder="Online / Alamat Kantor"
-                                            className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins placeholder:text-[#6B7280]/60 ${errors.lokasi ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
+                                            className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins placeholder:text-[#6B7280]/60 disabled:opacity-70 ${errors.lokasi ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
                                             value={formData.lokasi}
                                             onChange={(e) => {
                                                 setFormData({...formData, lokasi: e.target.value});
@@ -168,7 +173,9 @@ const ModalJadwalWawancara = ({
                                         <input
                                             required
                                             type="date"
-                                            className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer ${errors.tanggal ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
+                                            min={new Date().toISOString().split('T')[0]}
+                                            disabled={isSubmitting}
+                                            className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer disabled:opacity-70 ${errors.tanggal ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
                                             value={formData.tanggal}
                                             onChange={(e) => {
                                                 setFormData({...formData, tanggal: e.target.value});
@@ -187,7 +194,8 @@ const ModalJadwalWawancara = ({
                                         <input
                                             required
                                             type="time"
-                                            className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer ${errors.jam ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
+                                            disabled={isSubmitting}
+                                            className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer disabled:opacity-70 ${errors.jam ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
                                             value={formData.jam}
                                             onChange={(e) => {
                                                 setFormData({...formData, jam: e.target.value});
@@ -208,8 +216,9 @@ const ModalJadwalWawancara = ({
                                     </div>
                                     <textarea
                                         rows="2"
+                                        disabled={isSubmitting}
                                         placeholder="Tuliskan detail tambahan atau instruksi untuk pelamar di sini..."
-                                        className="w-full min-h-[80px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 pt-3 pb-3 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all resize-none font-poppins placeholder:text-[#6B7280]/60"
+                                        className="w-full min-h-[80px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 pt-3 pb-3 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all resize-none font-poppins placeholder:text-[#6B7280]/60 disabled:opacity-70"
                                         value={formData.catatan}
                                         onChange={(e) => setFormData({...formData, catatan: e.target.value})}
                                     />
@@ -221,20 +230,34 @@ const ModalJadwalWawancara = ({
                                 <button 
                                     type="button"
                                     onClick={onClose}
-                                    className="px-5 py-2.5 border border-[#2B1810] text-[#2B1810] rounded-full font-poppins text-[15px] hover:bg-[#2B1810]/5 transition-all active:scale-95"
+                                    disabled={isSubmitting}
+                                    className="px-5 py-2.5 border border-[#2B1810] text-[#2B1810] rounded-full font-poppins text-[15px] hover:bg-[#2B1810]/5 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                                 >
                                     Batal
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="px-6 py-2.5 bg-[#FEAE2C] text-[#6B4500] rounded-full font-poppins text-[15px] hover:bg-[#FEAE2C]/90 shadow-md transition-all transform active:scale-95 flex items-center justify-center gap-2"
+                                    disabled={isSubmitting}
+                                    className="px-6 py-2.5 bg-[#FEAE2C] text-[#6B4500] rounded-full font-poppins text-[15px] hover:bg-[#FEAE2C]/90 shadow-md transition-all transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
                                 >
-                                    <img 
-                                        src={KirimIcon} 
-                                        alt="kirim" 
-                                        className="w-[14px] h-[11px]"
-                                    />
-                                    {mode === 'add' ? 'Kirim Undangan Wawancara' : 'Simpan Perubahan'}
+                                    {isSubmitting ? (
+                                        <span className="flex items-center gap-2">
+                                            <svg className="animate-spin h-4 w-4 text-[#6B4500]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Memproses...
+                                        </span>
+                                    ) : (
+                                        <>
+                                            <img 
+                                                src={KirimIcon} 
+                                                alt="kirim" 
+                                                className="w-[14px] h-[11px]"
+                                            />
+                                            {mode === 'add' ? 'Kirim Undangan Wawancara' : 'Simpan Perubahan'}
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>

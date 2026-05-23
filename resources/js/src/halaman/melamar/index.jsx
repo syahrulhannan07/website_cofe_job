@@ -149,27 +149,12 @@ const Melamar = () => {
         setSedangMengirim(true);
         setGalat('');
         try {
-            // 1. Upload Dokumen
-            const payloadUpload = new FormData();
-            let hasFiles = false;
-            Object.keys(formData.upload).forEach((id_jenis_dokumen) => {
-                if (formData.upload[id_jenis_dokumen]) {
-                    payloadUpload.append('dokumen[]', formData.upload[id_jenis_dokumen]);
-                    payloadUpload.append('id_jenis_dokumen[]', id_jenis_dokumen);
-                    hasFiles = true;
-                }
-            });
-
-            if (hasFiles) {
-                await layananLamaran.uploadDokumen(idLamaran, payloadUpload);
-            }
-
-            // 2. Simpan Jawaban Pertanyaan
+            // 1. Simpan Jawaban Pertanyaan
             if (formData.pertanyaan && formData.pertanyaan.length > 0) {
                 await layananLamaran.simpanJawaban(idLamaran, formData.pertanyaan);
             }
 
-            // 3. Finalisasi / Kirim Lamaran
+            // 2. Finalisasi / Kirim Lamaran
             await layananLamaran.kirimLamaran(idLamaran);
 
             setLamaranTerkirim(true);
@@ -190,6 +175,7 @@ const Melamar = () => {
                     data={formData.upload} 
                     onChange={updateUpload} 
                     dokumenWajib={dokumenWajib}
+                    idLamaran={idLamaran}
                 />;
             case 2: 
                 return <Step2Pertanyaan 
@@ -241,30 +227,41 @@ const Melamar = () => {
     // ─── Halaman Sukses ──────────────────────────────────────────────────────
     if (lamaranTerkirim) {
         return (
-            <div className="flex-1 flex items-center justify-center p-8 min-h-[60vh] pembungkus-utama-melamar">
+            <div className="flex-1 flex items-center justify-center p-6 min-h-[75vh] pembungkus-utama-melamar">
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="max-w-md text-center"
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    className="bg-white rounded-[30px] border border-[#EAE4DC]/80 p-12 max-w-[520px] text-center shadow-[0_25px_60px_-15px_rgba(75,46,43,0.06)] flex flex-col items-center"
                 >
-                    <div className="w-24 h-24 bg-[#6B8E23] rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-12 h-12">
-                            <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
-                        </svg>
+                    {/* Premium Checkmark Badge */}
+                    <div className="w-20 h-20 bg-[#6B8E23]/10 border-4 border-[#6B8E23]/20 rounded-full flex items-center justify-center mb-8 relative">
+                        <div className="w-14 h-14 bg-[#6B8E23] rounded-full flex items-center justify-center shadow-md shadow-[#6B8E23]/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" className="w-6 h-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                        </div>
                     </div>
-                    <h1 className="font-poppins font-bold text-[36px] text-[#4B2E2B] mb-3">
-                        Lamaran Terkirim! 🎉
+
+                    <h1 className="font-poppins font-bold text-[30px] leading-tight text-[#2B1810] mb-3">
+                        Lamaran Berhasil Dikirim
                     </h1>
-                    <p className="font-poppins text-[16px] text-[#4B2E2B]/70 mb-8 leading-relaxed">
-                        Lamaran Anda telah berhasil dikirimkan. Tim HRD akan menghubungi Anda dalam waktu 3-7 hari kerja.
+                    
+                    <p className="font-poppins font-medium text-[15px] text-[#827470] mb-8 leading-relaxed max-w-[400px]">
+                        Berkas lamaran Anda telah berhasil dikirimkan ke perusahaan. Tim rekrutmen akan meninjau kualifikasi Anda dan menghubungi Anda melalui email atau telepon jika terpilih untuk tahap seleksi selanjutnya.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <button onClick={() => navigate('/status-lamaran')}
-                            className="px-8 py-3 bg-[#4B2E2B] text-white rounded-full font-semibold hover:bg-[#3d2523] transition-all">
+                    
+                    <div className="flex flex-col sm:flex-row gap-3.5 w-full justify-center">
+                        <button 
+                            onClick={() => navigate('/status-lamaran')}
+                            className="px-8 py-3.5 bg-[#4B2E2B] text-white rounded-full font-poppins font-bold text-[15px] hover:bg-[#3d2523] transition-all duration-300 shadow-md shadow-[#4B2E2B]/10 hover:shadow-lg active:scale-[0.98] cursor-pointer"
+                        >
                             Lihat Status Lamaran
                         </button>
-                        <button onClick={() => navigate('/')}
-                            className="px-8 py-3 border-2 border-[#4B2E2B] text-[#4B2E2B] rounded-full font-semibold hover:bg-[#4B2E2B] hover:text-white transition-all">
+                        <button 
+                            onClick={() => navigate('/')}
+                            className="px-8 py-3.5 border-2 border-[#4B2E2B] text-[#4B2E2B] rounded-full font-poppins font-bold text-[15px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-[0.98] cursor-pointer"
+                        >
                             Kembali ke Beranda
                         </button>
                     </div>

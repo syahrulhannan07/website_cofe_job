@@ -12,6 +12,7 @@ class PerusahaanResource extends JsonResource
             'id_perusahaan' => $this->id_perusahaan,
             'nama_perusahaan' => $this->nama_perusahaan,
             'logo_perusahaan' => $this->logo_perusahaan ? asset('storage/' . $this->logo_perusahaan) : null,
+            'email' => $this->whenLoaded('pengguna', fn() => $this->pengguna->email),
             'alamat_perusahaan' => $this->alamat_perusahaan,
             'kecamatan' => $this->kecamatan,
             'deskripsi' => $this->deskripsi,

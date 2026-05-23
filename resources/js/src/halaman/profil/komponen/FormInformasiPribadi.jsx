@@ -110,7 +110,7 @@ const FormInformasiPribadi = ({ initialData, onRefresh }) => {
                             value={profil.tentang_saya}
                             onChange={handleChange}
                             disabled={!isEditing}
-                            className="input-field h-[110px] bg-[#E3CEB6] border-none rounded-[8px] p-4 font-poppins text-[#4B2E2B] focus:ring-2 focus:ring-[#4B2E2B]/20 outline-none resize-none placeholder:text-[#4B2E2B]/40 transition-shadow disabled:opacity-70"
+                            className="input-field h-[160px] text-[14.5px] leading-relaxed bg-[#E3CEB6] border-none rounded-[8px] p-4 font-poppins text-[#4B2E2B] focus:ring-2 focus:ring-[#4B2E2B]/20 outline-none resize-none placeholder:text-[#4B2E2B]/40 transition-shadow disabled:opacity-70 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                         />
                     </div>
 

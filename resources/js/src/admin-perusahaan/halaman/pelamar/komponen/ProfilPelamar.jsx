@@ -1,18 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react'; // [UPDATE LOGIC]
+import { useNavigate } from 'react-router-dom';
 import { FileText, Eye, Download, CheckCircle } from 'lucide-react';
 import ArrowRepeatIcon from '../../../aset/pelamar/ArrowRepeat.svg';
 import ChevronDownIcon from '../../../aset/pelamar/ChevronDown.svg';
 import PersonIcon from '../../../aset/pelamar/person.svg';
 import TentangIcon from '../../../aset/pelamar/person.svg';
 import IdentitasIcon from '../../../aset/pelamar/identitas.svg';
-import KontakIcon from '../../../aset/pelamar/surat.svg';
-import KualifikasiIcon from '../../../aset/pelamar/pendidikan.svg';
+import KualifikasiIcon from '../../../aset/pelamar/ikon-ijasah.svg';
 import PengalamanIcon from '../../../aset/pelamar/penglaman.svg';
-import DokumenIcon from '../../../aset/pelamar/dokumen.svg';
-import SuratIcon from '../../../aset/pelamar/surat.svg';
-import SertifikatIcon from '../../../aset/pelamar/sertifikat.svg';
+import DokumenIcon from '../../../aset/pelamar/ikon-cv-dan-dokumenlain.svg';
+import SuratIcon from '../../../aset/pelamar/ikon-surat-lamaran.svg';
+import SertifikatIcon from '../../../aset/pelamar/ikon-sertifikat.svg';
 import FolderIcon from '../../../aset/pelamar/folder.svg';
-import PendidikanIcon from '../../../aset/pelamar/pendidikan.svg';
+import PendidikanIcon from '../../../aset/pelamar/ikon-ijasah.svg';
 import PertanyaanIcon from '../../../aset/pelamar/pertanyaan.svg';
 import SkillIcon from '../../../aset/pelamar/petir.svg';
 import DownloadIcon from '../../../aset/pelamar/Download.svg';
@@ -21,12 +21,32 @@ import api from '../../../../layanan/api'; // [UPDATE LOGIC]
 
 const ProfilPelamar = ({ pelamar }) => {
     // [UPDATE LOGIC] - State untuk status yang dapat diubah secara reaktif
+    const navigate = useNavigate();
     const STATUS_OPTIONS = ['Diproses', 'Wawancara', 'Diterima', 'Ditolak'];
     const [selectedStatus, setSelectedStatus] = useState(pelamar?.status || 'Diproses');
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState(null); // { type: 'success'|'error', text: string }
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
+
+    const [fullDetail, setFullDetail] = useState(null);
+    const [loadingDetail, setLoadingDetail] = useState(false);
+
+    useEffect(() => {
+        const fetchDetail = async () => {
+            if (!pelamar?.id_lamaran) return;
+            setLoadingDetail(true);
+            try {
+                const response = await api.get(`/admin/lamaran/${pelamar.id_lamaran}`);
+                setFullDetail(response.data.data);
+            } catch (error) {
+                console.error("Gagal load detail lamaran", error);
+            } finally {
+                setLoadingDetail(false);
+            }
+        };
+        fetchDetail();
+    }, [pelamar?.id_lamaran]);
 
     // [UPDATE LOGIC] - Tutup dropdown saat klik di luar
     useEffect(() => {
@@ -54,9 +74,25 @@ const ProfilPelamar = ({ pelamar }) => {
             });
             // Update state reaktif tanpa refresh halaman
             const statusTerbaru = response.data?.data?.status || selectedStatus;
-            pelamar.status = statusTerbaru; // mutasi prop untuk sinkronisasi jika diperlukan
+            pelamar.status = statusTerbaru;
             setSelectedStatus(statusTerbaru);
-            setSaveMessage({ type: 'success', text: 'Status berhasil diperbarui. Notifikasi telah dikirim ke pelamar.' });
+
+            // Jika status diubah ke Wawancara, arahkan langsung ke halaman jadwal wawancara
+            // dan buka modal tambah jadwal dengan kandidat ini sudah terpilih
+            if (statusTerbaru === 'Wawancara') {
+                setSaveMessage({ type: 'success', text: 'Status Wawancara disimpan. Mengarahkan ke halaman penjadwalan...' });
+                setTimeout(() => {
+                    navigate('/admin/wawancara', {
+                        state: {
+                            bukaModal: true,
+                            idLamaran: pelamar.id_lamaran,
+                            namaPelamar: pelamar?.pelamar?.nama_lengkap || 'Pelamar',
+                        }
+                    });
+                }, 1200);
+            } else {
+                setSaveMessage({ type: 'success', text: 'Status berhasil diperbarui. Notifikasi telah dikirim ke pelamar.' });
+            }
         } catch (error) {
             const msg = error.response?.data?.message || 'Gagal memperbarui status. Coba lagi.';
             setSaveMessage({ type: 'error', text: msg });
@@ -72,48 +108,93 @@ const ProfilPelamar = ({ pelamar }) => {
         return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     };
 
+    const sourceData = fullDetail || pelamar;
+
     const detail = {
-        nama:    pelamar?.pelamar?.nama_lengkap || '-',
+        nama:    sourceData?.pelamar?.nama_lengkap || '-',
         status:  selectedStatus,
-        tanggal: formatDate(pelamar?.tanggal_melamar),
-        tentangSaya: pelamar?.pelamar?.tentang_saya || '-',
+        tanggal: formatDate(sourceData?.tanggal_melamar),
+        tentangSaya: sourceData?.pelamar?.tentang_saya || '-',
         identitas: {
-            jenisKelamin:    '-',
-            tempatTglLahir:  '-',
-            alamatLengkap:   pelamar?.pelamar?.alamat || '-',
+            jenisKelamin:    sourceData?.pelamar?.jenis_kelamin || '-',
+            tempatTglLahir:  sourceData?.pelamar?.tanggal_lahir ? formatDate(sourceData.pelamar.tanggal_lahir) : '-',
+            alamatLengkap:   sourceData?.pelamar?.alamat || '-',
         },
         kontak: {
-            email:       pelamar?.pelamar?.email || '-',
-            telepon:     pelamar?.pelamar?.telepon || '-',
+            email:       sourceData?.pelamar?.email || '-',
+            telepon:     sourceData?.pelamar?.telepon || '-',
             linkedin:    '-',
             portofolio:  '-',
         },
         kualifikasi: {
-            keahlian: (pelamar?.skill || []).map(s => s.nama_skill || s),
+            keahlian: (sourceData?.skill || []).map(s => s.nama_skill || s),
         },
-        pengalamanKerja: (pelamar?.pengalaman || []).map(p => ({
-            posisi:    p.posisi,
-            perusahaan: p.nama_perusahaan,
-            tahun:     `${p.tahun_mulai} - ${p.tahun_selesai || 'Sekarang'}`,
-            deskripsi: p.deskripsi ? [p.deskripsi] : [],
-        })),
-        pendidikan: (pelamar?.pendidikan || []).map(p => ({
-            institusi: p.nama_institusi,
-            jurusan:   `${p.tingkat} ${p.jurusan}`,
-            tahun:     `${p.tahun_mulai} - ${p.tahun_selesai || 'Sekarang'}`,
-        })),
-        dokumen: (pelamar?.dokumen || []).map(d => ({
-            nama:   d.jenis_dokumen?.nama_dokumen || 'Dokumen',
-            format: d.nama_file ? d.nama_file.split('.').pop().toUpperCase() : '-',
-            url:    d.path_file ? `/storage/${d.path_file}` : null,
-            tipe:   d.jenis_dokumen?.kode || 'cv',
-        })),
-        evaluasi: (pelamar?.jawaban_seleksi || []).map(j => ({
-            tanya: j.pertanyaan_lowongan?.pertanyaan || '-',
+        pengalamanKerja: (sourceData?.pengalaman || []).map(p => {
+            const tglMulai = p.tanggal_mulai ? new Date(p.tanggal_mulai).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '';
+            const tglSelesai = p.tanggal_selesai ? new Date(p.tanggal_selesai).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : 'Sekarang';
+            return {
+                posisi:    p.posisi || '-',
+                perusahaan: p.nama_perusahaan || '-',
+                tahun:     tglMulai && tglSelesai ? `${tglMulai} - ${tglSelesai}` : (tglMulai || tglSelesai || '-'),
+                deskripsi: p.deskripsi ? [p.deskripsi] : [],
+            };
+        }),
+        pendidikan: (sourceData?.pendidikan || []).map(p => {
+            const startYear = p.tahun_mulai ? new Date(p.tahun_mulai).getFullYear() : '';
+            const endYear = p.tahun_selesai ? new Date(p.tahun_selesai).getFullYear() : 'Sekarang';
+            return {
+                institusi: p.institusi || '-',
+                jurusan:   `${p.tingkat || ''} ${p.jurusan || ''}`.trim() || '-',
+                tahun:     startYear && endYear ? `${startYear} - ${endYear}` : (startYear || endYear || '-'),
+            };
+        }),
+        evaluasi: (sourceData?.jawaban_seleksi || []).map(j => ({
+            tanya: j.pertanyaan?.pertanyaan || j.pertanyaan_lowongan?.pertanyaan || '-',
             jawab: j.jawaban || '-',
             tipe:  'panjang',
         })),
     };
+
+    const getDocumentTypeByName = (name) => {
+        if (!name) return 'cv';
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('cv')) return 'cv';
+        if (lowerName.includes('ijazah') || lowerName.includes('ijasah') || lowerName.includes('pendidikan')) return 'pendidikan';
+        if (lowerName.includes('surat') || lowerName.includes('rekomendasi') || lowerName.includes('kesehatan') || lowerName.includes('lamaran')) return 'surat';
+        if (lowerName.includes('sertifikat') || lowerName.includes('piagam') || lowerName.includes('barista')) return 'sertifikat';
+        return 'cv';
+    };
+
+    const uploadedDocs = sourceData?.dokumen || [];
+    const requiredDocs = sourceData?.dokumen_lowongan || [];
+    
+    // Jika data dokumen_lowongan belum dimuat, gunakan fallback dokumen yang diupload saja
+    const documentList = requiredDocs.length > 0 
+        ? requiredDocs.map(reqDoc => {
+            const uploaded = uploadedDocs.find(d => d.id_jenis_dokumen === reqDoc.id_jenis_dokumen);
+            const docName = reqDoc.jenis_dokumen?.nama_dokumen || 'Dokumen';
+            return {
+                id: reqDoc.id_jenis_dokumen,
+                nama: docName,
+                tipe: getDocumentTypeByName(docName),
+                wajib: reqDoc.wajib === true || reqDoc.wajib === 1 || reqDoc.wajib === "1",
+                terlampir: !!uploaded,
+                format: uploaded?.lokasi_file ? uploaded.lokasi_file.split('.').pop().toUpperCase() : '-',
+                url: uploaded?.lokasi_file ? `/storage/${uploaded.lokasi_file}` : null,
+            };
+        }) 
+        : uploadedDocs.map(d => {
+            const docName = d.jenis_dokumen?.nama_dokumen || 'Dokumen';
+            return {
+                id: d.id_jenis_dokumen,
+                nama: docName,
+                tipe: getDocumentTypeByName(docName),
+                wajib: true,
+                terlampir: true,
+                format: d.lokasi_file ? d.lokasi_file.split('.').pop().toUpperCase() : '-',
+                url: d.lokasi_file ? `/storage/${d.lokasi_file}` : null,
+            };
+        });
 
     const getStatusStyles = (status) => {
         switch (status) {
@@ -150,7 +231,7 @@ const ProfilPelamar = ({ pelamar }) => {
                 {/* Left side: Avatar and Info - Centered Vertically */}
                 <div className="flex flex-col md:flex-row items-center gap-[24px] md:gap-[39px] md:my-auto flex-1 min-w-0">
                     <img 
-                        src={PlaceholderProfile} 
+                        src={sourceData?.pelamar?.foto_profil ? (sourceData.pelamar.foto_profil.startsWith('http') ? sourceData.pelamar.foto_profil : `/storage/${sourceData.pelamar.foto_profil}`) : PlaceholderProfile} 
                         alt="Profile" 
                         className="w-[120px] h-[120px] md:w-[158px] md:h-[158px] rounded-full object-cover shrink-0"
                     />
@@ -255,7 +336,7 @@ const ProfilPelamar = ({ pelamar }) => {
                                 <span className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#2B1810]">{detail.nama}</span>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <span className="font-['Plus_Jakarta_Sans'] font-medium text-[12px] text-[#504440]">Tempat Tanggal Lahir</span>
+                                <span className="font-['Plus_Jakarta_Sans'] font-medium text-[12px] text-[#504440]">Tanggal Lahir</span>
                                 <span className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#2B1810]">{detail.identitas.tempatTglLahir}</span>
                             </div>
                             <div className="flex flex-col gap-1">
@@ -289,19 +370,17 @@ const ProfilPelamar = ({ pelamar }) => {
                         </div>
                         
                         <div className="flex flex-col gap-8">
-                            {/* Entry 1 */}
-                            <div className="flex flex-col gap-1">
-                                <h4 className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#2B1810]">Universitas Indonesia</h4>
-                                <span className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#504440]">Sarjana Pariwisata & Perhotelan</span>
-                                <span className="font-['Plus_Jakarta_Sans'] font-medium text-[12px] text-[#504440] mt-1">2016 - 2020</span>
-                            </div>
-                            
-                            {/* Entry 2 */}
-                            <div className="flex flex-col gap-1">
-                                <h4 className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#2B1810]">SMAN 8 Jakarta</h4>
-                                <span className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#504440]">Ilmu Pengetahuan Sosial</span>
-                                <span className="font-['Plus_Jakarta_Sans'] font-medium text-[12px] text-[#504440] mt-1">2013 - 2016</span>
-                            </div>
+                            {detail.pendidikan && detail.pendidikan.length > 0 ? (
+                                detail.pendidikan.map((edu, index) => (
+                                    <div key={index} className="flex flex-col gap-1">
+                                        <h4 className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#2B1810]">{edu.institusi}</h4>
+                                        <span className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#504440]">{edu.jurusan}</span>
+                                        <span className="font-['Plus_Jakarta_Sans'] font-medium text-[12px] text-[#504440] mt-1">{edu.tahun}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#504440]">Belum ada data pendidikan.</p>
+                            )}
                         </div>
                     </div>
 
@@ -371,34 +450,38 @@ const ProfilPelamar = ({ pelamar }) => {
                         </div>
                         
                         <div className="flex flex-col gap-8">
-                            {detail.evaluasi.map((qna, index) => (
-                                <div key={index} className="flex flex-col gap-2">
-                                    <h4 className="font-['Plus_Jakarta_Sans'] font-normal text-[14px] text-[#2B1810] leading-relaxed">
-                                        {qna.tanya}
-                                    </h4>
-                                    
-                                    {qna.tipe === "panjang" ? (
-                                        <div className="p-4 bg-[#F7F3EE] rounded-[12px] mt-1">
-                                            <p className="font-['Plus_Jakarta_Sans'] font-normal italic text-[14px] text-[#504440] leading-relaxed">
-                                                "{qna.jawab}"
-                                            </p>
-                                        </div>
-                                    ) : qna.tipe === "status" ? (
-                                        <div className="flex items-center gap-2 text-[#15803D] mt-1">
-                                            <CheckCircle className="w-4 h-4 shrink-0" />
-                                            <span className="font-['Plus_Jakarta_Sans'] font-normal text-[16px]">
-                                                {qna.jawab}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <div className="mt-1">
-                                            <span className="font-['Plus_Jakarta_Sans'] font-normal text-[18px] text-[#432C23]">
-                                                {qna.jawab}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                            {detail.evaluasi && detail.evaluasi.length > 0 ? (
+                                detail.evaluasi.map((qna, index) => (
+                                    <div key={index} className="flex flex-col gap-2">
+                                        <h4 className="font-['Plus_Jakarta_Sans'] font-normal text-[14px] text-[#2B1810] leading-relaxed">
+                                            {qna.tanya}
+                                        </h4>
+                                        
+                                        {qna.tipe === "panjang" ? (
+                                            <div className="p-4 bg-[#F7F3EE] rounded-[12px] mt-1">
+                                                <p className="font-['Plus_Jakarta_Sans'] font-normal italic text-[14px] text-[#504440] leading-relaxed">
+                                                    {qna.jawab}
+                                                </p>
+                                            </div>
+                                        ) : qna.tipe === "status" ? (
+                                            <div className="flex items-center gap-2 text-[#15803D] mt-1">
+                                                <CheckCircle className="w-4 h-4 shrink-0" />
+                                                <span className="font-['Plus_Jakarta_Sans'] font-normal text-[16px]">
+                                                    {qna.jawab}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <div className="mt-1">
+                                                <span className="font-['Plus_Jakarta_Sans'] font-normal text-[18px] text-[#432C23]">
+                                                    {qna.jawab}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="font-['Plus_Jakarta_Sans'] font-normal text-[14px] text-[#504440]">Tidak ada pertanyaan dari perusahaan.</p>
+                            )}
                         </div>
                     </div>
 
@@ -414,27 +497,39 @@ const ProfilPelamar = ({ pelamar }) => {
                         </div>
                         
                         <div className="flex flex-col gap-4">
-                            {detail.dokumen.map((doc, index) => (
-                                <div key={index} className="flex items-center justify-between p-4 bg-[#F7F3EE] rounded-[20px] border border-[#B45309]/10 transition-all hover:bg-[#F1EBE4] group cursor-pointer">
-                                    <div className="flex items-start gap-3 min-w-0">
-                                        <div className="w-[28px] h-[28px] flex items-center justify-center mt-1 shrink-0">
-                                            <img src={getDocIcon(doc.tipe)} alt={doc.nama} className="w-full h-full object-contain" />
+                            {loadingDetail ? (
+                                <div className="text-[#504440] font-['Plus_Jakarta_Sans'] text-[14px]">Memuat dokumen...</div>
+                            ) : documentList.length > 0 ? (
+                                documentList.map((doc, index) => (
+                                    <div key={index} className={`flex items-center justify-between p-4 bg-[#F7F3EE] rounded-[20px] border ${doc.terlampir ? 'border-[#B45309]/10' : 'border-[#CCCCCC]/50 border-dashed opacity-70'} transition-all hover:bg-[#F1EBE4] group ${doc.terlampir ? 'cursor-pointer' : ''}`}>
+                                        <div className="flex items-start gap-3 min-w-0">
+                                            <div className={`w-[28px] h-[28px] flex items-center justify-center mt-1 shrink-0 ${!doc.terlampir && 'grayscale opacity-50'}`}>
+                                                <img src={getDocIcon(doc.tipe)} alt={doc.nama} className="w-full h-full object-contain" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#2B1810] leading-tight break-words">
+                                                    {doc.nama} {!doc.wajib && <span className="text-[#504440] text-[12px] font-normal italic">(Opsional)</span>}
+                                                </span>
+                                                <span className={`font-['Plus_Jakarta_Sans'] text-[12px] mt-1 ${doc.terlampir ? 'text-[#504440]' : 'text-[#A04A4A]'}`}>
+                                                    {doc.terlampir ? doc.format : 'Tidak dilampirkan'}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="font-['Plus_Jakarta_Sans'] font-normal text-[16px] text-[#2B1810] leading-tight break-words">{doc.nama}</span>
-                                            <span className="font-['Plus_Jakarta_Sans'] text-[12px] text-[#504440] mt-1">{doc.format}</span>
-                                        </div>
+                                        {doc.terlampir && (
+                                            <div className="flex items-center gap-2 shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <a href={doc.url} target="_blank" rel="noreferrer" className="p-1 transition-colors">
+                                                    <Eye className="w-5 h-5 text-[#B45309]" />
+                                                </a>
+                                                <a href={doc.url} download className="p-1 transition-colors">
+                                                    <Download className="w-5 h-5 text-[#B45309]" />
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="flex items-center gap-2 shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-1 transition-colors">
-                                            <Eye className="w-5 h-5 text-[#B45309]" />
-                                        </button>
-                                        <button className="p-1 transition-colors">
-                                            <Download className="w-5 h-5 text-[#B45309]" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <div className="text-[#504440] font-['Plus_Jakarta_Sans'] text-[14px]">Tidak ada dokumen yang dilampirkan</div>
+                            )}
                         </div>
                     </div>
 

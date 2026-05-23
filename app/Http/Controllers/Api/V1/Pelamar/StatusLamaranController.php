@@ -20,8 +20,9 @@ class StatusLamaranController extends Controller
             ]);
         }
 
-        $query = Lamaran::with(['lowongan.perusahaan'])
-            ->where('id_profil', $profil->id_profil);
+        $query = Lamaran::with(['lowongan.perusahaan', 'logStatus'])
+            ->where('id_profil', $profil->id_profil)
+            ->has('logStatus');
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
@@ -43,9 +44,10 @@ class StatusLamaranController extends Controller
                 'nama_kafe' => $item->lowongan->perusahaan->nama_perusahaan ?? null,
                 'logo_kafe' => $item->lowongan->perusahaan->logo_perusahaan ?? null,
                 'posisi' => $item->lowongan->posisi ?? null,
+                // Status pill selalu dari DB (Diproses/Wawancara/Diterima/Ditolak)
                 'status' => $item->status,
-                'dibuat_pada' => $item->created_at,
-                'diperbarui_pada' => $item->updated_at,
+                'dibuat_pada' => $item->created_at?->toIso8601String(),
+                'diperbarui_pada' => $item->updated_at?->toIso8601String(),
             ];
         });
 
@@ -76,7 +78,8 @@ class StatusLamaranController extends Controller
                 'posisi' => $lamaran->lowongan->posisi ?? null,
                 'nama_kafe' => $lamaran->lowongan->perusahaan->nama_perusahaan ?? null,
                 'logo_kafe' => $lamaran->lowongan->perusahaan->logo_perusahaan ?? null,
-                'nama_pelamar' => $lamaran->profil->pengguna->nama_lengkap ?? null,
+                'nama_pelamar' => $lamaran->profil->nama_lengkap ?? $lamaran->profil->pengguna->nama_pengguna ?? null,
+                // Status pill selalu dari DB (Diproses/Wawancara/Diterima/Ditolak), BUKAN dari log
                 'status_saat_ini' => $lamaran->status,
                 'timeline' => $lamaran->logStatus()
                     ->orderBy('dibuat_pada', 'desc')
@@ -84,7 +87,7 @@ class StatusLamaranController extends Controller
                     ->map(function ($log) {
                         return [
                             'status' => $log->status_baru,
-                            'waktu' => $log->dibuat_pada,
+                            'waktu' => $log->dibuat_pada?->toIso8601String(),
                             'keterangan' => $log->keterangan
                         ];
                     }),

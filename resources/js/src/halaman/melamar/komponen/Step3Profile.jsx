@@ -38,6 +38,27 @@ const FieldInput = ({ label, field, value, isEditing, onChange, placeholder, typ
     </div>
 );
 
+const FieldSelect = ({ label, field, value, isEditing, onChange, options }) => (
+    <div className="flex flex-col gap-2 w-full">
+        <label className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">{label}</label>
+        <select
+            value={value || ''}
+            onChange={(e) => isEditing && onChange(field, e.target.value)}
+            disabled={!isEditing}
+            className={`w-full rounded-[10px] px-6 py-3 font-poppins font-medium text-[16px] text-[#4B2E2B] focus:outline-none transition-all appearance-none cursor-pointer ${
+                isEditing 
+                    ? 'bg-white border-2 border-[#4B2E2B]/30 focus:border-[#4B2E2B]' 
+                    : 'bg-white/80 border-none opacity-90'
+            }`}
+        >
+            <option value="" disabled>Pilih Jenis Kelamin</option>
+            {options.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+        </select>
+    </div>
+);
+
 const Step3Profile = ({ data, onChange }) => {
     const [profilData, setProfilData] = useState(null);
     const [loadingProfil, setLoadingProfil] = useState(true);
@@ -110,7 +131,12 @@ const Step3Profile = ({ data, onChange }) => {
             fetchProfil(); // Refresh data dari server
         } catch (error) {
             console.error("Gagal update info dasar:", error);
-            alert("Gagal menyimpan data.");
+            if (error.response?.data?.errors) {
+                const pesanError = Object.values(error.response.data.errors).flat().join("\n");
+                alert("Kesalahan Validasi:\n" + pesanError);
+            } else {
+                alert("Gagal menyimpan data.");
+            }
         }
     };
 
@@ -272,13 +298,16 @@ const Step3Profile = ({ data, onChange }) => {
                             placeholder="Tanggal lahir belum diisi"
                             type="date"
                         />
-                        <FieldInput 
+                        <FieldSelect 
                             label="Jenis Kelamin" 
                             field="jenis_kelamin"
                             value={isEditingDasar ? editData.jenis_kelamin : profilData?.jenis_kelamin} 
                             isEditing={isEditingDasar}
                             onChange={handleEditDasarChange}
-                            placeholder="Jenis kelamin belum diisi" 
+                            options={[
+                                { value: 'Laki-laki', label: 'Laki-laki' },
+                                { value: 'Perempuan', label: 'Perempuan' }
+                            ]}
                         />
                         <FieldInput 
                             label="Nomor Telepon" 
@@ -307,7 +336,7 @@ const Step3Profile = ({ data, onChange }) => {
                     </div>
 
                     {/* Tombol Simpan jika mode Edit */}
-                    {isEditingDasar ? (
+                    {isEditingDasar && (
                         <div className="flex flex-col gap-3 mt-4">
                             <button 
                                 onClick={handleSimpanDasar}
@@ -322,12 +351,6 @@ const Step3Profile = ({ data, onChange }) => {
                                 Batal
                             </button>
                         </div>
-                    ) : (
-                        <>
-                            <p className="font-poppins text-center text-white mt-4 text-[14px]">
-                                Klik ikon pensil di atas foto untuk mengubah info dasar tanpa perlu berpindah halaman.
-                            </p>
-                        </>
                     )}
                 </div>
             </div>

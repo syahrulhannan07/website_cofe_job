@@ -32,21 +32,33 @@ const DetailStatusLamaran = () => {
                         timeline: apiData.timeline.map((log) => {
                             let judul = log.status;
                             let deskripsi = log.keterangan;
+                            let hasButton = false;
                             
                             if (log.status === 'Diproses') {
                                 judul = 'Lamaran Dikirim';
+                                // Sesuai desain: nama kafe dinamis
                                 deskripsi = `Lamaran Anda telah berhasil diterima oleh tim rekrutmen ${apiData.nama_kafe}.`;
                             } else if (log.status === 'Dalam Review') {
                                 judul = 'Dalam Review';
+                                // Sesuai desain
                                 deskripsi = 'Tim HRD sedang meninjau portofolio dan pengalaman kerja Anda.';
                             } else if (log.status === 'Wawancara') {
                                 if (log.keterangan === 'Jadwal wawancara telah dibuat.') {
                                     judul = 'Jadwal Wawancara';
+                                    // Sesuai desain: ada tombol Lihat Jadwal
                                     deskripsi = 'Anda diundang untuk sesi wawancara.';
+                                    hasButton = true;
                                 } else {
                                     judul = 'Lamaran Diterima';
+                                    // Sesuai desain
                                     deskripsi = 'Lamaran anda lolos seleksi, selanjutnya tunggu informasi jadwal wawancara Anda.';
                                 }
+                            } else if (log.status === 'Diterima') {
+                                judul = 'Lamaran Diterima';
+                                deskripsi = 'Selamat! Anda dinyatakan diterima. Silakan tunggu informasi lebih lanjut dari perusahaan.';
+                            } else if (log.status === 'Ditolak') {
+                                judul = 'Lamaran Tidak Diterima';
+                                deskripsi = 'Terima kasih atas lamaran Anda. Mohon maaf, lamaran Anda belum dapat diproses ke tahap selanjutnya.';
                             }
                             
                             return {
@@ -54,9 +66,9 @@ const DetailStatusLamaran = () => {
                                 waktu: new Date(log.waktu).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' }).replace(' pukul ', ' - '),
                                 deskripsi: deskripsi,
                                 selesai: true,
-                                hasButton: log.keterangan === 'Jadwal wawancara telah dibuat.'
+                                hasButton: hasButton,
                             };
-                        }).reverse() // Reverse karena API return DESC (terbaru di atas), sedangkan timeline butuh ASC (dari awal mula)
+                        }).reverse() // Reverse karena API return DESC (terbaru di atas), timeline butuh ASC
                     };
 
                     setData(mappedData);

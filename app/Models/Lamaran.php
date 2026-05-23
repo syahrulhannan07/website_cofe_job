@@ -13,6 +13,11 @@ class Lamaran extends Model
         'id_lowongan',
         'id_profil',
         'status',
+        'snapshot_profil',
+    ];
+
+    protected $casts = [
+        'snapshot_profil' => 'array',
     ];
 
     public function lowongan()
@@ -47,19 +52,9 @@ class Lamaran extends Model
 
     protected static function booted()
     {
-        // Log status saat pertama kali dibuat
-        static::created(function ($lamaran) {
-            LogStatusLamaran::create([
-                'id_lamaran' => $lamaran->id_lamaran,
-                'status_lama' => null,
-                'status_baru' => $lamaran->status,
-                'keterangan' => 'Lamaran berhasil dikirim.',
-            ]);
-        });
-
         // Log status saat diupdate
         static::updated(function ($lamaran) {
-            if ($lamaran->isDirty('status')) {
+            if ($lamaran->wasChanged('status')) {
                 LogStatusLamaran::create([
                     'id_lamaran' => $lamaran->id_lamaran,
                     'status_lama' => $lamaran->getOriginal('status'),
@@ -75,7 +70,7 @@ class Lamaran extends Model
         return match ($status) {
             'Diproses' => 'Lamaran dikirim.',
             'Dalam Review' => 'Dalam review.',
-            'Wawancara' => 'Lamaran diterima, tinggal menunggu jadwal wawancara.',
+            'Wawancara' => 'Lamaran diterima, tunggu admin menjadwalkan wawancara.',
             'Diterima' => 'Selamat! Anda diterima bekerja di kafe ini.',
             'Ditolak' => 'Mohon maaf, lamaran Anda belum dapat diproses lebih lanjut.',
             default => 'Status lamaran diperbarui.',

@@ -64,6 +64,14 @@ class AuthService
             );
         }
 
+        // Langkah 4.5: Cegah Super Admin masuk dari jalur reguler
+        if ($pengguna->peran === 'Super_Admin') {
+            return $this->galatRespons(
+                'Username atau password salah.', // Menggunakan pesan generik demi keamanan atau bisa spesifik
+                401
+            );
+        }
+
         // Langkah 5: Buat JWT token untuk pengguna yang valid
         $token = auth('api')->login($pengguna);
 
