@@ -12,8 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Modify the ENUM directly using DB statement because doctrine/dbal has issues with ENUMs sometimes
-        DB::statement("ALTER TABLE lamaran MODIFY status ENUM('Diproses', 'Dalam Review', 'Wawancara', 'Diterima', 'Ditolak') DEFAULT 'Diproses'");
+        if (DB::getDriverName() !== 'sqlite') {
+            // Modify the ENUM directly using DB statement because doctrine/dbal has issues with ENUMs sometimes
+            DB::statement("ALTER TABLE lamaran MODIFY status ENUM('Diproses', 'Dalam Review', 'Wawancara', 'Diterima', 'Ditolak') DEFAULT 'Diproses'");
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert back
-        // Warning: if there are rows with 'Dalam Review', this might fail or truncate data
-        DB::statement("ALTER TABLE lamaran MODIFY status ENUM('Diproses', 'Wawancara', 'Diterima', 'Ditolak') DEFAULT 'Diproses'");
+        if (DB::getDriverName() !== 'sqlite') {
+            // Revert back
+            // Warning: if there are rows with 'Dalam Review', this might fail or truncate data
+            DB::statement("ALTER TABLE lamaran MODIFY status ENUM('Diproses', 'Wawancara', 'Diterima', 'Ditolak') DEFAULT 'Diproses'");
+        }
     }
 };

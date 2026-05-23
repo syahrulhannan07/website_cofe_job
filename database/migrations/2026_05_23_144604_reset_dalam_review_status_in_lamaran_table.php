@@ -15,8 +15,10 @@ return new class extends Migration
         // Reset any existing lamaran that has status 'Dalam Review' back to 'Diproses'
         DB::table('lamaran')->where('status', 'Dalam Review')->update(['status' => 'Diproses']);
 
-        // Alter the column enum to remove 'Dalam Review'
-        DB::statement("ALTER TABLE lamaran MODIFY status ENUM('Diproses', 'Wawancara', 'Diterima', 'Ditolak') DEFAULT 'Diproses'");
+        if (DB::getDriverName() !== 'sqlite') {
+            // Alter the column enum to remove 'Dalam Review'
+            DB::statement("ALTER TABLE lamaran MODIFY status ENUM('Diproses', 'Wawancara', 'Diterima', 'Ditolak') DEFAULT 'Diproses'");
+        }
     }
 
     /**
@@ -24,6 +26,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE lamaran MODIFY status ENUM('Diproses', 'Dalam Review', 'Wawancara', 'Diterima', 'Ditolak') DEFAULT 'Diproses'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE lamaran MODIFY status ENUM('Diproses', 'Dalam Review', 'Wawancara', 'Diterima', 'Ditolak') DEFAULT 'Diproses'");
+        }
     }
 };
