@@ -157,4 +157,4 @@ jobs:
           # Clear cache
           docker compose exec -T app php artisan optimize:clear
 
-          echo "✅ Deployment selesai!"
+          echo "✅ Deployment sudah berhasil!"  
