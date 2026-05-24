@@ -409,4 +409,93 @@ class RecruitmentFlowTest extends TestCase
         $kirimResponse->assertJsonPath('status', 'error');
         $kirimResponse->assertJsonPath('message', 'Harap upload semua dokumen wajib terlebih dahulu.');
     }
+
+    /**
+     * Skenario Tambahan: Admin Perusahaan yang Diblokir sama sekali tidak bisa login
+     */
+    public function test_admin_perusahaan_blocked_cannot_login()
+    {
+        $this->adminPerusahaan->update(['status_akun' => 'Diblokir']);
+
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => 'ramadhansanjaya24@student.polindra.ac.id',
+            'kata_sandi' => 'password',
+        ]);
+
+        $response->assertStatus(403);
+        $response->assertJsonPath('status', 'error');
+        $response->assertJsonPath('message', 'Akun Anda telah ditangguhkan. Silakan hubungi bantuan.');
+    }
+
+    /**
+     * Skenario Tambahan: Admin Perusahaan Nonaktif hanya bisa login secara read-only
+     */
+    public function test_admin_perusahaan_nonaktif_readonly_operations()
+    {
+        $this->profilPerusahaan->update(['status_verifikasi' => 'Diterima']);
+        $this->adminPerusahaan->update(['status_akun' => 'Nonaktif']);
+
+        // Login tetap bisa berhasil
+        $adminLogin = $this->postJson('/api/v1/auth/login', [
+            'email' => 'ramadhansanjaya24@student.polindra.ac.id',
+            'kata_sandi' => 'password',
+        ]);
+        $adminLogin->assertStatus(200);
+        $adminToken = $adminLogin->json('data.token');
+
+        // Coba lakukan GET request (read-only) - harus berhasil
+        $getResponse = $this->withHeader('Authorization', 'Bearer ' . $adminToken)
+            ->getJson('/api/v1/admin/lowongan');
+        $getResponse->assertStatus(200);
+
+        // Coba lakukan POST request (write) - harus gagal (403)
+        $postResponse = $this->withHeader('Authorization', 'Bearer ' . $adminToken)
+            ->postJson('/api/v1/admin/lowongan', [
+                'posisi' => 'Barista',
+                'deskripsi' => 'Deskripsi barista',
+                'persyaratan' => 'Persyaratan barista',
+                'batas_awal' => now()->format('Y-m-d'),
+                'batas_akhir' => now()->addMonth()->format('Y-m-d'),
+                'status' => 'Draft',
+            ]);
+        $postResponse->assertStatus(403);
+        $postResponse->assertJsonPath('status', 'error');
+        $postResponse->assertJsonPath('message', 'Akun Anda dinonaktifkan. Anda hanya dapat melihat data (read-only).');
+    }
+
+    /**
+     * Skenario Tambahan: Jika status perusahaan pending/ditolak, lowongan terpaksa draft
+     */
+    public function test_admin_perusahaan_pending_or_rejected_lowongan_only_draft()
+    {
+        // Set status perusahaan ke Pending
+        $this->profilPerusahaan->update(['status_verifikasi' => 'Pending']);
+        $this->adminPerusahaan->update(['status_akun' => 'Aktif']);
+
+        $adminLogin = $this->postJson('/api/v1/auth/login', [
+            'email' => 'ramadhansanjaya24@student.polindra.ac.id',
+            'kata_sandi' => 'password',
+        ]);
+        $adminToken = $adminLogin->json('data.token');
+
+        // Coba buat lowongan baru
+        $storeResponse = $this->withHeader('Authorization', 'Bearer ' . $adminToken)
+            ->postJson('/api/v1/admin/lowongan', [
+                'posisi' => 'Barista Pending',
+                'deskripsi' => 'Deskripsi barista',
+                'persyaratan' => 'Persyaratan barista',
+                'batas_awal' => now()->format('Y-m-d'),
+                'batas_akhir' => now()->addMonth()->format('Y-m-d'),
+                'status' => 'Active', // Mencoba set Active
+            ]);
+
+        // Status di database harus tersimpan sebagai Draft, dan status_label yang dikembalikan adalah Draft
+        $storeResponse->assertStatus(201);
+        $idLowongan = $storeResponse->json('data.id');
+        $this->assertDatabaseHas('lowongan', [
+            'id_lowongan' => $idLowongan,
+            'status' => 'Draft',
+        ]);
+        $this->assertEquals('Draft', $storeResponse->json('data.status'));
+    }
 }

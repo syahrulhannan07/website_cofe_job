@@ -29,6 +29,13 @@ class LowonganRepository
             ->where('batas_awal', '>', $today)
             ->update(['status' => 'Draft']);
 
+        $profil = \App\Models\ProfilPerusahaan::find($idPerusahaan);
+        if ($profil && $profil->status_verifikasi !== 'Diterima') {
+            if (!empty($filters['status']) && $filters['status'] !== 'Draft') {
+                return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $filters['per_page'] ?? 10);
+            }
+        }
+
         $query = Lowongan::where('id_perusahaan', $idPerusahaan)
             ->withCount('lamaran');
 

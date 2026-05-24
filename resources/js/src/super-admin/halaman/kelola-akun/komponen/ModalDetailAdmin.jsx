@@ -18,7 +18,7 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
 
     useEffect(() => {
         if (admin) {
-            setStatusTerpilih(admin.status === 'Aktif' ? 'Aktif' : 'Nonaktif');
+            setStatusTerpilih(admin.status);
         }
     }, [admin]);
 
@@ -179,7 +179,7 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
                             {/* Dropdown Items list */}
                             {dropdownBuka && (
                                 <div className="list-dropdown absolute right-0 mt-2 w-[140px] bg-white border border-[#EAE4DC] rounded-[8px] shadow-lg overflow-hidden z-40">
-                                    {['Aktif', 'Nonaktif'].map((opt) => (
+                                    {['Aktif', 'Nonaktif', 'Diblokir'].map((opt) => (
                                         <button
                                             key={opt}
                                             onClick={() => {

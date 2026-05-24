@@ -137,7 +137,7 @@ class SuperAdminKafeController extends Controller
     /**
      * Nonaktifkan (suspend/blokir) akun admin kafe.
      */
-    public function suspend($id)
+    public function suspend(Request $request, $id)
     {
         $admin = Pengguna::where('peran', 'Admin_Perusahaan')->find($id);
 
@@ -145,10 +145,21 @@ class SuperAdminKafeController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Akun admin kafe tidak ditemukan'], 404);
         }
 
-        $admin->status_akun = 'Diblokir';
+        $status = $request->input('status', 'Diblokir');
+        if (!in_array($status, ['Aktif', 'Nonaktif', 'Diblokir'])) {
+            return response()->json(['status' => 'error', 'message' => 'Status tidak valid'], 422);
+        }
+
+        $admin->status_akun = $status;
         $admin->save();
 
-        return response()->json(['status' => 'success', 'message' => 'Akun admin kafe berhasil ditangguhkan/diblokir'], 200);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Status akun admin kafe berhasil diperbarui',
+            'data' => [
+                'status' => $admin->status_akun
+            ]
+        ], 200);
     }
 
     /**

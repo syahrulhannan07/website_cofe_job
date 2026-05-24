@@ -51,6 +51,11 @@ class Lowongan extends Model
      */
     public function getStatusLabelAttribute()
     {
+        // Jika status akun perusahaan belum disetujui (Pending / Ditolak) -> Paksa Draft
+        if ($this->perusahaan && $this->perusahaan->status_verifikasi !== 'Diterima') {
+            return 'Draft';
+        }
+
         $today = Carbon::now('Asia/Jakarta')->format('Y-m-d');
         $start = Carbon::parse($this->batas_awal)->format('Y-m-d');
         $end   = Carbon::parse($this->batas_akhir)->format('Y-m-d');

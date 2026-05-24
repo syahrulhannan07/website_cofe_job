@@ -23,6 +23,7 @@ const HalamanKelolaAkun = () => {
 
     const [modalKonfirmasiBuka, setModalKonfirmasiBuka] = useState(false);
     const [adminIdUntukSuspend, setAdminIdUntukSuspend] = useState(null);
+    const [statusYangDipilih, setStatusYangDipilih] = useState('');
 
     // Fetch daftar admin dengan debounce 300ms pada search query
     useEffect(() => {
@@ -78,16 +79,25 @@ const HalamanKelolaAkun = () => {
         tampilNotif('sukses', `Akun "${admin.nama_perusahaan}" berhasil diaktifkan.`);
     };
 
-    const handleUpdateStatus = (admin, statusBaru) => {
-        if (statusBaru === 'Nonaktif') {
-            setAdminIdUntukSuspend(admin.id);
-            setModalKonfirmasiBuka(true);
-        } else {
-            setDaftarAdmin(prev => prev.map(a => a.id === admin.id ? { ...a, status: 'Aktif' } : a));
-            if (adminTerpilihDetail?.id === admin.id) {
-                setAdminTerpilihDetail(prev => prev ? { ...prev, status: 'Aktif' } : null);
+    const handleUpdateStatus = async (admin, statusBaru) => {
+        if (statusBaru === 'Aktif') {
+            try {
+                const respons = await api.put(`/super-admin/akun-kafe/${admin.id}/suspend`, { status: 'Aktif' });
+                if (respons.status === 200) {
+                    setDaftarAdmin(prev => prev.map(a => a.id === admin.id ? { ...a, status: 'Aktif' } : a));
+                    if (adminTerpilihDetail?.id === admin.id) {
+                        setAdminTerpilihDetail(prev => prev ? { ...prev, status: 'Aktif' } : null);
+                    }
+                    tampilNotif('sukses', `Status akun "${admin.nama_perusahaan}" berhasil diaktifkan.`);
+                }
+            } catch (err) {
+                console.error('Gagal mengaktifkan akun:', err);
+                tampilNotif('gagal', 'Gagal mengaktifkan akun admin.');
             }
-            tampilNotif('sukses', `Status akun "${admin.nama_perusahaan}" berhasil diaktifkan.`);
+        } else {
+            setAdminIdUntukSuspend(admin.id);
+            setStatusYangDipilih(statusBaru);
+            setModalKonfirmasiBuka(true);
         }
     };
 
@@ -109,27 +119,34 @@ const HalamanKelolaAkun = () => {
     };
 
     const handleKonfirmasiSuspend = async () => {
-        if (!adminIdUntukSuspend) return;
+        if (!adminIdUntukSuspend || !statusYangDipilih) return;
         try {
-            const respons = await api.put(`/super-admin/akun-kafe/${adminIdUntukSuspend}/suspend`);
+            const respons = await api.put(`/super-admin/akun-kafe/${adminIdUntukSuspend}/suspend`, {
+                status: statusYangDipilih
+            });
             if (respons.status === 200) {
                 const adminTarget = daftarAdmin.find(a => a.id === adminIdUntukSuspend);
                 const namaPerusahaan = adminTarget ? adminTarget.nama_perusahaan : '';
-                setDaftarAdmin(prev => prev.map(a => a.id === adminIdUntukSuspend ? { ...a, status: 'Diblokir' } : a));
+                setDaftarAdmin(prev => prev.map(a => a.id === adminIdUntukSuspend ? { ...a, status: statusYangDipilih } : a));
+                if (adminTerpilihDetail?.id === adminIdUntukSuspend) {
+                    setAdminTerpilihDetail(prev => prev ? { ...prev, status: statusYangDipilih } : null);
+                }
                 setModalKonfirmasiBuka(false);
-                setAdminTerpilihDetail(null);
                 setAdminIdUntukSuspend(null);
-                tampilNotif('sukses', `Akun "${namaPerusahaan}" berhasil diblokir.`);
+                setStatusYangDipilih('');
+                const labelStatus = statusYangDipilih === 'Nonaktif' ? 'dinonaktifkan' : 'diblokir';
+                tampilNotif('sukses', `Akun "${namaPerusahaan}" berhasil ${labelStatus}.`);
             }
         } catch (err) {
-            console.error('Gagal menonaktifkan akun:', err);
-            tampilNotif('gagal', 'Gagal menonaktifkan akun admin.');
+            console.error('Gagal memperbarui status akun:', err);
+            tampilNotif('gagal', 'Gagal memperbarui status akun admin.');
         }
     };
 
     const handleBatalSuspend = () => {
         setModalKonfirmasiBuka(false);
         setAdminIdUntukSuspend(null);
+        setStatusYangDipilih('');
     };
 
     return (
@@ -262,10 +279,12 @@ const HalamanKelolaAkun = () => {
                 <div className="fixed inset-0 bg-[#1c120e]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-[#FAF8F6] rounded-[16px] shadow-2xl p-6 w-[400px] border border-[#EAE4DC] flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
                         <h3 className="font-bold text-[18px] text-[#4B2E2B]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            Konfirmasi Penonaktifan
+                            {statusYangDipilih === 'Nonaktif' ? 'Konfirmasi Penonaktifan' : 'Konfirmasi Pemblokiran'}
                         </h3>
                         <p className="text-[14px] text-[#4B2E2B] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-                            Apakah Anda yakin ingin menonaktifkan akun admin kafe ini? Tindakan ini akan memblokir akses login bagi akun ini.
+                            {statusYangDipilih === 'Nonaktif'
+                                ? 'Apakah Anda yakin ingin menonaktifkan akun admin kafe ini? Akun masih bisa login tetapi hanya dapat melihat data (read-only).'
+                                : 'Apakah Anda yakin ingin memblokir akun admin kafe ini? Akses login untuk akun ini akan diblokir sepenuhnya.'}
                         </p>
                         <div className="flex justify-end gap-3 mt-2">
                             <button
@@ -280,7 +299,7 @@ const HalamanKelolaAkun = () => {
                                 className="px-4 py-2 bg-[#C98285] hover:bg-[#C27376] text-[#521A1C] rounded-[8px] font-bold text-[14px] transition-colors focus:outline-none"
                                 style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
                             >
-                                Ya, Nonaktifkan
+                                {statusYangDipilih === 'Nonaktif' ? 'Ya, Nonaktifkan' : 'Ya, Blokir'}
                             </button>
                         </div>
                     </div>

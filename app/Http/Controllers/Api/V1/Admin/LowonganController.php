@@ -42,13 +42,23 @@ class LowonganController extends Controller
         })->count();
 
         // Detailed Statistics for the company
-        $stats = [
-            'total'         => Lowongan::where('id_perusahaan', $idPerusahaan)->count(),
-            'active'        => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Active')->count(),
-            'draft'         => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Draft')->count(),
-            'closed'        => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Closed')->count(),
-            'total_pelamar' => $totalPelamar
-        ];
+        if ($profil->status_verifikasi !== 'Diterima') {
+            $stats = [
+                'total'         => Lowongan::where('id_perusahaan', $idPerusahaan)->count(),
+                'active'        => 0,
+                'draft'         => Lowongan::where('id_perusahaan', $idPerusahaan)->count(),
+                'closed'        => 0,
+                'total_pelamar' => $totalPelamar
+            ];
+        } else {
+            $stats = [
+                'total'         => Lowongan::where('id_perusahaan', $idPerusahaan)->count(),
+                'active'        => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Active')->count(),
+                'draft'         => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Draft')->count(),
+                'closed'        => Lowongan::where('id_perusahaan', $idPerusahaan)->where('status', 'Closed')->count(),
+                'total_pelamar' => $totalPelamar
+            ];
+        }
 
         return LowonganResource::collection($lowongan)->additional([
             'meta' => [
@@ -65,17 +75,16 @@ class LowonganController extends Controller
         $profil = auth('api')->user()->profilPerusahaan;
         if (!$profil) return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu', 403);
 
-        // [UPDATE LOGIC]
-        if ($request->status === 'Active' && $profil->status_verifikasi !== 'Diterima') {
-            return $this->errorResponse('Akun Anda sedang dalam proses verifikasi oleh Super Admin. Harap tunggu persetujuan.', 403);
-        }
-
         if ($request->status === 'Active' && !$this->isProfileComplete($profil)) {
             return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu sebelum memposting', 422);
         }
 
         try {
-            $lowongan = $this->service->createLowongan($profil->id_perusahaan, $request->validated());
+            $validatedData = $request->validated();
+            if ($profil->status_verifikasi !== 'Diterima') {
+                $validatedData['status'] = 'Draft';
+            }
+            $lowongan = $this->service->createLowongan($profil->id_perusahaan, $validatedData);
             return $this->successResponse(new LowonganResource($lowongan), 'Lowongan berhasil dibuat', 201);
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat menyimpan lowongan', 500, $e->getMessage());
@@ -139,17 +148,16 @@ class LowonganController extends Controller
 
         if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
 
-        // [UPDATE LOGIC]
-        if ($request->status === 'Active' && $lowongan->status !== 'Active' && $profil->status_verifikasi !== 'Diterima') {
-            return $this->errorResponse('Akun Anda sedang dalam proses verifikasi oleh Super Admin. Harap tunggu persetujuan.', 403);
-        }
-
         if ($request->status === 'Active' && $lowongan->status !== 'Active' && !$this->isProfileComplete($profil)) {
             return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu sebelum memposting', 422);
         }
 
         try {
-            $updated = $this->service->updateLowongan($lowongan, $request->all());
+            $data = $request->all();
+            if ($profil->status_verifikasi !== 'Diterima') {
+                $data['status'] = 'Draft';
+            }
+            $updated = $this->service->updateLowongan($lowongan, $data);
             return $this->successResponse(new LowonganResource($updated), 'Lowongan berhasil diperbarui');
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat memperbarui lowongan', 500, $e->getMessage());
