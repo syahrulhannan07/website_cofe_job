@@ -87,15 +87,10 @@ class VerifikasiPerusahaanController extends Controller
         if ($perusahaan->pengguna) {
             $perusahaan->pengguna->status_akun = 'Aktif';
             $perusahaan->pengguna->save();
-
-            // Kirim email PersetujuanPerusahaanMail secara synchronous
-            try {
-                Mail::to($perusahaan->pengguna->email)
-                    ->send(new PersetujuanPerusahaanMail($perusahaan));
-            } catch (\Exception $e) {
-                Log::error('Gagal mengirim email persetujuan untuk perusahaan ID ' . $id . ': ' . $e->getMessage());
-            }
         }
+
+        // Dispatch CompanyVerificationStatusChanged event
+        event(new \App\Events\CompanyVerificationStatusChanged($perusahaan, 'Diterima'));
 
         return response()->json([
             'status' => 'success',
@@ -138,15 +133,8 @@ class VerifikasiPerusahaanController extends Controller
         $perusahaan->alasan_penolakan = $request->alasan;
         $perusahaan->save();
 
-        // Kirim email PenolakanPerusahaanMail secara synchronous
-        if ($perusahaan->pengguna) {
-            try {
-                Mail::to($perusahaan->pengguna->email)
-                    ->send(new PenolakanPerusahaanMail($perusahaan, $request->alasan));
-            } catch (\Exception $e) {
-                Log::error('Gagal mengirim email penolakan untuk perusahaan ID ' . $id . ': ' . $e->getMessage());
-            }
-        }
+        // Dispatch CompanyVerificationStatusChanged event
+        event(new \App\Events\CompanyVerificationStatusChanged($perusahaan, 'Ditolak', $request->alasan));
 
         return response()->json([
             'status' => 'success',

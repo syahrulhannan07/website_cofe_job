@@ -126,13 +126,16 @@ class RegisterController extends Controller
             ]);
 
             // 5. Buat record PROFIL_PERUSAHAAN
-            ProfilPerusahaan::create([
+            $perusahaan = ProfilPerusahaan::create([
                 'id_pengguna' => $pengguna->id_pengguna,
                 'nama_perusahaan' => $request->nama_perusahaan,
                 'alamat_perusahaan' => $request->alamat_perusahaan,
                 'dokumen_izin' => $path,
                 'status_verifikasi' => 'Pending',
             ]);
+
+            // Dispatch CompanyRegistered event
+            event(new \App\Events\CompanyRegistered($perusahaan));
 
             DB::commit();
 
@@ -213,7 +216,7 @@ class RegisterController extends Controller
             ]);
 
             // 5. Buat record PROFIL_PERUSAHAAN
-            ProfilPerusahaan::create([
+            $perusahaan = ProfilPerusahaan::create([
                 'id_pengguna' => $pengguna->id_pengguna,
                 'nama_perusahaan' => $request->nama_kafe,
                 'alamat_perusahaan' => $request->alamat,
@@ -221,6 +224,9 @@ class RegisterController extends Controller
                 'dokumen_izin' => $path,
                 'status_verifikasi' => 'Pending',
             ]);
+
+            // Dispatch CompanyRegistered event
+            event(new \App\Events\CompanyRegistered($perusahaan));
 
             DB::commit();
 

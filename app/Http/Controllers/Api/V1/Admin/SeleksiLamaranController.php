@@ -84,14 +84,7 @@ class SeleksiLamaranController extends Controller
                     'keterangan' => 'Dalam review.',
                 ]);
 
-                // Dispatch event real-time ke pelamar agar timeline-nya terupdate otomatis
-                broadcast(new \App\Events\StatusLamaranDiperbarui(
-                    idPengguna: $lamaran->profil->pengguna->id_pengguna,
-                    statusBaru: 'Dalam Review',
-                    idLowongan: $lamaran->id_lowongan,
-                    posisi: $lamaran->lowongan->posisi,
-                    namaPerusahaan: $profil->nama_perusahaan
-                ))->toOthers();
+                event(new \App\Events\LamaranReviewed($lamaran->load(['lowongan.perusahaan', 'profil.pengguna'])));
             }
         }
 

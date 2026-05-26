@@ -153,6 +153,9 @@ class SuperAdminKafeController extends Controller
         $admin->status_akun = $status;
         $admin->save();
 
+        // Dispatch CompanyAccountStatusChanged event
+        event(new \App\Events\CompanyAccountStatusChanged($admin, $status));
+
         return response()->json([
             'status' => 'success',
             'message' => 'Status akun admin kafe berhasil diperbarui',

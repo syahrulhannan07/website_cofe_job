@@ -85,6 +85,11 @@ class LowonganController extends Controller
                 $validatedData['status'] = 'Draft';
             }
             $lowongan = $this->service->createLowongan($profil->id_perusahaan, $validatedData);
+
+            if ($lowongan->status === 'Active') {
+                event(new \App\Events\LowonganPublished($lowongan));
+            }
+
             return $this->successResponse(new LowonganResource($lowongan), 'Lowongan berhasil dibuat', 201);
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat menyimpan lowongan', 500, $e->getMessage());
@@ -154,10 +159,16 @@ class LowonganController extends Controller
 
         try {
             $data = $request->all();
+            $oldStatus = $lowongan->status;
             if ($profil->status_verifikasi !== 'Diterima') {
                 $data['status'] = 'Draft';
             }
             $updated = $this->service->updateLowongan($lowongan, $data);
+
+            if ($updated->status === 'Active' && $oldStatus !== 'Active') {
+                event(new \App\Events\LowonganPublished($updated));
+            }
+
             return $this->successResponse(new LowonganResource($updated), 'Lowongan berhasil diperbarui');
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat memperbarui lowongan', 500, $e->getMessage());
@@ -205,6 +216,8 @@ class LowonganController extends Controller
         if (!$this->isProfileComplete($profil)) return $this->errorResponse('Lengkapi profil kafe Anda terlebih dahulu', 422);
 
         $this->repository->update($lowongan, ['status' => 'Active']);
+
+        event(new \App\Events\LowonganPublished($lowongan->refresh()));
 
         return $this->successResponse(['id' => $lowongan->id_lowongan, 'status' => 'Active'], 'Lowongan berhasil dipublikasikan');
     }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'; // [UPDATE LOGIC]
 import { Link, useLocation } from 'react-router-dom';
 import logoGambar from '../../aset/logo.png';
 import api from '../../layanan/api'; // [UPDATE LOGIC]
+import ikonNotifikasi from '../../super-admin/aset/sidebar/Notification.png';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -185,20 +186,12 @@ const Navbar = () => {
                   className="tombol-lonceng relative flex items-center justify-center w-8 h-8 rounded-full text-[#f3ede6] hover:text-[#c69c6d] hover:bg-white/5 transition-all focus:outline-none shrink-0 mr-2"
                   aria-label="Notifikasi"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2.5"
-                    stroke="currentColor"
-                    className="w-5 h-5 md:w-6 md:h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M14.857 17.082a9.04 9.04 0 01-1.857 0m-8.984 0a11.934 11.934 0 01-1.857 0m10.841 0a1.947 1.947 0 01-3.682 0m0 0A9.75 9.75 0 019 15c0-2.254.545-4.397 1.514-6.29M12 3v1.5m0 0c-.053 0-.104.004-.154.01C10.669 4.607 9 6.602 9 9v1.5m3-6c.053 0 .104.004.154.01C13.33 4.607 15 6.602 15 9v1.5M9 15h6M9 15a2.25 2.25 0 01-2.25-2.25c0-1.25.75-2.25 2.25-2.25h6c1.5 0 2.25 1 2.25 2.25A2.25 2.25 0 0115 15"
-                    />
-                  </svg>
+                  <img
+                    src={ikonNotifikasi}
+                    alt="Notifikasi"
+                    className="w-[32px] h-[32px] object-contain cursor-pointer"
+                    style={{ filter: 'invert(1) brightness(2)' }}
+                  />
                   {unreadCount > 0 && (
                     <span className="absolut-badge absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm ring-1 ring-red-400">
                       {unreadCount}

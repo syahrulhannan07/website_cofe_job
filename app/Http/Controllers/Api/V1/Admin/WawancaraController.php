@@ -78,6 +78,13 @@ class WawancaraController extends Controller
                 $lamaran->profil->id_pengguna
             );
 
+            event(new \App\Events\WawancaraScheduled(
+                $wawancara->load('lamaran'),
+                $profil->nama_perusahaan,
+                $lamaran->lowongan->posisi,
+                $lamaran->profil->id_pengguna
+            ));
+
             // [UPDATE LOGIC] - Buat log manual untuk jadwal wawancara
             \App\Models\LogStatusLamaran::create([
                 'id_lamaran' => $id_lamaran,
@@ -111,6 +118,9 @@ class WawancaraController extends Controller
 
         try {
             $this->service->rescheduleWawancara($wawancara, $request->all(), $profil->nama_perusahaan);
+
+            event(new \App\Events\WawancaraUpdated($wawancara->refresh(), $profil->nama_perusahaan));
+
             return $this->successResponse(new WawancaraResource($wawancara->refresh()), 'Jadwal berhasil diperbarui');
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat memperbarui jadwal', 500, $e->getMessage());

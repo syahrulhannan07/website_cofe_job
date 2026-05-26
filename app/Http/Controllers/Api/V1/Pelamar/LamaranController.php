@@ -207,6 +207,8 @@ class LamaranController extends Controller
             'keterangan' => 'Lamaran berhasil dikirim.',
         ]);
 
+        event(new \App\Events\LamaranSubmitted($lamaran->load(['lowongan.perusahaan.pengguna', 'profil.pengguna'])));
+
         return response()->json([
             'status' => 'success',
             'message' => 'Lamaran berhasil dikirim.'

@@ -72,16 +72,17 @@ class SuperAdminController extends Controller
 
     public function setujuiVerifikasi($id)
     {
-        $p = $this->perusahaanRepo->findById($id);
+        $p = $this->perusahaanRepo->findById($id, ['pengguna']);
         if (!$p) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
 
         $this->perusahaanRepo->updateStatus($p, 'Diterima');
 
-        $this->notifikasiService->kirim(
-            $p->id_pengguna,
-            'Akun Terverifikasi ✅',
-            'Selamat! Akun kafe Anda telah diverifikasi dan kini Anda dapat memposting lowongan.'
-        );
+        if ($p->pengguna) {
+            $p->pengguna->status_akun = 'Aktif';
+            $p->pengguna->save();
+        }
+
+        event(new \App\Events\CompanyVerificationStatusChanged($p, 'Diterima'));
 
         return $this->successResponse(null, 'Akun kafe berhasil diverifikasi');
     }
@@ -91,16 +92,12 @@ class SuperAdminController extends Controller
         $validator = Validator::make($request->all(), ['alasan' => 'required|string|min:10']);
         if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
 
-        $p = $this->perusahaanRepo->findById($id);
+        $p = $this->perusahaanRepo->findById($id, ['pengguna']);
         if (!$p) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
 
         $this->perusahaanRepo->updateStatus($p, 'Ditolak', $request->alasan);
 
-        $this->notifikasiService->kirim(
-            $p->id_pengguna,
-            'Pendaftaran Ditolak ❌',
-            "Mohon maaf, pendaftaran kafe Anda ditolak dengan alasan: {$request->alasan}."
-        );
+        event(new \App\Events\CompanyVerificationStatusChanged($p, 'Ditolak', $request->alasan));
 
         return $this->successResponse(null, 'Pendaftaran kafe telah ditolak');
     }
@@ -140,6 +137,8 @@ class SuperAdminController extends Controller
 
         $this->penggunaRepo->updateStatus($admin, 'Diblokir');
 
+        event(new \App\Events\CompanyAccountStatusChanged($admin, 'Diblokir'));
+
         return $this->successResponse(null, 'Akun admin berhasil dinonaktifkan');
     }
 
@@ -149,6 +148,8 @@ class SuperAdminController extends Controller
         if (!$admin || $admin->peran !== 'Admin_Perusahaan') return $this->errorResponse('Admin tidak ditemukan', 404);
 
         $this->penggunaRepo->updateStatus($admin, 'Aktif');
+
+        event(new \App\Events\CompanyAccountStatusChanged($admin, 'Aktif'));
 
         return $this->successResponse(null, 'Akun admin berhasil diaktifkan kembali');
     }
