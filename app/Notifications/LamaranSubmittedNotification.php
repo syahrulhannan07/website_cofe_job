@@ -6,10 +6,12 @@ use App\Models\Lamaran;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class LamaranSubmittedNotification extends Notification implements ShouldQueue
+class LamaranSubmittedNotification extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
@@ -22,7 +24,7 @@ class LamaranSubmittedNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail'];
+        return [CustomDbChannel::class, 'mail', 'broadcast'];
     }
 
     public function toMail($notifiable): MailMessage
@@ -43,7 +45,18 @@ class LamaranSubmittedNotification extends Notification implements ShouldQueue
         $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
         return [
             'judul' => 'Lamaran Berhasil Terkirim 📂',
-            'pesan' => "Lamaran Anda untuk posisi {$posisi} di {$namaKafe} telah berhasil dikirim. Menunggu proses selanjutnya.",
+            'pesan' => "Lamaran Anda untuk posisi {$posisi} di {$namaKafe} telah sukses terkirim.",
         ];
+    }
+
+    public function toBroadcast($notifiable): BroadcastMessage
+    {
+        $namaKafe = $this->lamaran->lowongan->perusahaan->nama_perusahaan ?? 'Kafe';
+        $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
+        return new BroadcastMessage([
+            'judul' => 'Lamaran Berhasil Terkirim 📂',
+            'pesan' => "Lamaran Anda untuk posisi {$posisi} di {$namaKafe} telah sukses terkirim.",
+            'created_at' => now()->toIso8601String(),
+        ]);
     }
 }

@@ -6,10 +6,12 @@ use App\Models\Lowongan;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NewVacancyNotification extends Notification implements ShouldQueue
+class NewVacancyNotification extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
@@ -22,7 +24,7 @@ class NewVacancyNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail'];
+        return [CustomDbChannel::class, 'mail', 'broadcast'];
     }
 
     public function toMail($notifiable): MailMessage
@@ -42,7 +44,17 @@ class NewVacancyNotification extends Notification implements ShouldQueue
         $namaKafe = $this->lowongan->perusahaan?->nama_perusahaan ?? 'Kafe Baru';
         return [
             'judul' => "Lowongan Baru: {$this->lowongan->posisi}",
-            'pesan' => "Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru untuk posisi {$this->lowongan->posisi}. Anda dipersilakan untuk mengajukan lamaran apabila tertarik.",
+            'pesan' => "Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru untuk posisi {$this->lowongan->posisi}.",
         ];
+    }
+
+    public function toBroadcast($notifiable): BroadcastMessage
+    {
+        $namaKafe = $this->lowongan->perusahaan?->nama_perusahaan ?? 'Kafe Baru';
+        return new BroadcastMessage([
+            'judul' => "Lowongan Baru: {$this->lowongan->posisi}",
+            'pesan' => "Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru untuk posisi {$this->lowongan->posisi}.",
+            'created_at' => now()->toIso8601String(),
+        ]);
     }
 }

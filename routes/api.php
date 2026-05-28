@@ -25,6 +25,8 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    Broadcast::routes(['middleware' => ['auth:api']]);
+
     // Jenis Dokumen
     Route::get('/jenis-dokumen', [\App\Http\Controllers\Api\V1\JenisDokumenController::class, 'index']);
     Route::post('/jenis-dokumen', [\App\Http\Controllers\Api\V1\JenisDokumenController::class, 'store'])->middleware(['auth:api', 'role:Admin_Perusahaan']);
@@ -36,7 +38,6 @@ Route::prefix('v1')->group(function () {
         Route::put('/{id}/baca', [\App\Http\Controllers\Api\V1\NotifikasiController::class, 'baca']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\V1\NotifikasiController::class, 'destroy']);
     });
-
 
     // Fallback login route for authentication failures
     Route::get('/login', function () {

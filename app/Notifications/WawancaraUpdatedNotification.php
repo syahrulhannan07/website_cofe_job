@@ -6,10 +6,12 @@ use App\Models\Wawancara;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class WawancaraUpdatedNotification extends Notification implements ShouldQueue
+class WawancaraUpdatedNotification extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
@@ -24,7 +26,7 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail'];
+        return [CustomDbChannel::class, 'mail', 'broadcast'];
     }
 
     public function toMail($notifiable): MailMessage
@@ -44,8 +46,17 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue
     public function toDatabase($notifiable): array
     {
         return [
-            'judul' => "Perubahan Jadwal Wawancara: {$this->namaKafe}",
-            'pesan' => "Jadwal wawancara Anda di {$this->namaKafe} telah diperbarui menjadi tanggal {$this->wawancara->tanggal_wawancara}. Rincian jadwal terbaru kini dapat Anda akses di menu Status Lamaran.",
+            'judul' => "Perubahan Jadwal Wawancara: {$this->namaKafe} 🔄",
+            'pesan' => "Jadwal wawancara Anda di {$this->namaKafe} diubah menjadi {$this->wawancara->tanggal_wawancara}.",
         ];
+    }
+
+    public function toBroadcast($notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'judul' => "Perubahan Jadwal Wawancara: {$this->namaKafe} 🔄",
+            'pesan' => "Jadwal wawancara Anda di {$this->namaKafe} diubah menjadi {$this->wawancara->tanggal_wawancara}.",
+            'created_at' => now()->toIso8601String(),
+        ]);
     }
 }

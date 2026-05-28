@@ -6,10 +6,12 @@ use App\Models\Lamaran;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class LamaranStatusUpdatedNotification extends Notification implements ShouldQueue
+class LamaranStatusUpdatedNotification extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
@@ -26,7 +28,8 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail'];
+        // Menambahkan broadcast ke dalam channel list
+        return [CustomDbChannel::class, 'mail', 'broadcast'];
     }
 
     public function toMail($notifiable): MailMessage
@@ -49,6 +52,19 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
             'judul' => $judul,
             'pesan' => $pesan,
         ];
+    }
+
+    // Mengirimkan payload realtime ke Flutter via Websocket
+    public function toBroadcast($notifiable): BroadcastMessage
+    {
+        $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
+        [$judul, $pesan] = $this->buildNotifikasi($this->status, $posisi, $this->namaKafe);
+        
+        return new BroadcastMessage([
+            'judul' => $judul,
+            'pesan' => $pesan,
+            'created_at' => now()->toIso8601String(),
+        ]);
     }
 
     protected function buildNotifikasi(string $status, ?string $posisi, string $namaKafe): array
