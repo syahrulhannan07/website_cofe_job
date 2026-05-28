@@ -9,10 +9,16 @@ class NotifyPelamarWawancaraUpdated
 {
     public function handle(WawancaraUpdated $event): void
     {
+        // Resolve pelamar dari relasi: wawancara → lamaran → profil → pengguna
         $pelamar = $event->wawancara->lamaran?->profil?->pengguna;
+
         if ($pelamar) {
-            // Send Laravel notification (handles mail and database)
-            $pelamar->notify(new WawancaraUpdatedNotification($event->wawancara, $event->namaKafe));
+            // Kirim notifikasi dengan idLamaran untuk membangun deep-link yang benar
+            $pelamar->notify(new WawancaraUpdatedNotification(
+                $event->wawancara,
+                $event->namaKafe,
+                $event->idLamaran
+            ));
         }
     }
 }

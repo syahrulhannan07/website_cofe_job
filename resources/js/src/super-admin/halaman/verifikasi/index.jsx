@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../../layanan/api';
 import TabelVerifikasi from './komponen/TabelVerifikasi';
 import ModalDetailKafe from './komponen/ModalDetailKafe';
@@ -16,6 +17,7 @@ const HalamanVerifikasi = () => {
     const [kafeAktif, setKafeAktif]         = useState(null);
     const [kataKunci, setKataKunci]         = useState('');
     const [notifikasi, setNotifikasi]       = useState(null);
+    const [searchParams]                    = useSearchParams();
 
     // Ambil daftar kafe Pending dan statistik secara paralel
     const ambilSemuaData = useCallback(async () => {
@@ -42,6 +44,18 @@ const HalamanVerifikasi = () => {
     useEffect(() => {
         ambilSemuaData();
     }, [ambilSemuaData]);
+
+    // ─── Deep-Link Handler ───────────────────────────────────────────────────
+    // Poin 2 — Registrasi Perusahaan: Super Admin mendapat notifikasi dengan URL
+    // /super-admin/verifikasi?open_kafe_id=X
+    // Setelah data dimuat, otomatis buka modal pratinjau pendaftar yang relevan.
+    useEffect(() => {
+        const idKafe = searchParams.get('open_kafe_id');
+        if (!sedangMemuat && idKafe && daftarKafe.length > 0) {
+            const kafe = daftarKafe.find((k) => String(k.id_perusahaan) === idKafe || String(k.id) === idKafe);
+            if (kafe) setKafeAktif(kafe);
+        }
+    }, [sedangMemuat, daftarKafe, searchParams]);
 
     // Kartu metrik — nilai dari statistik API, bukan hardcoded
     const kartuStatistik = [

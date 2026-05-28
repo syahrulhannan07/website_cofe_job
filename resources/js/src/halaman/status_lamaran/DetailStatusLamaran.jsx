@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import coffeeBeansIcon from '../../aset/status_lamaran/Coffee Beans.png';
 import placeholderProfile from '../../aset/profil/placeholder_profil.jpg';
 import api from '../../layanan/api'; // Pastikan path ini sesuai untuk memanggil axios instance
@@ -7,6 +7,7 @@ import api from '../../layanan/api'; // Pastikan path ini sesuai untuk memanggil
 const DetailStatusLamaran = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [showModal, setShowModal] = useState(false);
     
     const [data, setData] = useState(null);
@@ -86,6 +87,15 @@ const DetailStatusLamaran = () => {
 
         fetchDetail();
     }, [id]);
+
+    // ─── Deep-Link Handler ───────────────────────────────────────────────────
+    // Jika URL mengandung ?action=open_modal_wawancara (dikirim dari notifikasi
+    // Poin 9 & 10), tunggu data selesai dimuat lalu buka modal secara otomatis.
+    useEffect(() => {
+        if (!loading && data && searchParams.get('action') === 'open_modal_wawancara') {
+            setShowModal(true);
+        }
+    }, [loading, data, searchParams]);
 
     const warnaGold = '#FBB041';
     const warnaCokelat = '#3D2722';

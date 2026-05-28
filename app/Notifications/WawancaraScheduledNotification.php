@@ -9,6 +9,13 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+/**
+ * Poin 9 — Penjadwalan Wawancara
+ *
+ * Penerima: Pelamar (In-App & Email)
+ * Deep-link: /status-lamaran/{idLamaran}?action=open_modal_wawancara
+ *   → Frontend membuka halaman Tracking Timeline, lalu auto-trigger modal "Detail Jadwal Wawancara"
+ */
 class WawancaraScheduledNotification extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -16,12 +23,14 @@ class WawancaraScheduledNotification extends Notification implements ShouldQueue
     public Wawancara $wawancara;
     public string $namaKafe;
     public string $posisi;
+    public int $idLamaran;
 
-    public function __construct(Wawancara $wawancara, string $namaKafe, string $posisi)
+    public function __construct(Wawancara $wawancara, string $namaKafe, string $posisi, int $idLamaran)
     {
         $this->wawancara = $wawancara;
-        $this->namaKafe = $namaKafe;
-        $this->posisi = $posisi;
+        $this->namaKafe  = $namaKafe;
+        $this->posisi    = $posisi;
+        $this->idLamaran = $idLamaran;
     }
 
     public function via($notifiable): array
@@ -31,23 +40,35 @@ class WawancaraScheduledNotification extends Notification implements ShouldQueue
 
     public function toMail($notifiable): MailMessage
     {
+        // Format tanggal & waktu wawancara yang mudah dibaca
+        $tanggalFormatted = $this->wawancara->tanggal_wawancara
+            ? $this->wawancara->tanggal_wawancara->translatedFormat('l, d F Y — H:i') . ' WIB'
+            : 'Segera dikonfirmasi';
+
+        // URL timeline untuk tombol di email
+        $urlTimeline = url("/status-lamaran/{$this->idLamaran}?action=open_modal_wawancara");
+
         return (new MailMessage)
             ->subject("Undangan Wawancara: {$this->posisi} di {$this->namaKafe} 📞")
-            ->line("Halo " . $notifiable->nama_pengguna . ",")
-            ->line("Selamat! Anda mendapatkan undangan wawancara untuk posisi {$this->posisi} di {$this->namaKafe}.")
-            ->line("Detail Jadwal:")
-            ->line("Tanggal & Waktu: " . $this->wawancara->tanggal_wawancara)
-            ->line("Tempat / Link: " . $this->wawancara->tempat_link)
-            ->line("Lokasi: " . $this->wawancara->lokasi)
-            ->line("Catatan: " . ($this->wawancara->catatan ?? '-'))
-            ->line("Harap hadir 10 menit sebelum jadwal dimulai. Terima kasih!");
+            ->markdown('emails.wawancara-dijadwalkan', [
+                'namaPengguna' => $notifiable->nama_pengguna,
+                'namaKafe'     => $this->namaKafe,
+                'posisi'       => $this->posisi,
+                'tanggal'      => $tanggalFormatted,
+                'lokasi'       => $this->wawancara->lokasi ?? '-',
+                'tempatLink'   => $this->wawancara->tempat_link ?? '-',
+                'catatan'      => $this->wawancara->catatan,
+                'urlTimeline'  => $urlTimeline,
+            ]);
     }
 
     public function toDatabase($notifiable): array
     {
         return [
             'judul' => "Undangan Wawancara: {$this->posisi}",
-            'pesan' => "Anda diundang untuk menghadiri sesi wawancara posisi {$this->posisi} di {$this->namaKafe}. Detail jadwal wawancara dapat Anda lihat melalui menu Status Lamaran.",
+            'pesan' => "Anda diundang untuk menghadiri sesi wawancara posisi {$this->posisi} di {$this->namaKafe}. Klik untuk melihat detail jadwal lengkap.",
+            // Deep-link SANGAT PENTING: membuka modal detail jadwal wawancara secara otomatis
+            'url'   => "/status-lamaran/{$this->idLamaran}?action=open_modal_wawancara",
         ];
     }
 }

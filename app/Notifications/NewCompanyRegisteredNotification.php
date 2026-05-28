@@ -45,6 +45,8 @@ class NewCompanyRegisteredNotification extends Notification implements ShouldQue
         return [
             'judul' => 'Pendaftaran Kafe Baru 🏢',
             'pesan' => "Kafe {$namaKafe} telah mendaftar dan menunggu verifikasi dokumen oleh Super Admin.",
+            // Deep-link: buka halaman verifikasi & otomatis tampilkan modal pratinjau kafe ini
+            'url'   => "/super-admin/verifikasi?open_kafe_id={$this->perusahaan->id_perusahaan}",
         ];
     }
 }

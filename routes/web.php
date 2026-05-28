@@ -16,7 +16,6 @@ Route::get('/storage/lamaran_dokumen/{id_lamaran}/{filename}', function ($id_lam
 });
 
 // Tangkap semua rute frontend — biarkan React Router yang menangani navigasi
-// Pola regex mengecualikan rute yang dimulai dengan 'api'
-Route::get('/{rute}', function () {
+Route::fallback(function () {
     return view('welcome');
-})->where('rute', '^(?!api).*$');
+});
