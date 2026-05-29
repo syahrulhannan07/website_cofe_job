@@ -43,6 +43,7 @@ class NewVacancyNotification extends Notification implements ShouldQueue
         return [
             'judul' => "Lowongan Baru: {$this->lowongan->posisi}",
             'pesan' => "Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru untuk posisi {$this->lowongan->posisi}. Anda dipersilakan untuk mengajukan lamaran apabila tertarik.",
+            'url'   => "/lowongan/{$this->lowongan->id_lowongan}",
         ];
     }
 }

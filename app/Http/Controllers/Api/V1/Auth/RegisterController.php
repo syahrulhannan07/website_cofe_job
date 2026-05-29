@@ -58,6 +58,9 @@ class RegisterController extends Controller
 
             DB::commit();
 
+            // Kirim notifikasi selamat datang ke pelamar
+            $pengguna->notify(new \App\Notifications\NewApplicantRegisteredNotification());
+
             // 6. Return 201 dengan data pengguna
             return response()->json([
                 'status' => 'success',

@@ -43,6 +43,7 @@ class NewApplicationNotification extends Notification implements ShouldQueue
         return [
             'judul' => "Lamaran Masuk Baru: {$posisi}",
             'pesan' => "Kandidat {$namaPelamar} telah mengajukan lamaran pekerjaan untuk posisi {$posisi}. Peninjauan berkas lamaran kini dapat dilakukan melalui dashboard Anda.",
+            'url'   => "/admin/pelamar?open_lamaran_id={$this->lamaran->id_lamaran}",
         ];
     }
 }

@@ -25,10 +25,6 @@ class AppServiceProvider extends ServiceProvider
             \App\Listeners\NotifyNewVacancyToPelamar::class
         );
         \Illuminate\Support\Facades\Event::listen(
-            \App\Events\LowonganPublished::class,
-            \App\Listeners\NotifyNewVacancyToSuperAdmin::class
-        );
-        \Illuminate\Support\Facades\Event::listen(
             \App\Events\LamaranSubmitted::class,
             \App\Listeners\NotifyLamaranSubmittedToPelamar::class
         );

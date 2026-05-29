@@ -44,6 +44,7 @@ class SuperAdminNewVacancyNotification extends Notification implements ShouldQue
         return [
             'judul' => "Audit Lowongan Baru: {$this->lowongan->posisi}",
             'pesan' => "Kafe {$namaKafe} baru saja menerbitkan lowongan baru untuk posisi {$this->lowongan->posisi}. Peninjauan dan audit lowongan kini dapat dilakukan pada panel moderasi jika diperlukan.",
+            'url'   => "/super-admin/kelola-akun/lowongan/{$this->lowongan->id_lowongan}",
         ];
     }
 }
