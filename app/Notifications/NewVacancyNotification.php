@@ -6,12 +6,13 @@ use App\Models\Lowongan;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NewVacancyNotification extends Notification implements ShouldQueue, ShouldBroadcast
+class NewVacancyNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -24,7 +25,7 @@ class NewVacancyNotification extends Notification implements ShouldQueue, Should
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail', 'broadcast'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -48,13 +49,18 @@ class NewVacancyNotification extends Notification implements ShouldQueue, Should
         ];
     }
 
-    public function toBroadcast($notifiable): BroadcastMessage
+    public function toFcm($notifiable): FcmMessage
     {
         $namaKafe = $this->lowongan->perusahaan?->nama_perusahaan ?? 'Kafe Baru';
-        return new BroadcastMessage([
-            'judul' => "Lowongan Baru: {$this->lowongan->posisi}",
-            'pesan' => "Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru untuk posisi {$this->lowongan->posisi}.",
-            'created_at' => now()->toIso8601String(),
-        ]);
+        
+        return (new FcmMessage())
+            ->setNotification(FcmNotification::create()
+                ->title("Lowongan Baru: {$this->lowongan->posisi} ☕")
+                ->body("Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru."))
+            ->setData([
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_lowongan' => (string) $this->lowongan->id,
+                'tipe' => 'lowongan_baru'
+            ]);
     }
 }

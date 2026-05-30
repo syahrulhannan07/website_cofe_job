@@ -6,12 +6,13 @@ use App\Models\Lamaran;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
-class LamaranStatusUpdatedNotification extends Notification implements ShouldQueue, ShouldBroadcast
+class LamaranStatusUpdatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -28,8 +29,7 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
 
     public function via($notifiable): array
     {
-        // Menambahkan broadcast ke dalam channel list
-        return [CustomDbChannel::class, 'mail', 'broadcast'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -41,30 +41,35 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
             ->subject($judul)
             ->line("Halo " . $notifiable->nama_pengguna . ",")
             ->line($pesan)
-            ->line("Terima kasih atas partisipasi Anda dalam proses rekrutmen kami.");
+            ->line("Teria kasih atas partisipasi Anda dalam proses rekrutmen kami.");
     }
 
     public function toDatabase($notifiable): array
     {
         $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
         [$judul, $pesan] = $this->buildNotifikasi($this->status, $posisi, $this->namaKafe);
+
         return [
             'judul' => $judul,
             'pesan' => $pesan,
         ];
     }
 
-    // Mengirimkan payload realtime ke Flutter via Websocket
-    public function toBroadcast($notifiable): BroadcastMessage
+    public function toFcm($notifiable): FcmMessage
     {
         $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
         [$judul, $pesan] = $this->buildNotifikasi($this->status, $posisi, $this->namaKafe);
-        
-        return new BroadcastMessage([
-            'judul' => $judul,
-            'pesan' => $pesan,
-            'created_at' => now()->toIso8601String(),
-        ]);
+
+        return (new FcmMessage())
+            ->setNotification(FcmNotification::create()
+                ->title($judul)
+                ->body($pesan))
+            ->setData([
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_lamaran' => (string) $this->lamaran->id,
+                'status_baru' => $this->status,
+                'tipe' => 'status_lamaran_berubah'
+            ]);
     }
 
     protected function buildNotifikasi(string $status, ?string $posisi, string $namaKafe): array
@@ -76,7 +81,7 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
             'Wawancara' => ["Lolos Seleksi Administrasi: {$posisi}", "Selamat, Anda dinyatakan lolos seleksi administrasi untuk posisi {$posisi} di {$namaKafe}. Informasi detail mengenai jadwal wawancara Anda akan segera kami kirimkan."],
             'Diterima'  => ["Penerimaan Kerja: {$posisi} 🎉", "Selamat, Anda dinyatakan DITERIMA untuk bergabung pada posisi {$posisi} di {$namaKafe}. Selamat bergabung!"],
             'Ditolak'   => ["Status Lamaran: {$posisi}", "Terima kasih atas partisipasi Anda dalam melamar posisi {$posisi} di {$namaKafe}. Kami memohon maaf karena lamaran Anda saat ini belum dapat kami proses ke tahap selanjutnya."],
-            default     => ["Pembaruan Lamaran: {$posisi}", "Status lamaran Anda untuk posisi {$posisi} di {$namaKafe} telah diperbarui menjadi {$status}."],
+            default     => ["Pembaruan Lamaran: {$posisi}", "Lamaran Anda di {$namaKafe} telah diperbarui ke status: {$status}."],
         };
     }
 }

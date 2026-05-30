@@ -6,12 +6,13 @@ use App\Models\Wawancara;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
-class WawancaraUpdatedNotification extends Notification implements ShouldQueue, ShouldBroadcast
+class WawancaraUpdatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -26,7 +27,7 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue, 
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail', 'broadcast'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -51,12 +52,16 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue, 
         ];
     }
 
-    public function toBroadcast($notifiable): BroadcastMessage
+    public function toFcm($notifiable): FcmMessage
     {
-        return new BroadcastMessage([
-            'judul' => "Perubahan Jadwal Wawancara: {$this->namaKafe} 🔄",
-            'pesan' => "Jadwal wawancara Anda di {$this->namaKafe} diubah menjadi {$this->wawancara->tanggal_wawancara}.",
-            'created_at' => now()->toIso8601String(),
-        ]);
+        return (new FcmMessage())
+            ->setNotification(FcmNotification::create()
+                ->title("Perubahan Jadwal Wawancara: {$this->namaKafe} 🔄")
+                ->body("Jadwal wawancara Anda diubah menjadi {$this->wawancara->tanggal_wawancara}."))
+            ->setData([
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_wawancara' => (string) $this->wawancara->id,
+                'tipe' => 'wawancara_diperbarui'
+            ]);
     }
 }

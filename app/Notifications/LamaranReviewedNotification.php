@@ -6,12 +6,13 @@ use App\Models\Lamaran;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage; // 
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
-class LamaranReviewedNotification extends Notification implements ShouldQueue, ShouldBroadcast
+class LamaranReviewedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -24,7 +25,7 @@ class LamaranReviewedNotification extends Notification implements ShouldQueue, S
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail', 'broadcast'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -48,14 +49,19 @@ class LamaranReviewedNotification extends Notification implements ShouldQueue, S
         ];
     }
 
-    public function toBroadcast($notifiable): BroadcastMessage
+    public function toFcm($notifiable): FcmMessage
     {
         $namaKafe = $this->lamaran->lowongan->perusahaan->nama_perusahaan ?? 'Kafe';
         $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
-        return new BroadcastMessage([
-            'judul' => "Lamaran Ditinjau: {$posisi}",
-            'pesan' => "Lamaran Anda untuk posisi {$posisi} di {$namaKafe} sedang ditinjau oleh HRD.",
-            'created_at' => now()->toIso8601String(),
-        ]);
+
+        return (new FcmMessage())
+            ->setNotification(FcmNotification::create()
+                ->title("Lamaran Ditinjau: {$posisi} 🔍")
+                ->body("Lamaran Anda di {$namaKafe} sedang ditinjau oleh HRD."))
+            ->setData([
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_lamaran' => (string) $this->lamaran->id,
+                'tipe' => 'lamaran_ditinjau'
+            ]);
     }
 }

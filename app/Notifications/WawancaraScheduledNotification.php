@@ -6,12 +6,13 @@ use App\Models\Wawancara;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class WawancaraScheduledNotification extends Notification implements ShouldQueue, ShouldBroadcast
+class WawancaraScheduledNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -28,7 +29,7 @@ class WawancaraScheduledNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail', 'broadcast'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -53,12 +54,16 @@ class WawancaraScheduledNotification extends Notification implements ShouldQueue
         ];
     }
 
-    public function toBroadcast($notifiable): BroadcastMessage
+    public function toFcm($notifiable): FcmMessage
     {
-        return new BroadcastMessage([
-            'judul' => "Undangan Wawancara Kafe {$this->namaKafe}",
-            'pesan' => "Anda diundang wawancara untuk posisi {$this->posisi} pada tanggal {$this->wawancara->tanggal_wawancara}.",
-            'created_at' => now()->toIso8601String(),
-        ]);
+        return (new FcmMessage())
+            ->setNotification(FcmNotification::create()
+                ->title("Undangan Wawancara: {$this->namaKafe} 📞")
+                ->body("Anda mendapatkan undangan wawancara untuk posisi {$this->posisi}."))
+            ->setData([
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_wawancara' => (string) $this->wawancara->id,
+                'tipe' => 'wawancara_dijadwalkan'
+            ]);
     }
 }

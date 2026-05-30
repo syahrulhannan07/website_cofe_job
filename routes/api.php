@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\SuperAdmin\VerifikasiPerusahaanController; // [U
 use App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminKafeController; // [UPDATE LOGIC]
 
 use App\Http\Controllers\Api\V1\Pelamar\ProfilController;
+use App\Http\Controllers\Api\V1\NotifikasiController;
 
 Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
@@ -22,6 +23,8 @@ Route::prefix('v1')->group(function () {
         Route::middleware('auth:api')->group(function () {
             Route::post('/logout', [LoginController::class, 'logout']);
             Route::get('/me', [LoginController::class, 'me']);
+            Route::get('/notifikasi', [NotifikasiController::class, 'index']);
+            Route::post('/notifikasi/update-fcm-token', [NotifikasiController::class, 'updateFcmToken']);
         });
     });
 

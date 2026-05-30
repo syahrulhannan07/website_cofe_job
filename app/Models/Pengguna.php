@@ -19,6 +19,7 @@ class Pengguna extends Authenticatable implements JWTSubject
         'kata_sandi',
         'peran',
         'status_akun',
+        'fcm_token',
     ];
 
     protected $hidden = [
@@ -58,5 +59,10 @@ class Pengguna extends Authenticatable implements JWTSubject
     public function profilPelamar()
     {
         return $this->hasOne(ProfilPelamar::class, 'id_pengguna', 'id_pengguna');
+    }
+
+    public function routeNotificationForFcm()
+    {
+        return $this->fcm_token;
     }
 }
