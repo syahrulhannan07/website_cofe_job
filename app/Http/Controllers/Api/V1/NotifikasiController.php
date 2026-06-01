@@ -73,4 +73,26 @@ class NotifikasiController extends Controller
 
         return $this->successResponse(null, 'Notifikasi berhasil dihapus');
     }
+
+    public function updateFcmToken(Request $request)
+    {
+        // Validasi input dari Flutter
+        $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+
+        // Mengambil data pengguna yang sedang login berdasarkan JWT token
+        $user = auth('api')->user();
+
+        if (!$user) {
+            return $this->errorResponse('Pengguna tidak ditemukan atau sesi kedaluwarsa', 401);
+        }
+
+        // Update kolom fcm_token di tabel pengguna
+        $user->update([
+            'fcm_token' => $request->fcm_token
+        ]);
+
+        return $this->successResponse(null, 'Token FCM berhasil diperbarui');
+    }
 }

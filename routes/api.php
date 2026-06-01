@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\SuperAdmin\VerifikasiPerusahaanController; // [U
 use App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminKafeController; // [UPDATE LOGIC]
 
 use App\Http\Controllers\Api\V1\Pelamar\ProfilController;
+use App\Http\Controllers\Api\V1\NotifikasiController;
 
 Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
@@ -22,8 +23,12 @@ Route::prefix('v1')->group(function () {
         Route::middleware('auth:api')->group(function () {
             Route::post('/logout', [LoginController::class, 'logout']);
             Route::get('/me', [LoginController::class, 'me']);
+            Route::get('/notifikasi', [NotifikasiController::class, 'index']);
+            Route::post('/notifikasi/update-fcm-token', [NotifikasiController::class, 'updateFcmToken']);
         });
     });
+
+    Broadcast::routes(['middleware' => ['auth:api']]);
 
     // Jenis Dokumen
     Route::get('/jenis-dokumen', [\App\Http\Controllers\Api\V1\JenisDokumenController::class, 'index']);
@@ -36,7 +41,6 @@ Route::prefix('v1')->group(function () {
         Route::put('/{id}/baca', [\App\Http\Controllers\Api\V1\NotifikasiController::class, 'baca']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\V1\NotifikasiController::class, 'destroy']);
     });
-
 
     // Fallback login route for authentication failures
     Route::get('/login', function () {

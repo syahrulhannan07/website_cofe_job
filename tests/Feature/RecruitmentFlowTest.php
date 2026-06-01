@@ -16,6 +16,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Notification;
 
 class RecruitmentFlowTest extends TestCase
 {
@@ -31,6 +32,9 @@ class RecruitmentFlowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Put Notification::fake() di sini agar ALL test ter-mocking dari Firebase API secara global
+        Notification::fake();
 
         // 1. Seed Jenis Dokumen
         $this->jenisDoc = JenisDokumen::create([
@@ -372,6 +376,7 @@ class RecruitmentFlowTest extends TestCase
         ]);
         $adminToken = $adminLogin->json('data.token');
 
+        // Simpan sebagai 'Draft' terlebih dahulu mengikuti alur controller asli
         $lowonganResponse = $this->withHeader('Authorization', 'Bearer ' . $adminToken)
             ->postJson('/api/v1/admin/lowongan', [
                 'posisi' => 'Barista Shift Malam',
@@ -379,12 +384,16 @@ class RecruitmentFlowTest extends TestCase
                 'persyaratan' => 'Persyaratan barista',
                 'batas_awal' => now()->format('Y-m-d'),
                 'batas_akhir' => now()->addMonth()->format('Y-m-d'),
-                'status' => 'Active',
+                'status' => 'Draft', 
                 'dokumen_dibutuhkan' => [
                     ['id_jenis_dokumen' => $this->jenisDoc->id_jenis_dokumen, 'wajib' => true],
                 ],
             ]);
         $idLowongan = $lowonganResponse->json('data.id');
+
+        // MODIFIKASI: Wajib di-publish lewat endpoint agar statusnya valid menjadi 'Active'
+        $this->withHeader('Authorization', 'Bearer ' . $adminToken)
+            ->postJson("/api/v1/admin/lowongan/{$idLowongan}/publish");
 
         // 2. Login Pelamar & Inisiasi lamaran
         app('auth')->forgetGuards();
@@ -398,6 +407,9 @@ class RecruitmentFlowTest extends TestCase
             ->postJson('/api/v1/lamaran/mulai', [
                 'id_lowongan' => $idLowongan,
             ]);
+        
+        // Memastikan inisiasi lamaran sukses
+        $mulaiLamaran->assertStatus(201);
         $idLamaran = $mulaiLamaran->json('data.id_lamaran');
 
         // 3. Langsung kirim lamaran tanpa upload file dokumen wajib

@@ -6,6 +6,9 @@ use App\Models\Lowongan;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -22,7 +25,7 @@ class NewVacancyNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -46,5 +49,20 @@ class NewVacancyNotification extends Notification implements ShouldQueue
             'pesan' => "Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru untuk posisi {$this->lowongan->posisi}. Anda dipersilakan untuk mengajukan lamaran apabila tertarik.",
             'url'   => "/lowongan/{$this->lowongan->id_lowongan}",
         ];
+    }
+
+    public function toFcm($notifiable): FcmMessage
+    {
+        $namaKafe = $this->lowongan->perusahaan?->nama_perusahaan ?? 'Kafe Baru';
+        
+        return (new FcmMessage())
+            ->setNotification(FcmNotification::create()
+                ->title("Lowongan Baru: {$this->lowongan->posisi} ☕")
+                ->body("Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru."))
+            ->setData([
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_lowongan' => (string) $this->lowongan->id,
+                'tipe' => 'lowongan_baru'
+            ]);
     }
 }

@@ -8,6 +8,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class LamaranSubmittedNotification extends Notification implements ShouldQueue
 {
@@ -22,7 +25,7 @@ class LamaranSubmittedNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -47,5 +50,21 @@ class LamaranSubmittedNotification extends Notification implements ShouldQueue
             // Deep-link: Menampilkan status lamaran dan membuka tracking timeline
             'url'   => "/status-lamaran/{$this->lamaran->id_lamaran}?action=open_timeline",
         ];
+    }
+
+    public function toFcm($notifiable): FcmMessage
+    {
+        $namaKafe = $this->lamaran->lowongan->perusahaan->nama_perusahaan ?? 'Kafe';
+        $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
+
+        return (new FcmMessage())
+            ->setNotification(FcmNotification::create()
+                ->title("Lamaran Berhasil Terkirim 📂")
+                ->body("Lamaran Anda untuk posisi {$posisi} di {$namaKafe} sukses terkirim."))
+            ->setData([
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_lamaran' => (string) $this->lamaran->id,
+                'tipe' => 'lamaran_terkirim'
+            ]);
     }
 }

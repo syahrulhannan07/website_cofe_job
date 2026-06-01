@@ -6,6 +6,9 @@ use App\Models\Wawancara;
 use App\Notifications\Channels\CustomDbChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -35,7 +38,7 @@ class WawancaraScheduledNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -70,5 +73,18 @@ class WawancaraScheduledNotification extends Notification implements ShouldQueue
             // Deep-link SANGAT PENTING: membuka modal detail jadwal wawancara secara otomatis
             'url'   => "/status-lamaran/{$this->idLamaran}?action=open_modal_wawancara",
         ];
+    }
+
+    public function toFcm($notifiable): FcmMessage
+    {
+        return (new FcmMessage())
+            ->setNotification(FcmNotification::create()
+                ->title("Undangan Wawancara: {$this->namaKafe} 📞")
+                ->body("Anda mendapatkan undangan wawancara untuk posisi {$this->posisi}."))
+            ->setData([
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_wawancara' => (string) $this->wawancara->id,
+                'tipe' => 'wawancara_dijadwalkan'
+            ]);
     }
 }

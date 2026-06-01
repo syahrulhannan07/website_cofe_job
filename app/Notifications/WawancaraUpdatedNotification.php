@@ -8,6 +8,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 /**
  * Poin 10 — Pembaruan Jadwal Wawancara
@@ -32,7 +35,7 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -69,5 +72,18 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue
             // Deep-link: otomatis buka modal wawancara di halaman timeline
             'url'   => "/status-lamaran/{$this->idLamaran}?action=open_modal_wawancara",
         ];
+    }
+
+    public function toFcm($notifiable): FcmMessage
+    {
+        return (new FcmMessage())
+            ->setNotification(FcmNotification::create()
+                ->title("Perubahan Jadwal Wawancara: {$this->namaKafe} 🔄")
+                ->body("Jadwal wawancara Anda diubah menjadi {$this->wawancara->tanggal_wawancara}."))
+            ->setData([
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_wawancara' => (string) $this->wawancara->id,
+                'tipe' => 'wawancara_diperbarui'
+            ]);
     }
 }
