@@ -3,14 +3,29 @@ import ikonNotifikasi from '../aset/sidebar/Notification.png';
 import api from '../../layanan/api';
 
 const TopbarPusat = () => {
-    // Di aplikasi nyata, data ini mungkin dari localStorage atau API
-    const sapaan = "Hai CEO Ramadhan";
+    const [namaPengguna, setNamaPengguna] = useState("Super Admin");
     const peranSuperAdmin = "Super Admin";
 
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const penggunaStr = localStorage.getItem('pengguna');
+        if (penggunaStr) {
+            try {
+                const pengguna = JSON.parse(penggunaStr);
+                if (pengguna && pengguna.nama_pengguna) {
+                    setNamaPengguna(pengguna.nama_pengguna);
+                }
+            } catch (e) {
+                console.error('Gagal mem-parse data pengguna:', e);
+            }
+        }
+    }, []);
+
+    const sapaan = `Hai ${namaPengguna}`;
 
     const fetchNotifications = async () => {
         try {

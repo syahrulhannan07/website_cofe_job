@@ -34,6 +34,7 @@ class NewVacancyNotification extends Notification implements ShouldQueue
             ->line("Lokasi: " . ($this->lowongan->lokasi ?? '-'))
             ->line("Gaji: " . ($this->lowongan->gaji ?? '-'))
             ->line("Batas Akhir Pendaftaran: " . ($this->lowongan->batas_akhir ?? '-'))
+            ->action('Lihat Detail Lowongan', url("/lowongan/{$this->lowongan->id_lowongan}"))
             ->line("Segera kirimkan lamaran Anda sebelum terlambat!");
     }
 

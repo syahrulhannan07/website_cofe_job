@@ -128,10 +128,15 @@ const HalamanDetailLowonganSuperAdmin = () => {
                 </div>
             )}
 
-            {/* Back Button Navigation Row */}
             <div className="kembali-row flex items-center">
                 <button
-                    onClick={() => navigate('/super-admin/kelola-akun')}
+                    onClick={() => {
+                        if (lowongan && lowongan.id_pengguna) {
+                            navigate(`/super-admin/kelola-akun?open_kafe_id=${lowongan.id_pengguna}`);
+                        } else {
+                            navigate('/super-admin/kelola-akun');
+                        }
+                    }}
                     className="btn-kembali flex items-center gap-2.5 px-4 py-2 bg-white hover:bg-[#EAE4DC]/50 border border-[#EAE4DC] text-[#4B2E2B] rounded-full text-[14px] font-bold transition-all duration-300 shadow-sm cursor-pointer hover:-translate-x-0.5"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -154,13 +159,6 @@ const HalamanDetailLowonganSuperAdmin = () => {
                             <span className={`w-1.5 h-1.5 rounded-full ${statusHalaman === 'Aktif' ? 'bg-[#22C55E]' : 'bg-[#EF4444]'}`} />
                             {(statusHalaman || '').toUpperCase()}
                         </span>
-
-                        {lowongan.terdeteksi && (
-                            <span className="badge-terdeteksi px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wider bg-[#FEF2F2] border border-[#FCA5A5] text-[#991B1B] flex items-center gap-1.5 shadow-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse" />
-                                TERDETEKSI SISTEM
-                            </span>
-                        )}
 
                         <span className="header-id text-[12px] font-bold text-[#827470] tracking-[1.2px]">
                             ID: JOB-2024-{100 + lowongan.id}
@@ -344,47 +342,6 @@ const HalamanDetailLowonganSuperAdmin = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Moderation Actions Card */}
-                    {lowongan.terdeteksi && (
-                        <div className="moderasi-card bg-white rounded-[20px] border border-[#FCA5A5] p-6 shadow-[0_8px_30px_-6px_rgba(153,27,27,0.05)] flex flex-col gap-4">
-                            <h4 className="sidebar-section-title font-bold text-[13px] tracking-wider text-[#991B1B] uppercase mb-1 flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse" />
-                                Panel Moderasi
-                            </h4>
-                            <p className="text-[13.5px] font-medium text-[#4B2E2B] leading-relaxed text-left">
-                                Lowongan ini terdeteksi oleh sistem memiliki potensi pelanggaran konten atau aktivitas mencurigakan. Silakan lakukan tindakan moderasi.
-                            </p>
-                            <div className="flex flex-col gap-2.5 mt-2">
-                                <button
-                                    onClick={tanganiBlokir}
-                                    disabled={sedangProses}
-                                    className="btn-blokir w-full py-3 bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] font-bold rounded-[12px] text-[14px] transition-all cursor-pointer flex items-center justify-center gap-2"
-                                >
-                                    {sedangProses ? (
-                                        <svg className="w-4 h-4 animate-spin text-[#991B1B]" viewBox="0 0 24 24" fill="none">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                        </svg>
-                                    ) : null}
-                                    {sedangProses ? 'Memproses...' : 'Blokir Lowongan'}
-                                </button>
-                                <button
-                                    onClick={tanganiAbaikan}
-                                    disabled={sedangProses}
-                                    className="btn-abaikan w-full py-3 bg-white hover:bg-[#EAE4DC]/30 border border-[#EAE4DC] text-[#4B2E2B] font-bold rounded-[12px] text-[14px] transition-all cursor-pointer flex items-center justify-center gap-2"
-                                >
-                                    {sedangProses ? (
-                                        <svg className="w-4 h-4 animate-spin text-[#4B2E2B]" viewBox="0 0 24 24" fill="none">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                        </svg>
-                                    ) : null}
-                                    Abaikan Laporan
-                                </button>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

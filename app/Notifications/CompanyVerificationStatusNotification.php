@@ -72,7 +72,7 @@ class CompanyVerificationStatusNotification extends Notification implements Shou
                 'judul' => 'Akun Terverifikasi ✅',
                 'pesan' => "Selamat! Akun kafe {$namaKafe} telah diverifikasi. Anda kini dapat memposting lowongan.",
                 // Deep-link: buka tab baru langsung ke halaman profil perusahaan
-                'url'   => '/admin?action=go_profil',
+                'url'   => '/admin/profil',
             ];
         }
 

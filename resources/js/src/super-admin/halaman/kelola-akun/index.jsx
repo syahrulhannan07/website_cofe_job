@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 // [UPDATE LOGIC] - Import Axios API instance
 import api from '../../../layanan/api';
 
@@ -12,6 +13,7 @@ import ModalDetailAdmin from './komponen/ModalDetailAdmin';
 import ikonSearch from '../../aset/akun admin/search.svg';
 
 const HalamanKelolaAkun = () => {
+    const [searchParams] = useSearchParams();
     const [daftarAdmin, setDaftarAdmin]       = useState([]);
     const [sedangMemuat, setSedangMemuat]     = useState(true);
     const [searchQuery, setSearchQuery]       = useState('');
@@ -117,6 +119,17 @@ const HalamanKelolaAkun = () => {
             setSedangMuatDetail(false);
         }
     };
+
+    // Deep-link: otomatis buka modal detail admin kafe jika parameter open_kafe_id terdeteksi
+    useEffect(() => {
+        const idKafe = searchParams.get('open_kafe_id');
+        if (!sedangMemuat && idKafe && daftarAdmin.length > 0) {
+            const adminRingkas = daftarAdmin.find(a => String(a.id_perusahaan) === idKafe || String(a.id) === idKafe);
+            if (adminRingkas) {
+                fetchDetailAdmin(adminRingkas);
+            }
+        }
+    }, [sedangMemuat, daftarAdmin, searchParams]);
 
     const handleKonfirmasiSuspend = async () => {
         if (!adminIdUntukSuspend || !statusYangDipilih) return;
