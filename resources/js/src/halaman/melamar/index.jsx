@@ -117,9 +117,17 @@ const Melamar = () => {
             for (let q of pertanyaanSeleksi) {
                 const jawabanItem = formData.pertanyaan.find(p => p.id_pertanyaan === q.id_pertanyaan);
                 if (!jawabanItem || !jawabanItem.jawaban.trim()) {
-                    setGalat('Harap jawab semua pertanyaan dari perusahaan sebelum melanjutkan.');
+                    setGalat('Maaf, Anda belum dapat melamar. Mohon lengkapi data berikut');
                     return false;
                 }
+            }
+        }
+        if (stepSaatIni === 3) {
+            // Cek kelengkapan profil (Skenario Tambahan: nama, tgl_lahir, no_telp, alamat, email, tentang, foto)
+            const p = formData.profil;
+            if (!p.nama_lengkap || !p.tanggal_lahir || !p.nomor_telepon || !p.alamat || !p.pengguna?.email || !p.tentangSaya || !p.foto_profil) {
+                setGalat('Harap lengkapi Nama Lengkap, Tanggal Lahir, Nomor Telepon, Alamat, Email, Tentang Saya, dan Foto Profil sebelum melanjutkan.');
+                return false;
             }
         }
         return true;

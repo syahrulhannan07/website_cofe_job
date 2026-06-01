@@ -74,9 +74,11 @@ const Step3Profile = ({ data, onChange }) => {
             const res = await layananProfil.ambilProfil();
             if (res.status === 'success') {
                 setProfilData(res.data);
-                if (!data.tentangSaya && res.data.tentang_saya) {
-                    onChange({ ...data, tentangSaya: res.data.tentang_saya });
-                }
+                onChange({ 
+                    ...data, 
+                    ...res.data,
+                    tentangSaya: res.data.tentang_saya 
+                });
             }
         } catch (err) {
             console.error('Gagal memuat profil:', err);
@@ -141,6 +143,19 @@ const Step3Profile = ({ data, onChange }) => {
     };
 
     const handleCameraClick = () => {
+        // Validasi kelengkapan data dasar sebelum upload foto
+        const nama = isEditingDasar ? editData.nama_lengkap : profilData?.nama_lengkap;
+        const tglLahir = isEditingDasar ? editData.tanggal_lahir : profilData?.tanggal_lahir;
+        const noHp = isEditingDasar ? editData.nomor_telepon : profilData?.nomor_telepon;
+        const alamat = isEditingDasar ? editData.alamat : profilData?.alamat;
+        const email = isEditingDasar ? editData.email : profilData?.pengguna?.email;
+        const tentang = data.tentangSaya || profilData?.tentang_saya;
+
+        if (!nama || !tglLahir || !noHp || !alamat || !email || !tentang) {
+            alert("Harap lengkapi Nama Lengkap, Tanggal Lahir, Nomor Telepon, Alamat, Email, dan Tentang Saya terlebih dahulu sebelum mengubah foto profil.");
+            return;
+        }
+
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
