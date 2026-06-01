@@ -88,14 +88,27 @@ class DatabaseSeeder extends Seeder
                 for ($j = 1; $j <= 4; $j++) {
                     $posisi = $faker->randomElement($posisiKopi);
 
-                    // ✅ FIX: Enum status lowongan yang benar setelah migration update
-                    // ['Draft', 'Active', 'Closed'] — bukan 'Aktif'
-                    $statusLowongan = $faker->randomElement(['Active', 'Active', 'Active', 'Closed', 'Draft']);
+                    // Ensure companies that are not accepted only have Draft lowongans
+                    if ($statusVerif !== 'Diterima') {
+                        $statusLowongan = 'Draft';
+                    } else {
+                        $statusLowongan = $faker->randomElement(['Active', 'Active', 'Active', 'Closed', 'Draft']);
+                    }
 
-                    // ✅ FIX: Kolom gaji sudah diubah ke string 'gaji' (bukan gaji_min/gaji_max)
+                    // Ensure Draft and Active lowongans have a future batas_akhir
+                    if ($statusLowongan === 'Draft' || $statusLowongan === 'Active') {
+                        $batasAkhir = now()->addDays(rand(5, 30))->format('Y-m-d');
+                    } else {
+                        // Closed can be in the past
+                        $batasAkhir = now()->subDays(rand(1, 30))->format('Y-m-d');
+                    }
+
                     $gajiMin = rand(2, 4) * 500000;
                     $gajiMax = $gajiMin + rand(1, 3) * 500000;
                     $gajiStr = 'Rp ' . number_format($gajiMin, 0, ',', '.') . ' – Rp ' . number_format($gajiMax, 0, ',', '.');
+
+                    // Make created_at within the last 30 days for realism
+                    $createdAt = now()->subDays(rand(1, 30))->subHours(rand(1, 24));
 
                     $idLowongan = DB::table('lowongan')->insertGetId([
                         'id_perusahaan' => $idPerusahaan,
@@ -103,12 +116,12 @@ class DatabaseSeeder extends Seeder
                         'deskripsi'     => "Dicari {$posisi} profesional dan berpengalaman untuk bergabung bersama tim kami di cabang {$kec}. Kandidat yang kami cari adalah sosok yang ramah, jujur, dan berkomitmen tinggi.",
                         'persyaratan'   => "1. Pengalaman minimal 6 bulan di bidang F&B\n2. Jujur dan bertanggung jawab\n3. Domisili Kabupaten Indramayu atau bersedia pindah\n4. Mampu bekerja dalam tim dan di bawah tekanan",
                         'lokasi'        => 'Kecamatan ' . $kec . ', Kabupaten Indramayu',
-                        'gaji'          => $gajiStr, // ✅ FIX: kolom 'gaji' string
-                        'batas_awal'    => '2026-04-01',
-                        'batas_akhir'   => Carbon::create(2026, 4, 30)->addDays(rand(1, 60))->format('Y-m-d'),
+                        'gaji'          => $gajiStr,
+                        'batas_awal'    => $createdAt->format('Y-m-d'),
+                        'batas_akhir'   => $batasAkhir,
                         'status'        => $statusLowongan,
-                        'created_at'    => '2026-04-01 08:00:00',
-                        'updated_at'    => now(),
+                        'created_at'    => $createdAt,
+                        'updated_at'    => $createdAt,
                     ]);
                     $lowongans[] = $idLowongan;
 
@@ -200,7 +213,8 @@ class DatabaseSeeder extends Seeder
     }
 
     private function seedPelamar($i, $p, $lowongans, $kec, $faker) {
-        $tgl = Carbon::create(2026, 3, 1)->addDays(rand(0, 60));
+        // Tanggal registrasi pelamar dalam 30 hari terakhir
+        $tglRegistrasi = now()->subDays(rand(1, 30))->subHours(rand(1, 24));
         
         // Jenis Kelamin & Nama
         $isMale = (rand(0, 1) === 0);
@@ -216,8 +230,8 @@ class DatabaseSeeder extends Seeder
             'kata_sandi'    => Hash::make('password'),
             'peran'         => 'Pelamar',
             'status_akun'   => 'Aktif',
-            'created_at'    => $tgl,
-            'updated_at'    => $tgl,
+            'created_at'    => $tglRegistrasi,
+            'updated_at'    => $tglRegistrasi,
         ]);
 
         // Alamat Indramayu
@@ -260,8 +274,8 @@ class DatabaseSeeder extends Seeder
             'nomor_telepon' => "08" . rand(11, 99) . rand(1000, 9999) . rand(1000, 9999),
             'alamat'        => $alamatLengkap,
             'jenis_kelamin' => $isMale ? 'Laki-laki' : 'Perempuan',
-            'created_at'    => $tgl,
-            'updated_at'    => $tgl,
+            'created_at'    => $tglRegistrasi,
+            'updated_at'    => $tglRegistrasi,
         ]);
 
         // Data Pendidikan Realistis Indramayu
@@ -282,7 +296,7 @@ class DatabaseSeeder extends Seeder
             'tingkat'       => $edu['tingkat'],
             'tahun_mulai'   => '2020-07-01',
             'tahun_selesai' => '2023-06-30',
-            'created_at'    => $tgl,
+            'created_at'    => $tglRegistrasi,
         ]);
 
         // Data Skill Realistis Industri Kopi
@@ -297,26 +311,38 @@ class DatabaseSeeder extends Seeder
                 'id_profil'  => $pid,
                 'nama_skill' => $skName,
                 'deskripsi'  => 'Memiliki kemampuan ' . $skName . ' yang baik.',
-                'created_at' => $tgl,
+                'created_at' => $tglRegistrasi,
             ]);
         }
         
         $targetL = $faker->randomElement($lowongans);
-        $status = $faker->randomElement(['Diproses', 'Wawancara', 'Diterima', 'Ditolak']);
-        $lamaranId = DB::table('lamaran')->insertGetId([
-            'id_lowongan' => $targetL,
-            'id_profil'   => $pid,
-            'status'      => $status,
-            'created_at'  => $tgl,
-            'updated_at'  => $tgl,
-        ]);
+        
+        // Ambil data lowongan untuk memastikan lamaran masuk setelah lowongan dibuat
+        $lowonganData = DB::table('lowongan')->where('id_lowongan', $targetL)->first();
+        
+        // Hanya pelamar yang melamar pada lowongan aktif atau closed
+        if ($lowonganData && $lowonganData->status !== 'Draft') {
+            $tglLamaran = Carbon::parse($lowonganData->created_at)->addDays(rand(1, 10));
+            if ($tglLamaran > now()) {
+                $tglLamaran = now();
+            }
 
-        // Dokumen Lamaran
-        DB::table('lamaran_dokumen')->insert([
-            'id_lamaran'       => $lamaranId,
-            'id_jenis_dokumen' => 1, // CV
-            'lokasi_file'      => 'lamaran/dummy_cv.pdf',
-            'created_at'       => $tgl,
-        ]);
+            $status = $faker->randomElement(['Diproses', 'Wawancara', 'Diterima', 'Ditolak']);
+            $lamaranId = DB::table('lamaran')->insertGetId([
+                'id_lowongan' => $targetL,
+                'id_profil'   => $pid,
+                'status'      => $status,
+                'created_at'  => $tglLamaran,
+                'updated_at'  => $tglLamaran,
+            ]);
+
+            // Dokumen Lamaran
+            DB::table('lamaran_dokumen')->insert([
+                'id_lamaran'       => $lamaranId,
+                'id_jenis_dokumen' => 1, // CV
+                'lokasi_file'      => 'lamaran/dummy_cv.pdf',
+                'created_at'       => $tglLamaran,
+            ]);
+        }
     }
 }
