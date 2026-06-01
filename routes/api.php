@@ -19,6 +19,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/register/perusahaan', [RegisterController::class, 'registrasiPerusahaan']);
         Route::post('/login', [LoginController::class, 'login']);
         Route::post('/portal-pusat/login', [SuperAdminAuthController::class, 'login']); // [UPDATE LOGIC]
+        Route::post('/google-auth', [LoginController::class, 'googleAuth']);
 
         Route::middleware('auth:api')->group(function () {
             Route::post('/logout', [LoginController::class, 'logout']);
