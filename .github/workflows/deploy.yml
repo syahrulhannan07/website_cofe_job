@@ -130,12 +130,8 @@ jobs:
             echo "⏳ Menunggu container ready..."
             sleep 40
 
-            # [TEMPORARY FIX] Hapus tabel failed_jobs yang bermasalah agar migrasi lancar
-            echo "🧹 Membersihkan tabel bermasalah..."
-            docker compose exec -T db mysql -u ${{ secrets.DB_USERNAME }} -p${{ secrets.DB_PASSWORD }} -e "DROP TABLE IF EXISTS failed_jobs;" cofe-job || true
-
-            # Jalankan migrasi database (Gunakan fresh agar seeder baru masuk)
-            docker compose exec -T app php artisan migrate:fresh --seed --force --no-interaction
+            # Jalankan migrasi database
+            docker compose exec -T app php artisan migrate --force --no-interaction
 
             # Restart queue worker untuk memuat kode terbaru
             docker compose exec -T app php artisan queue:restart
