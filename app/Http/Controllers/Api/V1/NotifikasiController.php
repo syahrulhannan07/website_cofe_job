@@ -27,6 +27,7 @@ class NotifikasiController extends Controller
             'id'          => $n->id_notifikasi,
             'judul'       => $n->judul,
             'pesan'       => $n->pesan,
+            'url'         => $n->url,
             'dibaca'      => $n->dibaca,
             'dibuat_pada' => $n->created_at?->toIso8601String(),
         ]);

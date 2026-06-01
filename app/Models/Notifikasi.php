@@ -13,6 +13,7 @@ class Notifikasi extends Model
         'id_pengguna',
         'judul',
         'pesan',
+        'url',
         'dibaca',
         'dibaca_pada',
     ];

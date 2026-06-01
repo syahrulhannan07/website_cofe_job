@@ -132,4 +132,22 @@ class StatusLamaranController extends Controller
             ]
         ]);
     }
+
+    public function konfirmasiWawancara($id_lamaran)
+    {
+        $profil = auth('api')->user()->profilPelamar;
+
+        $lamaran = Lamaran::with(['lowongan.perusahaan.pengguna', 'profil'])
+            ->where('id_lamaran', $id_lamaran)
+            ->where('id_profil', $profil->id_profil)
+            ->firstOrFail();
+
+        // Trigger event untuk notifikasi ke admin
+        event(new \App\Events\WawancaraConfirmedByPelamar($lamaran));
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Konfirmasi berhasil dikirim ke perusahaan.'
+        ]);
+    }
 }

@@ -86,6 +86,14 @@ class LowonganController extends Controller
             }
             $lowongan = $this->service->createLowongan($profil->id_perusahaan, $validatedData);
 
+            // Kirim notifikasi audit ke semua Super Admin (Poin 3 - Hanya jika Draft, karena jika Active akan dikirim via event LowonganPublished)
+            if ($lowongan->status === 'Draft') {
+                $superAdmins = \App\Models\Pengguna::where('peran', 'Super_Admin')->get();
+                foreach ($superAdmins as $sa) {
+                    $sa->notify(new \App\Notifications\SuperAdminNewVacancyNotification($lowongan));
+                }
+            }
+
             if ($lowongan->status === 'Active') {
                 event(new \App\Events\LowonganPublished($lowongan));
             }

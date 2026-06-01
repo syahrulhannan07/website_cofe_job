@@ -58,6 +58,15 @@ class RegisterController extends Controller
 
             DB::commit();
 
+            // Kirim notifikasi selamat datang ke pelamar
+            $pengguna->notify(new \App\Notifications\NewApplicantRegisteredNotification());
+
+            // Kirim notifikasi ke semua Super Admin
+            $superAdmins = \App\Models\Pengguna::where('peran', 'Super_Admin')->get();
+            foreach ($superAdmins as $sa) {
+                $sa->notify(new \App\Notifications\NewApplicantRegisteredSuperAdminNotification($pengguna));
+            }
+
             // 6. Return 201 dengan data pengguna
             return response()->json([
                 'status' => 'success',
@@ -138,6 +147,9 @@ class RegisterController extends Controller
             event(new \App\Events\CompanyRegistered($perusahaan));
 
             DB::commit();
+
+            // Kirim notifikasi registrasi berhasil ke perusahaan
+            $pengguna->notify(new \App\Notifications\CompanyRegistrationReceivedNotification($perusahaan));
 
             // 6. Return response sukses
             return response()->json([
@@ -229,6 +241,9 @@ class RegisterController extends Controller
             event(new \App\Events\CompanyRegistered($perusahaan));
 
             DB::commit();
+
+            // Kirim notifikasi registrasi berhasil ke perusahaan
+            $pengguna->notify(new \App\Notifications\CompanyRegistrationReceivedNotification($perusahaan));
 
             // 6. Return response sukses
             return response()->json([

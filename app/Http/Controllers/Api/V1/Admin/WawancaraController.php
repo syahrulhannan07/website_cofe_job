@@ -119,7 +119,11 @@ class WawancaraController extends Controller
         try {
             $this->service->rescheduleWawancara($wawancara, $request->all(), $profil->nama_perusahaan);
 
-            event(new \App\Events\WawancaraUpdated($wawancara->refresh(), $profil->nama_perusahaan));
+            event(new \App\Events\WawancaraUpdated(
+                $wawancara->refresh(),
+                $profil->nama_perusahaan,
+                (int) $wawancara->id_lamaran
+            ));
 
             return $this->successResponse(new WawancaraResource($wawancara->refresh()), 'Jadwal berhasil diperbarui');
         } catch (\Exception $e) {

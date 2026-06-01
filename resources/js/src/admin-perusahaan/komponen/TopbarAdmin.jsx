@@ -35,17 +35,21 @@ const TopbarAdmin = ({ identitas }) => {
         }
     };
 
-    const handleMarkAsRead = async (id, dibaca) => {
-        if (dibaca) return;
-        try {
+    // Tandai notifikasi sebagai dibaca, lalu buka URL deep-link di tab baru (jika ada)
+    const handleKlikNotifikasi = async (notif) => {
+        // 1. Optimistic UI update
+        if (!notif.dibaca) {
             setNotifications(prev =>
-                prev.map(n => (n.id === id ? { ...n, dibaca: 1 } : n))
+                prev.map(n => (n.id === notif.id ? { ...n, dibaca: 1 } : n))
             );
             setUnreadCount(prev => Math.max(0, prev - 1));
-            await api.put(`/notifikasi/${id}/baca`);
-        } catch (error) {
-            console.error('Gagal menandai notifikasi sebagai dibaca:', error);
-            fetchNotifications();
+            // 2. Kirim ke backend (fire-and-forget)
+            api.put(`/notifikasi/${notif.id}/baca`).catch(() => fetchNotifications());
+        }
+        // 3. Buka URL deep-link di tab baru
+        if (notif.url) {
+            window.open(notif.url, '_blank', 'noopener,noreferrer');
+            setShowNotifications(false);
         }
     };
 
@@ -81,8 +85,25 @@ const TopbarAdmin = ({ identitas }) => {
 
     useEffect(() => {
         fetchNotifications();
-        const intervalId = setInterval(fetchNotifications, 10000);
-        return () => clearInterval(intervalId);
+        
+        // Menggunakan Laravel Echo untuk Notifikasi Real-Time via Reverb
+        const userId = localStorage.getItem('id_pengguna');
+        if (userId && window.Echo) {
+            window.Echo.private(`App.Models.Pengguna.${userId}`)
+                .notification((notification) => {
+                    console.log("Notifikasi Admin Baru Real-Time!", notification);
+                    fetchNotifications();
+                });
+        }
+
+        // Hapus interval polling manual
+        // const intervalId = setInterval(fetchNotifications, 10000);
+        return () => {
+            // clearInterval(intervalId);
+            if (userId && window.Echo) {
+                window.Echo.leaveChannel(`App.Models.Pengguna.${userId}`);
+            }
+        };
     }, []);
 
     useEffect(() => {
@@ -161,7 +182,7 @@ const TopbarAdmin = ({ identitas }) => {
                                             notifications.map((n) => (
                                                 <div
                                                     key={n.id}
-                                                    onClick={() => handleMarkAsRead(n.id, n.dibaca)}
+                                                    onClick={() => handleKlikNotifikasi(n)}
                                                     className={`px-4 py-3 cursor-pointer transition-colors flex items-start gap-2 ${
                                                         n.dibaca ? 'hover:bg-white/5 bg-transparent' : 'bg-white/5 hover:bg-white/10'
                                                     }`}
@@ -170,9 +191,17 @@ const TopbarAdmin = ({ identitas }) => {
                                                         <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#c69c6d]" />
                                                     )}
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className={`text-xs text-[#f3ede6] truncate ${!n.dibaca ? 'font-bold' : 'font-medium'}`}>
-                                                            {n.judul}
-                                                        </h4>
+                                                        <div className="flex items-start justify-between gap-1">
+                                                            <h4 className={`text-xs text-[#f3ede6] truncate ${!n.dibaca ? 'font-bold' : 'font-medium'}`}>
+                                                                {n.judul}
+                                                            </h4>
+                                                            {/* Indikator panah jika notif punya deep-link */}
+                                                            {n.url && (
+                                                                <svg className="w-3 h-3 text-[#c69c6d] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                </svg>
+                                                            )}
+                                                        </div>
                                                         <p className="text-[11px] text-[#f3ede6]/70 mt-0.5 break-words line-clamp-3">
                                                             {n.pesan}
                                                         </p>

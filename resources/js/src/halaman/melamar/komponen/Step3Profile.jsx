@@ -74,9 +74,11 @@ const Step3Profile = ({ data, onChange }) => {
             const res = await layananProfil.ambilProfil();
             if (res.status === 'success') {
                 setProfilData(res.data);
-                if (!data.tentangSaya && res.data.tentang_saya) {
-                    onChange({ ...data, tentangSaya: res.data.tentang_saya });
-                }
+                onChange({ 
+                    ...data, 
+                    ...res.data,
+                    tentangSaya: res.data.tentang_saya 
+                });
             }
         } catch (err) {
             console.error('Gagal memuat profil:', err);

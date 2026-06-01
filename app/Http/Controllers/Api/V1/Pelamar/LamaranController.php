@@ -27,15 +27,26 @@ class LamaranController extends Controller
             ], 403);
         }
 
-        $lamaran = Lamaran::firstOrCreate(
-            [
+        $lamaran = Lamaran::where('id_lowongan', $request->id_lowongan)
+            ->where('id_profil', $profil->id_profil)
+            ->first();
+
+        if ($lamaran) {
+            // Cek apakah lamaran sudah dikirim secara final
+            $isSubmitted = !empty($lamaran->snapshot_profil);
+            if ($isSubmitted) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Anda sudah melamar lowongan ini dan tidak dapat melamar lagi.'
+                ], 403);
+            }
+        } else {
+            $lamaran = Lamaran::create([
                 'id_lowongan' => $request->id_lowongan,
                 'id_profil' => $profil->id_profil,
-            ],
-            [
                 'status' => 'Diproses'
-            ]
-        );
+            ]);
+        }
 
         $lowongan = Lowongan::with('dokumenDibutuhkan.jenisDokumen')->find($request->id_lowongan);
         
@@ -145,18 +156,23 @@ class LamaranController extends Controller
         }
 
         // VALIDASI DOKUMEN WAJIB
-        $dokumenWajib = $lamaran->lowongan->dokumenDibutuhkan->where('wajib', true)->pluck('id_jenis_dokumen')->toArray();
+        $dokumenWajib = $lamaran->lowongan->dokumenDibutuhkan->where('wajib', true);
+        $dokumenWajibIds = $dokumenWajib->pluck('id_jenis_dokumen')->toArray();
         $dokumenUploaded = $lamaran->lamaranDokumen->pluck('id_jenis_dokumen')->toArray();
         
-        if (count(array_diff($dokumenWajib, $dokumenUploaded)) > 0) {
-            return response()->json(['status' => 'error', 'message' => 'Harap upload semua dokumen wajib terlebih dahulu.'], 422);
+        $missingDocsIds = array_diff($dokumenWajibIds, $dokumenUploaded);
+        if (count($missingDocsIds) > 0) {
+            $missingDocNames = $dokumenWajib->whereIn('id_jenis_dokumen', $missingDocsIds)
+                ->map(function($d) { return $d->jenisDokumen->nama_dokumen ?? 'Dokumen'; })
+                ->implode(', ');
+            return response()->json(['status' => 'error', 'message' => "Sebelum kamu dapat melanjutkan proses lamaran, harap upload dokumen berikut: {$missingDocNames}"], 422);
         }
 
         // VALIDASI SEMUA PERTANYAAN DIJAWAB (Opsional tapi baik dilakukan)
         $pertanyaanIds = $lamaran->lowongan->pertanyaanSeleksi->pluck('id_pertanyaan')->toArray();
         $jawabanIds = $lamaran->jawabanPertanyaan->pluck('id_pertanyaan')->toArray();
         if (count(array_diff($pertanyaanIds, $jawabanIds)) > 0) {
-            return response()->json(['status' => 'error', 'message' => 'Harap jawab semua pertanyaan seleksi terlebih dahulu.'], 422);
+            return response()->json(['status' => 'error', 'message' => 'Maaf, Anda belum dapat melamar. Mohon lengkapi data berikut'], 422);
         }
 
         // Finalisasi: Status tetap 'Diproses' sesuai permintaan, tapi kita bisa anggap ini submsission

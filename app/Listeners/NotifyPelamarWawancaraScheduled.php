@@ -14,13 +14,19 @@ class NotifyPelamarWawancaraScheduled
     {
         $pelamar = Pengguna::find($event->idPengguna);
         if ($pelamar) {
-            // 1. Send Laravel notification (handles mail and database)
-            $pelamar->notify(new WawancaraScheduledNotification($event->wawancara, $event->namaKafe, $event->posisi));
+            // 1. Kirim notifikasi (In-App via CustomDbChannel + Email Markdown)
+            //    Pass idLamaran agar URL deep-link dapat dibangun dengan benar
+            $pelamar->notify(new WawancaraScheduledNotification(
+                $event->wawancara,
+                $event->namaKafe,
+                $event->posisi,
+                (int) $event->wawancara->id_lamaran
+            ));
 
-            // 2. Broadcast the real-time event to the frontend
+            // 2. Broadcast real-time event ke frontend via WebSocket
             try {
                 $idLowongan = $event->wawancara->lamaran?->id_lowongan ?? 0;
-                
+
                 event(new StatusLamaranDiperbarui(
                     idPengguna:     $event->idPengguna,
                     statusBaru:     'Wawancara',

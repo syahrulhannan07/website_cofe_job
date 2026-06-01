@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAdmin } from '../../konteks/AdminContext';
 import HeaderPelamar from './komponen/HeaderPelamar';
 import KartuLowonganPelamar from './komponen/KartuLowonganPelamar';
@@ -10,6 +11,7 @@ import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
 const HalamanPelamar = () => {
     const { setTopbarAction } = useAdmin();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [activeFilter, setActiveFilter] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [dataLowongan, setDataLowongan] = useState([]);
@@ -18,6 +20,36 @@ const HalamanPelamar = () => {
 
     const [selectedLowongan, setSelectedLowongan] = useState(null);
     const [selectedPelamar, setSelectedPelamar] = useState(null);
+
+    // Deep-Link Handler (Poin 6)
+    useEffect(() => {
+        const idLamaran = searchParams.get('id_lamaran');
+        if (idLamaran) {
+            const fetchSingleLamaran = async () => {
+                try {
+                    const response = await api.get(`/admin/lamaran/${idLamaran}`);
+                    if (response.data?.status === 'success') {
+                        setSelectedPelamar(response.data.data);
+                        setSelectedLowongan(response.data.data.lowongan);
+                    }
+                } catch (error) {
+                    console.error("Gagal mengambil detail lamaran via deep-link:", error);
+                }
+            };
+            fetchSingleLamaran();
+        }
+    }, [searchParams]);
+
+    // Cleanup search params saat menutup detail pelamar
+    const handleCloseDetail = () => {
+        setSelectedPelamar(null);
+        if (searchParams.has('id_lamaran')) {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('id_lamaran');
+            newParams.delete('id_pelamar');
+            setSearchParams(newParams, { replace: true });
+        }
+    };
 
     // Fetch data dari API
     const fetchData = useCallback(async () => {
@@ -57,7 +89,7 @@ const HalamanPelamar = () => {
             setTopbarAction({
                 prefix: `Lowongan / ${selectedLowongan?.judul || selectedLowongan?.posisi} / `,
                 highlight: 'Pelamar',
-                onBack: () => setSelectedPelamar(null)
+                onBack: handleCloseDetail
             });
         } else if (selectedLowongan) {
             setTopbarAction({

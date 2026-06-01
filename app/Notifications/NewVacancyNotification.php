@@ -37,6 +37,7 @@ class NewVacancyNotification extends Notification implements ShouldQueue
             ->line("Lokasi: " . ($this->lowongan->lokasi ?? '-'))
             ->line("Gaji: " . ($this->lowongan->gaji ?? '-'))
             ->line("Batas Akhir Pendaftaran: " . ($this->lowongan->batas_akhir ?? '-'))
+            ->action('Lihat Detail Lowongan', url("/lowongan/{$this->lowongan->id_lowongan}"))
             ->line("Segera kirimkan lamaran Anda sebelum terlambat!");
     }
 
@@ -45,7 +46,8 @@ class NewVacancyNotification extends Notification implements ShouldQueue
         $namaKafe = $this->lowongan->perusahaan?->nama_perusahaan ?? 'Kafe Baru';
         return [
             'judul' => "Lowongan Baru: {$this->lowongan->posisi}",
-            'pesan' => "Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru untuk posisi {$this->lowongan->posisi}.",
+            'pesan' => "Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru untuk posisi {$this->lowongan->posisi}. Anda dipersilakan untuk mengajukan lamaran apabila tertarik.",
+            'url'   => "/lowongan/{$this->lowongan->id_lowongan}",
         ];
     }
 

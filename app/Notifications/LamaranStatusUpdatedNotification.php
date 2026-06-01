@@ -52,6 +52,7 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
         return [
             'judul' => $judul,
             'pesan' => $pesan,
+            'url'   => "/status-lamaran/{$this->lamaran->id_lamaran}",
         ];
     }
 

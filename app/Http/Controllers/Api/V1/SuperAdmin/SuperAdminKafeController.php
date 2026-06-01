@@ -114,6 +114,8 @@ class SuperAdminKafeController extends Controller
             'data' => [
                 'id'           => $lowongan->id_lowongan,
                 'posisi'       => $lowongan->posisi,
+                'id_pengguna'  => $lowongan->perusahaan?->id_pengguna,
+                'id_perusahaan'=> $lowongan->perusahaan?->id_perusahaan,
                 'perusahaan'   => $lowongan->perusahaan?->nama_perusahaan ?? '-',
                 'lokasi'       => $lowongan->lokasi ?? '-',
                 'gaji'         => $lowongan->gaji ?? '-',
