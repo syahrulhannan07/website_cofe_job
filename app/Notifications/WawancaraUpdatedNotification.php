@@ -59,9 +59,13 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue
 
     public function toDatabase($notifiable): array
     {
+        $tanggalStr = $this->wawancara->tanggal_wawancara 
+            ? $this->wawancara->tanggal_wawancara->translatedFormat('d F Y, H:i') . ' WIB'
+            : '-';
+
         return [
-            'judul' => "Perubahan Jadwal Wawancara: {$this->namaKafe}",
-            'pesan' => "Jadwal wawancara Anda di {$this->namaKafe} telah diperbarui menjadi tanggal {$this->wawancara->tanggal_wawancara}. Klik untuk melihat jadwal terbaru.",
+            'judul' => "Pembaruan Jadwal Wawancara: {$this->namaKafe}",
+            'pesan' => "Ada perubahan pada jadwal wawancara Anda di {$this->namaKafe} menjadi {$tanggalStr}. Silakan cek detail jadwal terbaru Anda.",
             // Deep-link: otomatis buka modal wawancara di halaman timeline
             'url'   => "/status-lamaran/{$this->idLamaran}?action=open_modal_wawancara",
         ];

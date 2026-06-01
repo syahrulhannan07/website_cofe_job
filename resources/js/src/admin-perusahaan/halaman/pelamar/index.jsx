@@ -23,7 +23,7 @@ const HalamanPelamar = () => {
 
     // Deep-Link Handler (Poin 6)
     useEffect(() => {
-        const idLamaran = searchParams.get('open_lamaran_id');
+        const idLamaran = searchParams.get('id_lamaran');
         if (idLamaran) {
             const fetchSingleLamaran = async () => {
                 try {
@@ -39,6 +39,17 @@ const HalamanPelamar = () => {
             fetchSingleLamaran();
         }
     }, [searchParams]);
+
+    // Cleanup search params saat menutup detail pelamar
+    const handleCloseDetail = () => {
+        setSelectedPelamar(null);
+        if (searchParams.has('id_lamaran')) {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('id_lamaran');
+            newParams.delete('id_pelamar');
+            setSearchParams(newParams, { replace: true });
+        }
+    };
 
     // Fetch data dari API
     const fetchData = useCallback(async () => {
@@ -78,13 +89,7 @@ const HalamanPelamar = () => {
             setTopbarAction({
                 prefix: `Lowongan / ${selectedLowongan?.judul || selectedLowongan?.posisi} / `,
                 highlight: 'Pelamar',
-                onBack: () => {
-                    setSelectedPelamar(null);
-                    // Bersihkan search param agar ketika diklik kembali tidak men-trigger auto-open lagi
-                    const newParams = new URLSearchParams(searchParams);
-                    newParams.delete('open_lamaran_id');
-                    setSearchParams(newParams, { replace: true });
-                }
+                onBack: handleCloseDetail
             });
         } else if (selectedLowongan) {
             setTopbarAction({

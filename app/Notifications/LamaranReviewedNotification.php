@@ -43,7 +43,8 @@ class LamaranReviewedNotification extends Notification implements ShouldQueue
         return [
             'judul' => "Lamaran Ditinjau: {$posisi}",
             'pesan' => "Lamaran Anda untuk posisi {$posisi} di {$namaKafe} saat ini sedang ditinjau oleh pihak HRD.",
-            'url'   => "/status-lamaran/{$this->lamaran->id_lamaran}",
+            // Deep-link: Menampilkan status lamaran dan membuka tracking timeline
+            'url'   => "/status-lamaran/{$this->lamaran->id_lamaran}?action=open_timeline",
         ];
     }
 }

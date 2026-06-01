@@ -96,6 +96,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'index']);
         Route::get('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'show']);
         Route::get('/{id}/wawancara', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'detailWawancara']);
+        Route::post('/{id}/konfirmasi-wawancara', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'konfirmasiWawancara']);
     });
 
     Route::middleware(['auth:api', 'role:Admin_Perusahaan'])->prefix('admin')->group(function () {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import coffeeBeansIcon from '../../aset/status_lamaran/Coffee Beans.png';
 import placeholderProfile from '../../aset/profil/placeholder_profil.jpg';
@@ -13,6 +13,8 @@ const DetailStatusLamaran = () => {
     const [data, setData] = useState(null);
     const [wawancara, setWawancara] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false); // [UPDATE LOGIC]
+    const timelineRef = useRef(null);
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -92,10 +94,34 @@ const DetailStatusLamaran = () => {
     // Jika URL mengandung ?action=open_modal_wawancara (dikirim dari notifikasi
     // Poin 9 & 10), tunggu data selesai dimuat lalu buka modal secara otomatis.
     useEffect(() => {
-        if (!loading && data && searchParams.get('action') === 'open_modal_wawancara') {
-            setShowModal(true);
+        if (!loading && data) {
+            const action = searchParams.get('action');
+            if (action === 'open_modal_wawancara') {
+                setShowModal(true);
+            } else if (action === 'open_timeline') {
+                // Scroll ke area tracking timeline
+                timelineRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }
         }
     }, [loading, data, searchParams]);
+
+    // [UPDATE LOGIC] Handler untuk tombol Konfirmasi
+    const handleKonfirmasi = async () => {
+        setSubmitting(true);
+        try {
+            const response = await api.post(`/pelamar/lamaran/${id}/konfirmasi-wawancara`);
+            if (response.data.status === 'success') {
+                setShowModal(false);
+                // Optional: Beri feedback sukses
+                alert('Terima kasih! Konfirmasi Anda telah terkirim ke perusahaan.');
+            }
+        } catch (error) {
+            console.error("Gagal mengirim konfirmasi:", error);
+            alert('Gagal mengirim konfirmasi. Silakan coba lagi nanti.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     const warnaGold = '#FBB041';
     const warnaCokelat = '#3D2722';
@@ -172,7 +198,7 @@ const DetailStatusLamaran = () => {
                 </div>
 
                 {/* Tracking Timeline Section */}
-                <div className="area-tracking flex flex-col items-center">
+                <div ref={timelineRef} className="area-tracking flex flex-col items-center">
                     <h2 className="font-poppins font-bold text-[36px] text-[#3D2722] mb-16">
                         Tracking Timeline
                     </h2>
@@ -332,10 +358,11 @@ const DetailStatusLamaran = () => {
                         {/* Footer Modal - Beige Lebih Gelap */}
                         <div className="px-7 py-4 bg-[#F0EDE9] flex justify-end">
                             <button 
-                                onClick={() => setShowModal(false)}
-                                className="px-9 py-2.5 rounded-full font-poppins font-bold text-[14px] shadow-sm transition-all hover:bg-[#F9A62B]"
+                                onClick={handleKonfirmasi}
+                                disabled={submitting}
+                                className={`px-9 py-2.5 rounded-full font-poppins font-bold text-[14px] shadow-sm transition-all ${submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#F9A62B]'}`}
                                 style={{ backgroundColor: warnaGold, color: warnaCokelat }}>
-                                Konfirmasi
+                                {submitting ? 'Mengirim...' : 'Konfirmasi'}
                             </button>
                         </div>
                     </div>

@@ -44,7 +44,8 @@ class LamaranSubmittedNotification extends Notification implements ShouldQueue
         return [
             'judul' => 'Lamaran Berhasil Terkirim 📂',
             'pesan' => "Lamaran Anda untuk posisi {$posisi} di {$namaKafe} telah berhasil dikirim. Menunggu proses selanjutnya.",
-            'url'   => "/status-lamaran/{$this->lamaran->id_lamaran}",
+            // Deep-link: Menampilkan status lamaran dan membuka tracking timeline
+            'url'   => "/status-lamaran/{$this->lamaran->id_lamaran}?action=open_timeline",
         ];
     }
 }
