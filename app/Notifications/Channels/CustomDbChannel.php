@@ -4,6 +4,7 @@ namespace App\Notifications\Channels;
 
 use Illuminate\Notifications\Notification;
 use App\Models\Notifikasi;
+use Illuminate\Notifications\Events\BroadcastNotificationCreated;
 
 class CustomDbChannel
 {
@@ -19,12 +20,19 @@ class CustomDbChannel
     {
         $data = $notification->toDatabase($notifiable);
 
-        Notifikasi::create([
+        $notifModel = Notifikasi::create([
             'id_pengguna' => $notifiable->id_pengguna,
             'judul'       => $data['judul'] ?? 'Notifikasi Baru',
             'pesan'       => $data['pesan'] ?? '',
             'url'         => $data['url'] ?? null,   // deep-link untuk navigasi frontend
             'dibaca'      => false,
         ]);
+
+        // Broadcast event agar frontend (Laravel Echo) menerimanya secara real-time
+        event(new BroadcastNotificationCreated(
+            $notifiable, 
+            $notification, 
+            $data
+        ));
     }
 }

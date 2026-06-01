@@ -85,8 +85,25 @@ const TopbarAdmin = ({ identitas }) => {
 
     useEffect(() => {
         fetchNotifications();
-        const intervalId = setInterval(fetchNotifications, 10000);
-        return () => clearInterval(intervalId);
+        
+        // Menggunakan Laravel Echo untuk Notifikasi Real-Time via Reverb
+        const userId = localStorage.getItem('id_pengguna');
+        if (userId && window.Echo) {
+            window.Echo.private(`App.Models.Pengguna.${userId}`)
+                .notification((notification) => {
+                    console.log("Notifikasi Admin Baru Real-Time!", notification);
+                    fetchNotifications();
+                });
+        }
+
+        // Hapus interval polling manual
+        // const intervalId = setInterval(fetchNotifications, 10000);
+        return () => {
+            // clearInterval(intervalId);
+            if (userId && window.Echo) {
+                window.Echo.leaveChannel(`App.Models.Pengguna.${userId}`);
+            }
+        };
     }, []);
 
     useEffect(() => {

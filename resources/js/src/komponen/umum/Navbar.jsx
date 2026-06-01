@@ -88,8 +88,25 @@ const Navbar = () => {
 
     if (token) {
       fetchNotifications();
-      const intervalId = setInterval(fetchNotifications, 10000);
-      return () => clearInterval(intervalId);
+      
+      // Menggunakan Laravel Echo untuk Notifikasi Real-Time via Reverb
+      const userId = localStorage.getItem('id_pengguna');
+      if (userId && window.Echo) {
+          window.Echo.private(`App.Models.Pengguna.${userId}`)
+              .notification((notification) => {
+                  console.log("Notifikasi Baru Real-Time!", notification);
+                  // Refresh notifikasi dari API atau tambahkan ke list secara manual
+                  fetchNotifications(); 
+              });
+      }
+
+      // Hapus interval polling manual karena sudah pakai WebSocket
+      // const intervalId = setInterval(fetchNotifications, 10000);
+      return () => {
+          if (userId && window.Echo) {
+              window.Echo.leaveChannel(`App.Models.Pengguna.${userId}`);
+          }
+      };
     }
   }, [location]);
 
