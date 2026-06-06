@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('notifikasi', function (Blueprint $table) {
-            $table->string('url')->nullable()->after('pesan');
-        });
+        // Lakukan pengecekan apakah kolom 'url' belum ada
+        if (!Schema::hasColumn('notifikasi', 'url')) {
+            Schema::table('notifikasi', function (Blueprint $table) {
+                $table->string('url')->nullable(); // sesuaikan dengan tipe data asli kamu
+            });
+        }
     }
 
     /**
