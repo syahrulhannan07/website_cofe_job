@@ -50,6 +50,16 @@ const layananAutentikasi = {
     },
 
     /**
+     * Login/Daftar menggunakan akun Google (Firebase).
+     * Mengirim data dari Firebase ke backend Laravel untuk mendapatkan JWT token.
+     * @param {{ nama_pengguna: string, email: string, fcm_token?: string }} dataGoogle
+     */
+    googleAuth: async (dataGoogle) => {
+        const respons = await api.post('/auth/google-auth', dataGoogle);
+        return respons.data;
+    },
+
+    /**
      * Mengambil data profil pengguna yang sedang masuk.
      */
     ambilProfilSaya: async () => {

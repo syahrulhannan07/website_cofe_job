@@ -4,6 +4,7 @@ import FormInformasiPribadi from './komponen/FormInformasiPribadi';
 import BagianPendidikan from './komponen/BagianPendidikan';
 import BagianPengalaman from './komponen/BagianPengalaman';
 import BagianKeahlian from './komponen/BagianKeahlian';
+import BagianGantiPassword from './komponen/BagianGantiPassword';
 import TombolKeluar from './komponen/TombolKeluar';
 import LoadingKopi from '../../komponen/umum/LoadingKopi';
 import layananProfil from '../../layanan/layananProfil';
@@ -11,6 +12,7 @@ import layananProfil from '../../layanan/layananProfil';
 const Profil = () => {
     const [profilData, setProfilData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isModalPasswordOpen, setIsModalPasswordOpen] = useState(false);
 
     const refreshData = async () => {
         try {
@@ -27,6 +29,13 @@ const Profil = () => {
 
     useEffect(() => {
         refreshData();
+
+        const handleOpen = () => {
+            console.log('Event received in Profil index, opening modal');
+            setIsModalPasswordOpen(true);
+        };
+        window.addEventListener('buka-ganti-password', handleOpen);
+        return () => window.removeEventListener('buka-ganti-password', handleOpen);
     }, []);
 
     if (loading) return <LoadingKopi />;
@@ -48,6 +57,10 @@ const Profil = () => {
                     <BagianPendidikan initialData={profilData?.pendidikan} onRefresh={refreshData} />
                     <BagianPengalaman initialData={profilData?.pengalaman_kerja} onRefresh={refreshData} />
                     <BagianKeahlian initialData={profilData?.skills} onRefresh={refreshData} />
+                    
+                    {/* Render BagianGantiPassword as modal */}
+                    <BagianGantiPassword isOpen={isModalPasswordOpen} onClose={() => setIsModalPasswordOpen(false)} />
+                    
                     <TombolKeluar />
                 </div>
             </main>

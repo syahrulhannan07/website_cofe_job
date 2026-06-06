@@ -220,7 +220,7 @@ class ProfilController extends Controller
 
     public function updatePassword(Request $request)
     {
-        // 1. Validasi input dari Flutter
+        // 1. Validasi input
         $request->validate([
             'current_password' => 'required',
             'password' => 'required|string|min:8|confirmed',
@@ -242,9 +242,8 @@ class ProfilController extends Controller
             ], 401);
         }
 
-        // 3. Pengecekan password lama (Teks polos vs Hash di DB)
-        // Tambahkan trim() untuk mengantisipasi adanya spasi tidak sengaja dari Flutter
-        if (!Hash::check(trim($request->current_password), $user->password)) {
+        // 3. Pengecekan password lama (kata_sandi di DB)
+        if (!Hash::check(trim($request->current_password), $user->kata_sandi)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Password saat ini salah.'
@@ -253,7 +252,7 @@ class ProfilController extends Controller
 
         // 4. Update password baru dengan enkripsi Hash::make
         $user->update([
-            'password' => Hash::make(trim($request->password))
+            'kata_sandi' => Hash::make(trim($request->password))
         ]);
 
         return response()->json([

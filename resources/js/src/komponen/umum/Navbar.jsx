@@ -192,89 +192,120 @@ const Navbar = () => {
           ) : (
             /* Tombol Profil (Tampil jika sudah login) */
             <>
-              {/* [UPDATE LOGIC] Tombol Lonceng & Panel Dropdown Notifikasi */}
-              <div className="relative mr-2 flex items-center" ref={dropdownRef}>
-                <button
-                  onClick={() => {
-                    const nextShow = !showNotifications;
-                    setShowNotifications(nextShow);
-                    if (nextShow) {
-                      fetchNotifications();
-                    }
-                  }}
-                  className="tombol-lonceng relative flex items-center justify-center w-8 h-8 rounded-full text-[#f3ede6] hover:text-[#c69c6d] hover:bg-white/5 transition-all focus:outline-none shrink-0 mr-2"
-                  aria-label="Notifikasi"
-                >
-                  <img
-                    src={ikonNotifikasi}
-                    alt="Notifikasi"
-                    className="w-[32px] h-[32px] object-contain cursor-pointer"
-                    style={{ filter: 'invert(1) brightness(2)' }}
-                  />
-                  {unreadCount > 0 && (
-                    <span className="absolut-badge absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm ring-1 ring-red-400">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
+              {/* Wadah Ikon Lonceng & Gir agar letaknya berdekatan dan tidak menggeser lonceng */}
+              <div className="flex items-center gap-1 mr-2">
+                {/* [UPDATE LOGIC] Tombol Lonceng & Panel Dropdown Notifikasi */}
+                <div className="relative flex items-center" ref={dropdownRef}>
+                  <button
+                    onClick={() => {
+                      const nextShow = !showNotifications;
+                      setShowNotifications(nextShow);
+                      if (nextShow) {
+                        fetchNotifications();
+                      }
+                    }}
+                    className="tombol-lonceng relative flex items-center justify-center w-8 h-8 rounded-full text-[#f3ede6] hover:text-[#c69c6d] hover:bg-white/5 transition-all focus:outline-none shrink-0"
+                    aria-label="Notifikasi"
+                  >
+                    <img
+                      src={ikonNotifikasi}
+                      alt="Notifikasi"
+                      className="w-[32px] h-[32px] object-contain cursor-pointer"
+                      style={{ filter: 'invert(1) brightness(2)' }}
+                    />
+                    {unreadCount > 0 && (
+                      <span className="absolut-badge absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm ring-1 ring-red-400">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
 
-                {showNotifications && (
-                  <div className="panel-notifikasi absolute right-0 top-full mt-2 w-72 md:w-80 rounded-2xl bg-[#4b2e2b]/95 backdrop-blur-md border border-[#c69c6d]/30 shadow-2xl z-50 overflow-hidden font-poppins text-left">
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-[#c69c6d]/20 bg-[#3d2523]">
-                      <span className="text-[#f3ede6] font-bold text-xs md:text-sm">Notifikasi</span>
-                      {unreadCount > 0 && (
-                        <button
-                          onClick={handleMarkAllAsRead}
-                          className="text-[#c69c6d] text-[10px] md:text-xs font-semibold hover:opacity-80 transition-opacity"
-                        >
-                          Tandai semua dibaca
-                        </button>
-                      )}
-                    </div>
-
-                    {/* List */}
-                    <div className="max-h-64 md:max-h-72 overflow-y-auto divide-y divide-[#c69c6d]/10 scrollbar-thin scrollbar-thumb-[#c69c6d]/20">
-                      {notifications.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-[#f3ede6]/50 text-xs md:text-sm italic">
-                          Tidak ada notifikasi
-                        </div>
-                      ) : (
-                        notifications.map((n) => (
-                          <div
-                            key={n.id}
-                            onClick={() => handleKlikNotifikasi(n)}
-                            className={`px-4 py-3 cursor-pointer transition-colors flex items-start gap-2 ${
-                              n.dibaca ? 'hover:bg-white/5 bg-transparent' : 'bg-white/5 hover:bg-white/10'
-                            }`}
+                  {showNotifications && (
+                    <div className="panel-notifikasi absolute right-0 top-full mt-2 w-72 md:w-80 rounded-2xl bg-[#4b2e2b]/95 backdrop-blur-md border border-[#c69c6d]/30 shadow-2xl z-50 overflow-hidden font-poppins text-left">
+                      {/* Header */}
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-[#c69c6d]/20 bg-[#3d2523]">
+                        <span className="text-[#f3ede6] font-bold text-xs md:text-sm">Notifikasi</span>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={handleMarkAllAsRead}
+                            className="text-[#c69c6d] text-[10px] md:text-xs font-semibold hover:opacity-80 transition-opacity"
                           >
-                            {!n.dibaca && (
-                              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#c69c6d]" />
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-1">
-                                <h4 className={`text-xs text-[#f3ede6] truncate ${!n.dibaca ? 'font-bold' : 'font-medium'}`}>
-                                  {n.judul}
-                                </h4>
-                                {/* Indikator panah jika notif punya deep-link */}
-                                {n.url && (
-                                  <svg className="w-3 h-3 text-[#c69c6d] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                  </svg>
-                                )}
-                              </div>
-                              <p className="text-[11px] text-[#f3ede6]/70 mt-0.5 break-words line-clamp-3">
-                                {n.pesan}
-                              </p>
-                              <span className="text-[9px] text-[#f3ede6]/40 block mt-1">
-                                {formatTime(n.dibuat_pada)}
-                              </span>
-                            </div>
+                            Tandai semua dibaca
+                          </button>
+                        )}
+                      </div>
+
+                      {/* List */}
+                      <div className="max-h-64 md:max-h-72 overflow-y-auto divide-y divide-[#c69c6d]/10 scrollbar-thin scrollbar-thumb-[#c69c6d]/20">
+                        {notifications.length === 0 ? (
+                          <div className="px-4 py-8 text-center text-[#f3ede6]/50 text-xs md:text-sm italic">
+                            Tidak ada notifikasi
                           </div>
-                        ))
-                      )}
+                        ) : (
+                          notifications.map((n) => (
+                            <div
+                              key={n.id}
+                              onClick={() => handleKlikNotifikasi(n)}
+                              className={`px-4 py-3 cursor-pointer transition-colors flex items-start gap-2 ${
+                                n.dibaca ? 'hover:bg-white/5 bg-transparent' : 'bg-white/5 hover:bg-white/10'
+                              }`}
+                            >
+                              {!n.dibaca && (
+                                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#c69c6d]" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-1">
+                                  <h4 className={`text-xs text-[#f3ede6] truncate ${!n.dibaca ? 'font-bold' : 'font-medium'}`}>
+                                    {n.judul}
+                                  </h4>
+                                  {/* Indikator panah jika notif punya deep-link */}
+                                  {n.url && (
+                                    <svg className="w-3 h-3 text-[#c69c6d] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-[#f3ede6]/70 mt-0.5 break-words line-clamp-3">
+                                  {n.pesan}
+                                </p>
+                                <span className="text-[9px] text-[#f3ede6]/40 block mt-1">
+                                  {formatTime(n.dibuat_pada)}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
+                </div>
+
+                {/* Tombol Gir Pengaturan (Hanya tampil di halaman profil, di antara Lonceng dan Profil) */}
+                {location.pathname === '/profil' && (
+                  <button
+                    onClick={() => {
+                      console.log('Gear clicked, dispatching buka-ganti-password event');
+                      window.dispatchEvent(new CustomEvent('buka-ganti-password'));
+                    }}
+                    className="tombol-pengaturan flex items-center justify-center w-8 h-8 rounded-full text-[#f3ede6] hover:text-[#c69c6d] hover:bg-white/5 transition-all focus:outline-none cursor-pointer shrink-0"
+                    aria-label="Ganti Password"
+                    title="Ganti Password"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
                 )}
               </div>
 

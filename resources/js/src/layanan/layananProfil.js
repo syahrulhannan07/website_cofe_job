@@ -55,6 +55,12 @@ const layananProfil = {
         const respons = await api.delete(`/pelamar/profil/skill/${id}`);
         return respons.data;
     },
+
+    // Ganti Password
+    gantiPassword: async (data) => {
+        const respons = await api.post('/pelamar/profil/update-password', data);
+        return respons.data;
+    },
 };
 
 export default layananProfil;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import FormProfil from './komponen/FormProfil';
 import FotoProfil from './komponen/FotoProfil';
+import FormGantiPassword from './komponen/FormGantiPassword';
 import { useAdmin } from '../../konteks/AdminContext';
 import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
@@ -71,6 +72,9 @@ const HalamanProfil = () => {
                     onUpdate={() => fetchProfil(true)}
                 />
             </motion.div>
+
+            {/* BAGIAN GANTI PASSWORD */}
+            <FormGantiPassword variants={itemVariants} />
 
             <div className="h-[40px]" />
         </div>

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - lupa-password
 
 env:
   REGISTRY: ghcr.io
@@ -130,8 +131,8 @@ jobs:
             echo "⏳ Menunggu container ready..."
             sleep 40
 
-            # Jalankan migrasi database
-            docker compose exec -T app php artisan migrate --force --no-interaction
+            # Jalankan migrasi database dan seeder (sementara)
+            docker compose exec -T app php artisan migrate:fresh --seed --force --no-interaction
 
             # Restart queue worker untuk memuat kode terbaru
             docker compose exec -T app php artisan queue:restart

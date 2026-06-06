@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 
 class ProfilPerusahaanController extends Controller
 {
@@ -139,5 +140,43 @@ class ProfilPerusahaanController extends Controller
             'message' => 'Profil berhasil diperbarui',
             'data' => $profil
         ]);
+    }
+
+    /**
+     * Ganti password perusahaan menggunakan password lama.
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = auth('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sesi berakhir atau user tidak dikenali.'
+            ], 401);
+        }
+
+        // Cek password lama
+        if (!Hash::check(trim($request->current_password), $user->kata_sandi)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Password saat ini salah.'
+            ], 422);
+        }
+
+        // Update password baru
+        $user->update([
+            'kata_sandi' => Hash::make(trim($request->password))
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Password berhasil diubah.'
+        ], 200);
     }
 }

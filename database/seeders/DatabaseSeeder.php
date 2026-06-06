@@ -25,40 +25,37 @@ class DatabaseSeeder extends Seeder
             $kecamatanIndramayu = ['Jatibarang', 'Sindang', 'Haurgeulis', 'Karangampel', 'Pasekan', 'Indramayu', 'Lohbener', 'Widasari'];
             $posisiKopi = ['Barista', 'Waiter', 'Kasir', 'Cook', 'Menejer', 'Helper', 'Cleaning Service', 'Pencuci Piring', 'Admin Medsos'];
 
-            // 3. Loop Perusahaan (25)
-            for ($i = 1; $i <= 25; $i++) {
-                $this->command->comment("Seeding Perusahaan $i/25...");
+            // 3. Loop Perusahaan (5)
+            $allPerusahaan = [];
+            for ($i = 1; $i <= 5; $i++) {
+                $this->command->comment("Seeding Perusahaan $i/5...");
              
+                $createdAtCompany = Carbon::now()->subDays(rand(1, 30))->subHours(rand(1, 24));
+
                 $idUserPerusahaan = DB::table('pengguna')->insertGetId([
                     'nama_pengguna' => "Owner " . $faker->name,
                     'email' => "cafe" . $i . "@gmail.com",
                     'kata_sandi' => Hash::make('password'),
                     'peran' => 'Admin_Perusahaan',
-                    'status_akun' => 'Aktif', // ✅ FIX: kolom status_akun wajib diisi
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'status_akun' => 'Aktif',
+                    'created_at' => $createdAtCompany,
+                    'updated_at' => $createdAtCompany,
                 ]);
 
                 $namaCafeRealistis = [
                     'Kopi Cimanuk', 'Indramayu Coffee House', 'Griya Kopi', 'Pojok Kopi', 'Kopi Rakyat', 
-                    'Kilang Kopi', 'Halaman Kopi', 'Ruang Temu Kopi', 'Kopi Mangga', 'Kedai Kopi Indah',
-                    'Kopi Toean', 'Warung Kopi Tjilik', 'Kopi Janji Manis', 'Fore Coffee Indramayu', 
-                    'Kopi Kenangan Masa', 'Anomali Coffee Indramayu', 'Djournal Coffee', 'Kopi Tuku',
-                    'Kopi Lain Hati', 'Kopi Soe', 'Kopi Kenangan', 'Excelso Indramayu', 'Starbucks Indramayu',
-                    'Maxx Coffee', 'The Coffee Bean'
+                    'Kilang Kopi', 'Halaman Kopi', 'Ruang Temu Kopi', 'Kopi Mangga', 'Kedai Kopi Indah'
                 ];
 
                 $kec = $faker->randomElement($kecamatanIndramayu);
-                // ✅ FIX: Tentukan status verifikasi dengan distribusi yang benar
-                // 60% Diterima, 25% Pending, 15% Ditolak
+                
                 $statusRand = rand(1, 100);
                 $statusVerif = match(true) {
-                    $statusRand <= 60 => 'Diterima',
-                    $statusRand <= 85 => 'Pending',
+                    $statusRand <= 80 => 'Diterima',
+                    $statusRand <= 90 => 'Pending',
                     default           => 'Ditolak',
                 };
 
-                // ✅ FIX: Isi alasan_penolakan jika status Ditolak
                 $alasanPenolakanPool = [
                     'Dokumen izin usaha yang diunggah tidak terbaca dengan jelas.',
                     'Nama perusahaan pada SIUP tidak sesuai dengan nama yang didaftarkan.',
@@ -74,41 +71,40 @@ class DatabaseSeeder extends Seeder
                     'id_pengguna'       => $idUserPerusahaan,
                     'nama_perusahaan'   => $namaCafeRealistis[$i - 1] ?? ($faker->company . " Coffee"),
                     'alamat_perusahaan' => 'Jl. Raya ' . $kec . ' No. ' . rand(1, 200) . ', Kecamatan ' . $kec . ', Kab. Indramayu',
-                    'kecamatan'         => $kec, // ✅ Tambahkan kolom kecamatan
+                    'kecamatan'         => $kec,
                     'deskripsi'         => 'Sebuah kafe yang berlokasi strategis di ' . $kec . ' dengan konsep modern dan suasana nyaman. Kami berkomitmen menyajikan kopi berkualitas tinggi kepada masyarakat Indramayu.',
                     'status_verifikasi' => $statusVerif,
-                    'alasan_penolakan'  => $alasanPenolakan, // ✅ FIX: wajib diisi jika Ditolak
+                    'alasan_penolakan'  => $alasanPenolakan,
                     'dokumen_izin'      => 'legalitas/dummy_izin_' . $i . '.pdf',
-                    'created_at'        => now(),
-                    'updated_at'        => now(),
+                    'created_at'        => $createdAtCompany,
+                    'updated_at'        => $createdAtCompany,
                 ]);
 
-                // Lowongan (4 per perusahaan)
+                // Lowongan (3 per perusahaan agar data bervariasi)
                 $lowongans = [];
-                for ($j = 1; $j <= 4; $j++) {
+                for ($j = 1; $j <= 3; $j++) {
                     $posisi = $faker->randomElement($posisiKopi);
 
-                    // Ensure companies that are not accepted only have Draft lowongans
                     if ($statusVerif !== 'Diterima') {
                         $statusLowongan = 'Draft';
                     } else {
-                        $statusLowongan = $faker->randomElement(['Active', 'Active', 'Active', 'Closed', 'Draft']);
+                        $statusLowongan = $faker->randomElement(['Active', 'Active', 'Closed', 'Draft']);
                     }
 
-                    // Ensure Draft and Active lowongans have a future batas_akhir
                     if ($statusLowongan === 'Draft' || $statusLowongan === 'Active') {
-                        $batasAkhir = now()->addDays(rand(5, 30))->format('Y-m-d');
+                        $batasAkhir = Carbon::now()->addDays(rand(5, 30))->format('Y-m-d');
                     } else {
-                        // Closed can be in the past
-                        $batasAkhir = now()->subDays(rand(1, 30))->format('Y-m-d');
+                        $batasAkhir = Carbon::now()->subDays(rand(1, 30))->format('Y-m-d');
                     }
 
                     $gajiMin = rand(2, 4) * 500000;
                     $gajiMax = $gajiMin + rand(1, 3) * 500000;
                     $gajiStr = 'Rp ' . number_format($gajiMin, 0, ',', '.') . ' – Rp ' . number_format($gajiMax, 0, ',', '.');
 
-                    // Make created_at within the last 30 days for realism
-                    $createdAt = now()->subDays(rand(1, 30))->subHours(rand(1, 24));
+                    $createdAt = Carbon::parse($createdAtCompany)->addHours(rand(1, 48));
+                    if ($createdAt > Carbon::now()) {
+                        $createdAt = Carbon::now();
+                    }
 
                     $idLowongan = DB::table('lowongan')->insertGetId([
                         'id_perusahaan' => $idPerusahaan,
@@ -125,18 +121,70 @@ class DatabaseSeeder extends Seeder
                     ]);
                     $lowongans[] = $idLowongan;
 
-                    // Dokumen & Pertanyaan
                     $this->seedLowonganDetails($idLowongan, $idsJenisDokumen, $faker, $posisi);
                 }
 
-                // Pelamar (10 per perusahaan)
-                for ($p = 1; $p <= 10; $p++) {
-                    $this->seedPelamar($i, $p, $lowongans, $kec, $faker);
-                }
+                $allPerusahaan[] = [
+                    'index' => $i,
+                    'lowongans' => $lowongans,
+                    'kec' => $kec
+                ];
             }
 
+            // Pelamar (Maksimal 25 secara total, tersebar acak di perusahaan yang berbeda)
+            $this->command->info("Seeding 25 Pelamar secara acak...");
+            for ($p = 1; $p <= 25; $p++) {
+                $randPerusahaan = $faker->randomElement($allPerusahaan);
+                $i = $randPerusahaan['index'];
+                $lowongans = $randPerusahaan['lowongans'];
+                $kec = $randPerusahaan['kec'];
+
+                $this->seedPelamar($i, $p, $lowongans, $kec, $faker);
+            }
+
+            // 4. Tambah satu perusahaan khusus dengan status Diterima dan lowongan tanpa pelamar
+            $this->command->info("Seeding Perusahaan khusus (Cafe Kopi Hore) tanpa pelamar...");
+            $idUserPerusahaanKhusus = DB::table('pengguna')->insertGetId([
+                'nama_pengguna' => "Owner Cafe Hore",
+                'email' => "cafehore@gmail.com",
+                'kata_sandi' => Hash::make('password'),
+                'peran' => 'Admin_Perusahaan',
+                'status_akun' => 'Aktif',
+                'created_at' => Carbon::now()->subDays(5),
+                'updated_at' => Carbon::now()->subDays(5),
+            ]);
+
+            $idPerusahaanKhusus = DB::table('profil_perusahaan')->insertGetId([
+                'id_pengguna'       => $idUserPerusahaanKhusus,
+                'nama_perusahaan'   => "Cafe Kopi Hore",
+                'alamat_perusahaan' => 'Jl. Jenderal Sudirman No. 88, Kecamatan Indramayu, Kab. Indramayu',
+                'kecamatan'         => 'Indramayu',
+                'deskripsi'         => 'Sebuah kafe baru dengan menu spesial manual brew yang modern, berlokasi di pusat kota Indramayu.',
+                'status_verifikasi' => 'Diterima',
+                'alasan_penolakan'  => null,
+                'dokumen_izin'      => 'legalitas/dummy_izin_hore.pdf',
+                'created_at'        => Carbon::now()->subDays(5),
+                'updated_at'        => Carbon::now()->subDays(5),
+            ]);
+
+            $idLowonganKhusus = DB::table('lowongan')->insertGetId([
+                'id_perusahaan' => $idPerusahaanKhusus,
+                'posisi'        => 'Barista',
+                'deskripsi'     => 'Dicari Barista berpengalaman untuk join di Cafe Kopi Hore. Mampu mengoperasikan mesin espresso dan ramah terhadap pelanggan.',
+                'persyaratan'   => "1. Jujur dan bertanggung jawab\n2. Mampu meracik kopi dengan baik\n3. Bersedia kerja shift",
+                'lokasi'        => 'Kecamatan Indramayu, Kabupaten Indramayu',
+                'gaji'          => 'Rp 2.000.000 – Rp 2.500.000',
+                'batas_awal'    => Carbon::now()->subDays(2)->format('Y-m-d'),
+                'batas_akhir'   => Carbon::now()->addDays(20)->format('Y-m-d'),
+                'status'        => 'Active',
+                'created_at'    => Carbon::now()->subDays(2),
+                'updated_at'    => Carbon::now()->subDays(2),
+            ]);
+
+            $this->seedLowonganDetails($idLowonganKhusus, $idsJenisDokumen, $faker, 'Barista');
+
             DB::commit();
-            $this->command->info("Seeding data utama SELESAI! Total 250 pelamar berhasil dibuat.");
+            $this->command->info("Seeding data utama SELESAI! Total 25 pelamar berhasil dibuat, ditambah 1 perusahaan khusus tanpa pelamar.");
 
             // ✅ Jalankan seeder tambahan setelah data utama selesai
             $this->command->info('Menjalankan JawabanLamaranSeeder...');

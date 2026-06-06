@@ -112,6 +112,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('profil-perusahaan')->group(function () {
             Route::get('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'index']);
             Route::post('/', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'update']);
+            Route::post('/update-password', [\App\Http\Controllers\Api\V1\Admin\ProfilPerusahaanController::class, 'updatePassword']);
         });
 
         // Manajemen Lowongan

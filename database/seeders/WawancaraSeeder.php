@@ -95,17 +95,11 @@ class WawancaraSeeder extends Seeder
                 $isPastDate = (rand(1, 10) <= 6);
 
                 if ($isPastDate) {
-                    // Tanggal di masa lalu: 1 Jan s.d. kemarin
-                    $startOfYear = Carbon::create($tahunBerjalan, 1, 1);
-                    $daysDiff = $today->copy()->subDay()->diffInDays($startOfYear);
-                    if ($daysDiff < 1) $daysDiff = 1;
-                    $tanggal = $startOfYear->copy()->addDays(rand(0, $daysDiff));
+                    // Tanggal di masa lalu: 30 hari terakhir
+                    $tanggal = Carbon::now()->subDays(rand(1, 30))->subHours(rand(1, 24));
                 } else {
-                    // Tanggal di masa depan: besok s.d. akhir tahun
-                    $endOfYear = Carbon::create($tahunBerjalan, 12, 31);
-                    $daysToEnd = $today->copy()->addDay()->diffInDays($endOfYear);
-                    if ($daysToEnd < 1) $daysToEnd = 30;
-                    $tanggal = $today->copy()->addDays(rand(1, $daysToEnd));
+                    // Tanggal di masa depan: 1 s.d. 30 hari ke depan
+                    $tanggal = Carbon::now()->addDays(rand(1, 30))->addHours(rand(1, 24));
                 }
 
                 // Pastikan hari kerja (Senin–Sabtu, dayOfWeek 1–6)
