@@ -56,6 +56,12 @@ class ProfilController extends Controller
     {
         $pengguna = auth('api')->user();
         $profil = $pengguna->profilPelamar;
+        if (!$profil) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Profil pelamar belum tersedia'
+            ], 404);
+        }
 
         $data = $request->validated();
 

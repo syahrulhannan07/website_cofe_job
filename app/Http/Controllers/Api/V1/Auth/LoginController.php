@@ -10,6 +10,8 @@ use App\Models\Pengguna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use App\Models\ProfilPelamar;
 
 class LoginController extends Controller
 {
@@ -78,7 +80,13 @@ class LoginController extends Controller
             'status_akun'   => 'Aktif',   // Status default saat akun dibuat
             'fcm_token'     => $request->fcm_token,
         ]);
-        $message = 'Registrasi akun Google berhasil disinkronkan ke database';
+        
+        ProfilPelamar::create([
+            'id_pengguna' => $user->id_pengguna,
+            'nama_lengkap' => $user->nama_pengguna,
+        ]);
+
+        $message = 'Registrasi akun Google berhasil';
     } else {
         // 3. Jika SUDAH terdaftar, tinggal update fcm_token (jika ada)
         if ($request->filled('fcm_token')) {
@@ -89,7 +97,7 @@ class LoginController extends Controller
 
     // 4. Generate Token Otentikasi (Sesuaikan dengan library JWT/Passport/Sanctum yang Anda pakai)
     // Contoh jika menggunakan Passport (sesuai 'auth:api' di api.php Anda):
-    $token = $user->createToken('CofeJobToken')->accessToken; 
+    $token = JWTAuth::fromUser($user);
 
     return response()->json([
         'status'  => true,

@@ -15,7 +15,7 @@ use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 class NewVacancyNotification extends Notification implements ShouldQueue
 {
     use Queueable;
-
+    
     public Lowongan $lowongan;
 
     public function __construct(Lowongan $lowongan)
@@ -52,17 +52,19 @@ class NewVacancyNotification extends Notification implements ShouldQueue
     }
 
     public function toFcm($notifiable): FcmMessage
-    {
-        $namaKafe = $this->lowongan->perusahaan?->nama_perusahaan ?? 'Kafe Baru';
-        
-        return (new FcmMessage())
-            ->setNotification(FcmNotification::create()
-                ->title("Lowongan Baru: {$this->lowongan->posisi} ☕")
-                ->body("Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru."))
-            ->setData([
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                'id_lowongan' => (string) $this->lowongan->id,
-                'tipe' => 'lowongan_baru'
-            ]);
-    }
+{
+    $namaKafe = $this->lowongan->perusahaan?->nama_perusahaan ?? 'Kafe Baru';
+
+    return new FcmMessage(
+        notification: new FcmNotification(
+            title: "Lowongan Baru: {$this->lowongan->posisi} ☕",
+            body: "Kafe {$namaKafe} sedang membuka lowongan pekerjaan baru."
+        ),
+        data: [
+            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+            'id_lowongan' => (string) $this->lowongan->id_lowongan,
+            'tipe' => 'lowongan_baru',
+        ]
+    );
+}
 }

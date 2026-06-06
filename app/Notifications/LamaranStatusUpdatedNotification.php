@@ -59,17 +59,25 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
     public function toFcm($notifiable): FcmMessage
     {
         $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
-        [$judul, $pesan] = $this->buildNotifikasi($this->status, $posisi, $this->namaKafe);
+
+        [$judul, $pesan] = $this->buildNotifikasi(
+            $this->status,
+            $posisi,
+            $this->namaKafe
+        );
 
         return (new FcmMessage())
-            ->setNotification(FcmNotification::create()
-                ->title($judul)
-                ->body($pesan))
+            ->setNotification(
+                FcmNotification::create()
+                    ->title($judul)
+                    ->body($pesan)
+            )
             ->setData([
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                'id_lamaran' => (string) $this->lamaran->id,
+                'id_lamaran' => (string) $this->lamaran->id_lamaran,
                 'status_baru' => $this->status,
-                'tipe' => 'status_lamaran_berubah'
+                'tipe' => 'status_lamaran_berubah',
+                'route' => "/status-lamaran/{$this->lamaran->id_lamaran}",
             ]);
     }
 
