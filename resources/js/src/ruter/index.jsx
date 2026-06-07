@@ -13,6 +13,7 @@ import StatusLamaran from '../halaman/status_lamaran';
 import DetailStatusLamaran from '../halaman/status_lamaran/DetailStatusLamaran';
 import Masuk from '../halaman/autentikasi/Masuk';
 import Daftar from '../halaman/autentikasi/Daftar';
+import AturUlangSandi from '../halaman/autentikasi/AturUlangSandi';
 import Melamar from '../halaman/melamar';
 
 // Fitur Admin Perusahaan
@@ -58,6 +59,7 @@ const ruter = createBrowserRouter([
     // --- Rute Autentikasi ---
     { path: '/masuk', element: <Masuk /> },
     { path: '/daftar', element: <Daftar /> },
+    { path: '/atur-ulang-sandi', element: <AturUlangSandi /> },
 
     // --- Rute Admin Perusahaan (Struktur Refactored) ---
     {

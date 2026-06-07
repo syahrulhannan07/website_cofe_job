@@ -1,5 +1,12 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    sendPasswordResetEmail,
+    verifyPasswordResetCode,
+    confirmPasswordReset,
+} from 'firebase/auth';
 
 /**
  * Konfigurasi Firebase.
@@ -43,11 +50,36 @@ export const masukDenganGoogle = async () => {
 
 /**
  * Kirim email reset password melalui Firebase.
+ * Link email akan mengarah langsung ke halaman /atur-ulang-sandi di aplikasi kita.
  * @param {string} email - Alamat email pengguna
  * @returns {Promise<void>}
  */
 export const kirimEmailResetPassword = async (email) => {
-    await sendPasswordResetEmail(auth, email);
+    const actionCodeSettings = {
+        // Setelah reset berhasil, pengguna akan diarahkan kembali ke halaman login
+        url: `${window.location.origin}/masuk`,
+        handleCodeInApp: false,
+    };
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
+};
+
+/**
+ * Verifikasi kode reset password (oobCode) dari email.
+ * @param {string} oobCode - Kode aksi dari URL email
+ * @returns {Promise<string>} - Email yang terkait dengan kode reset
+ */
+export const verifikasiKodeReset = async (oobCode) => {
+    return await verifyPasswordResetCode(auth, oobCode);
+};
+
+/**
+ * Konfirmasi reset password dengan kata sandi baru.
+ * @param {string} oobCode - Kode aksi dari URL email
+ * @param {string} passwordBaru - Kata sandi baru
+ * @returns {Promise<void>}
+ */
+export const konfirmasiResetPassword = async (oobCode, passwordBaru) => {
+    await confirmPasswordReset(auth, oobCode, passwordBaru);
 };
 
 export { auth, googleProvider };
