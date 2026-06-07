@@ -36,6 +36,8 @@ WORKDIR /var/www/html
 COPY . .
 
 # Install & build frontend assets
+# Copy .env.example as .env agar Vite bisa membaca variabel VITE_* saat build
+RUN cp .env.example .env
 RUN npm install
 RUN npm run build
 
