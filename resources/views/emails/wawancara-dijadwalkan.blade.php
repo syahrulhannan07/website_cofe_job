@@ -20,10 +20,6 @@ Selamat! Anda mendapatkan undangan wawancara untuk posisi **{{ $posisi }}** di *
 
 > Harap hadir **10 menit sebelum** jadwal dimulai. Pastikan koneksi internet Anda stabil jika wawancara dilakukan secara online.
 
-@component('mail::button', ['url' => $urlTimeline, 'color' => 'success'])
-Lihat Detail di Aplikasi
-@endcomponent
-
 Semangat dan sukses untuk wawancara Anda!
 
 Salam hangat,<br>

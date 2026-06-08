@@ -142,22 +142,6 @@
             line-height: 1.5;
         }
 
-        /* Call to Action Button */
-        .btn-wrapper {
-            text-align: center;
-            margin: 32px 0 24px;
-        }
-        .btn {
-            display: inline-block;
-            background-color: #FEAE2C;
-            color: #6B4500;
-            font-weight: 600;
-            font-size: 15px;
-            text-decoration: none;
-            padding: 14px 28px;
-            border-radius: 50px;
-        }
-
         /* Footer Area */
         .footer { 
             background: #EFE9E2; 
