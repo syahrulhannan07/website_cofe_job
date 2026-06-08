@@ -8,6 +8,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class WawancaraConfirmedNotification extends Notification implements ShouldQueue
 {
@@ -23,7 +26,7 @@ class WawancaraConfirmedNotification extends Notification implements ShouldQueue
     public function via($notifiable): array
     {
         // Kirim ke database (web/mobile) dan mail
-        return [CustomDbChannel::class, 'mail'];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class,];
     }
 
     public function toMail($notifiable): MailMessage
@@ -50,5 +53,25 @@ class WawancaraConfirmedNotification extends Notification implements ShouldQueue
             // Deep-link ke halaman pelamar di admin
             'url'   => "/admin/pelamar?id_pelamar={$this->lamaran->id_profil}&id_lamaran={$this->lamaran->id_lamaran}",
         ];
+    }
+
+    public function toFcm($notifiable): FcmMessage
+    {
+        $namaPelamar = $this->lamaran->profil->nama_lengkap ?? 'Pelamar';
+        $posisi = $this->lamaran->lowongan->posisi ?? 'Posisi';
+
+        return new FcmMessage(
+            notification: new FcmNotification(
+                title: "Jadwal Wawancara Dikonfirmasi ✅",
+                body: "{$namaPelamar} telah mengonfirmasi jadwal wawancara untuk posisi {$posisi}."
+            ),
+            data: [
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_lamaran' => (string) $this->lamaran->id_lamaran,
+                'id_profil' => (string) $this->lamaran->id_profil,
+                'tipe' => 'wawancara_dikonfirmasi',
+                'route' => "/admin/pelamar?id_pelamar={$this->lamaran->id_profil}&id_lamaran={$this->lamaran->id_lamaran}",
+            ]
+        );
     }
 }

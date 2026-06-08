@@ -75,23 +75,23 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue
     }
 
     public function toFcm($notifiable): FcmMessage
-{
-    $tanggalFormatted = $this->wawancara->tanggal_wawancara
-        ? $this->wawancara->tanggal_wawancara->translatedFormat('d F Y, H:i') . ' WIB'
-        : 'jadwal terbaru';
+    {
+        $tanggalFormatted = $this->wawancara->tanggal_wawancara
+            ? $this->wawancara->tanggal_wawancara->translatedFormat('d F Y, H:i') . ' WIB'
+            : 'jadwal terbaru';
 
-    return (new FcmMessage())
-        ->setNotification(
-            FcmNotification::create()
-                ->title("Perubahan Jadwal Wawancara: {$this->namaKafe} 🔄")
-                ->body("Jadwal wawancara Anda diperbarui menjadi {$tanggalFormatted}.")
-        )
-        ->setData([
-            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-            'id_wawancara' => (string) $this->wawancara->id_wawancara,
-            'id_lamaran'   => (string) $this->idLamaran,
-            'route'        => "/status-lamaran/{$this->idLamaran}?action=open_modal_wawancara",
-            'tipe'         => 'wawancara_diperbarui',
-        ]);
+        return new FcmMessage(
+            notification: new FcmNotification(
+                title: "Perubahan Jadwal Wawancara: {$this->namaKafe} 🔄",
+                body: "Jadwal wawancara Anda diperbarui menjadi {$tanggalFormatted}."
+            ),
+            data: [
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_wawancara' => (string) $this->wawancara->id_wawancara,
+                'id_lamaran'   => (string) $this->idLamaran,
+                'route'        => "/status-lamaran/{$this->idLamaran}?action=open_modal_wawancara",
+                'tipe'         => 'wawancara_diperbarui',
+            ]
+        );
     }
 }

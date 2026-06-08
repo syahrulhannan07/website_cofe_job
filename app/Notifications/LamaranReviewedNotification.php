@@ -65,6 +65,7 @@ class LamaranReviewedNotification extends Notification implements ShouldQueue
             'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
             'id_lamaran' => (string) $this->lamaran->id_lamaran,
             'tipe' => 'lamaran_ditinjau',
+            'route' => "/status-lamaran/{$this->lamaran->id_lamaran}",
         ]
     );
 }

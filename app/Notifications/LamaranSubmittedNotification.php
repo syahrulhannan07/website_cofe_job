@@ -53,21 +53,21 @@ class LamaranSubmittedNotification extends Notification implements ShouldQueue
     }
 
     public function toFcm($notifiable): FcmMessage
-{
-    $namaKafe = $this->lamaran->lowongan->perusahaan->nama_perusahaan ?? 'Kafe';
-    $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
+    {
+        $namaKafe = $this->lamaran->lowongan->perusahaan->nama_perusahaan ?? 'Kafe';
+        $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
 
-    return (new FcmMessage())
-        ->setNotification(
-            FcmNotification::create()
-                ->title("Lamaran Berhasil Terkirim 📂")
-                ->body("Lamaran Anda untuk posisi {$posisi} di {$namaKafe} sukses terkirim.")
-        )
-        ->setData([
-            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-            'id_lamaran' => (string) $this->lamaran->id_lamaran,
-            'tipe' => 'lamaran_terkirim',
-            'route' => "/status-lamaran/{$this->lamaran->id_lamaran}",
-        ]);
-}
+        return new FcmMessage(
+            notification: new FcmNotification(
+                title: "Lamaran Berhasil Terkirim 📂",
+                body: "Lamaran Anda untuk posisi {$posisi} di {$namaKafe} sukses terkirim."
+            ),
+            data: [
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_lamaran' => (string) $this->lamaran->id_lamaran,
+                'tipe' => 'lamaran_terkirim',
+                'route' => "/status-lamaran/{$this->lamaran->id_lamaran}",
+            ]
+        );
+    }
 }

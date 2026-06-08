@@ -66,19 +66,19 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
             $this->namaKafe
         );
 
-        return (new FcmMessage())
-            ->setNotification(
-                FcmNotification::create()
-                    ->title($judul)
-                    ->body($pesan)
-            )
-            ->setData([
+        return new FcmMessage(
+            notification: new FcmNotification(
+                title: $judul,
+                body: $pesan
+            ),
+            data: [
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                 'id_lamaran' => (string) $this->lamaran->id_lamaran,
                 'status_baru' => $this->status,
                 'tipe' => 'status_lamaran_berubah',
                 'route' => "/status-lamaran/{$this->lamaran->id_lamaran}",
-            ]);
+            ]
+        );
     }
 
     protected function buildNotifikasi(string $status, ?string $posisi, string $namaKafe): array

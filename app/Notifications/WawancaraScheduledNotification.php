@@ -76,19 +76,19 @@ class WawancaraScheduledNotification extends Notification implements ShouldQueue
     }
 
     public function toFcm($notifiable): FcmMessage
-{
-    return (new FcmMessage())
-        ->setNotification(
-            FcmNotification::create()
-                ->title("Undangan Wawancara: {$this->namaKafe} 📞")
-                ->body("Anda mendapatkan undangan wawancara untuk posisi {$this->posisi}.")
-        )
-        ->setData([
-            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-            'id_wawancara' => (string) $this->wawancara->id_wawancara,
-            'id_lamaran'   => (string) $this->idLamaran,
-            'route'        => "/status-lamaran/{$this->idLamaran}?action=open_modal_wawancara",
-            'tipe'         => 'wawancara_dijadwalkan',
-        ]);
+    {
+        return new FcmMessage(
+            notification: new FcmNotification(
+                title: "Undangan Wawancara: {$this->namaKafe} 📞",
+                body: "Anda mendapatkan undangan wawancara untuk posisi {$this->posisi}."
+            ),
+            data: [
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'id_wawancara' => (string) $this->wawancara->id_wawancara,
+                'id_lamaran'   => (string) $this->idLamaran,
+                'route'        => "/status-lamaran/{$this->idLamaran}?action=open_modal_wawancara",
+                'tipe'         => 'wawancara_dijadwalkan',
+            ]
+        );
     }
 }
