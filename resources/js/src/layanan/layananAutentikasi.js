@@ -59,6 +59,16 @@ const layananAutentikasi = {
         return respons.data;
     },
 
+    forgotPassword: async (email) => {
+        const respons = await api.post('/auth/forgot-password', { email });
+        return respons.data;
+    },
+
+    resetPassword: async (dataReset) => {
+        const respons = await api.post('/auth/reset-password', dataReset);
+        return respons.data;
+    },
+
     /**
      * Mengambil data profil pengguna yang sedang masuk.
      */

@@ -57,8 +57,8 @@ export const masukDenganGoogle = async () => {
 export const kirimEmailResetPassword = async (email) => {
     const actionCodeSettings = {
         // Setelah reset berhasil, pengguna akan diarahkan kembali ke halaman login
-        url: `${window.location.origin}/masuk`,
-        handleCodeInApp: false,
+        url: `${window.location.origin}/atur-ulang-sandi`,
+        handleCodeInApp: true,
     };
     await sendPasswordResetEmail(auth, email, actionCodeSettings);
 };

@@ -1,49 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { verifikasiKodeReset, konfirmasiResetPassword } from '../../layanan/firebase';
+import layananAutentikasi from '../../layanan/layananAutentikasi';
 
 const AturUlangSandi = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
     // State
-    const [status, setStatus] = useState('memverifikasi'); // memverifikasi | form | berhasil | gagal
+    const [status, setStatus] = useState('form'); // Langsung ke form karena verifikasi token dilakukan saat submit
     const [emailPengguna, setEmailPengguna] = useState('');
     const [passwordBaru, setPasswordBaru] = useState('');
     const [konfirmasiPassword, setKonfirmasiPassword] = useState('');
     const [sedangMemproses, setSedangMemproses] = useState(false);
     const [pesanGalat, setPesanGalat] = useState('');
-    const [oobCode, setOobCode] = useState('');
+    const [token, setToken] = useState('');
 
-    // Ambil oobCode dari URL saat halaman dimuat
+    // Ambil token dan email dari URL saat halaman dimuat
     useEffect(() => {
-        const code = searchParams.get('oobCode');
-        if (!code) {
+        const urlToken = searchParams.get('token');
+        const urlEmail = searchParams.get('email');
+        
+        if (!urlToken || !urlEmail) {
             setStatus('gagal');
-            setPesanGalat('Link reset password tidak valid. Parameter kode tidak ditemukan.');
+            setPesanGalat('Link reset password tidak valid. Parameter token atau email tidak ditemukan.');
             return;
         }
-        setOobCode(code);
-
-        // Verifikasi kode reset
-        const verifikasi = async () => {
-            try {
-                const email = await verifikasiKodeReset(code);
-                setEmailPengguna(email);
-                setStatus('form');
-            } catch (error) {
-                console.error('Verifikasi kode reset gagal:', error);
-                setStatus('gagal');
-                if (error.code === 'auth/expired-action-code') {
-                    setPesanGalat('Link reset password sudah kadaluarsa. Silakan minta link baru dari halaman login.');
-                } else if (error.code === 'auth/invalid-action-code') {
-                    setPesanGalat('Link reset password tidak valid atau sudah pernah digunakan. Silakan minta link baru.');
-                } else {
-                    setPesanGalat('Terjadi kesalahan saat memverifikasi link. Silakan coba lagi.');
-                }
-            }
-        };
-        verifikasi();
+        
+        setToken(urlToken);
+        setEmailPengguna(urlEmail);
     }, [searchParams]);
 
     // Handler submit form kata sandi baru
@@ -52,8 +36,8 @@ const AturUlangSandi = () => {
         setPesanGalat('');
 
         // Validasi
-        if (passwordBaru.length < 6) {
-            setPesanGalat('Kata sandi minimal 6 karakter.');
+        if (passwordBaru.length < 8) {
+            setPesanGalat('Kata sandi minimal 8 karakter.');
             return;
         }
         if (passwordBaru !== konfirmasiPassword) {
@@ -63,17 +47,16 @@ const AturUlangSandi = () => {
 
         setSedangMemproses(true);
         try {
-            await konfirmasiResetPassword(oobCode, passwordBaru);
+            await layananAutentikasi.resetPassword({
+                token: token,
+                email: emailPengguna,
+                password: passwordBaru,
+                password_confirmation: konfirmasiPassword
+            });
             setStatus('berhasil');
         } catch (error) {
             console.error('Reset password gagal:', error);
-            if (error.code === 'auth/expired-action-code') {
-                setPesanGalat('Link sudah kadaluarsa. Silakan minta link baru dari halaman login.');
-            } else if (error.code === 'auth/weak-password') {
-                setPesanGalat('Kata sandi terlalu lemah. Gunakan minimal 6 karakter.');
-            } else {
-                setPesanGalat('Gagal mengatur ulang kata sandi. Silakan coba lagi.');
-            }
+            setPesanGalat(error.response?.data?.message || 'Gagal mengatur ulang kata sandi. Link mungkin sudah kadaluarsa.');
         } finally {
             setSedangMemproses(false);
         }
@@ -92,14 +75,6 @@ const AturUlangSandi = () => {
 
                 {/* Card */}
                 <div className="bg-white rounded-[30px] p-8 md:p-10 shadow-lg">
-
-                    {/* Status: Memverifikasi */}
-                    {status === 'memverifikasi' && (
-                        <div className="text-center py-8">
-                            <div className="inline-block w-10 h-10 border-4 border-[#C69C6D] border-t-transparent rounded-full animate-spin mb-4"></div>
-                            <p className="text-[#4B2E2B] font-medium">Memverifikasi link reset password...</p>
-                        </div>
-                    )}
 
                     {/* Status: Form (kode valid) */}
                     {status === 'form' && (
@@ -127,10 +102,10 @@ const AturUlangSandi = () => {
                                         type="password"
                                         value={passwordBaru}
                                         onChange={(e) => setPasswordBaru(e.target.value)}
-                                        placeholder="Minimal 6 karakter"
+                                        placeholder="Minimal 8 karakter"
                                         className="w-full px-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"
                                         required
-                                        minLength={6}
+                                        minLength={8}
                                     />
                                 </div>
 
@@ -146,7 +121,7 @@ const AturUlangSandi = () => {
                                         placeholder="Ulangi kata sandi baru"
                                         className="w-full px-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"
                                         required
-                                        minLength={6}
+                                        minLength={8}
                                     />
                                 </div>
 

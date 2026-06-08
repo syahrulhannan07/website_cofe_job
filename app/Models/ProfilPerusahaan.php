@@ -30,4 +30,16 @@ class ProfilPerusahaan extends Model
     {
         return $this->hasMany(Lowongan::class, 'id_perusahaan', 'id_perusahaan');
     }
+
+    /**
+     * Scope untuk memfilter perusahaan yang sudah terverifikasi (Diterima)
+     * dan akun admin (pengguna) dalam status Aktif.
+     */
+    public function scopeAktifTerverifikasi($query)
+    {
+        return $query->where('status_verifikasi', 'Diterima')
+            ->whereHas('pengguna', function ($q) {
+                $q->where('status_akun', 'Aktif');
+            });
+    }
 }

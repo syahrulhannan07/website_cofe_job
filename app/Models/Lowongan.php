@@ -47,13 +47,31 @@ class Lowongan extends Model
     }
 
     /**
+     * Scope untuk memfilter lowongan yang aktif dan berasal dari perusahaan yang terverifikasi serta akun admin aktif.
+     */
+    public function scopeAktifTerverifikasi($query)
+    {
+        return $query->where('status', 'Active')
+            ->whereHas('perusahaan', function ($q) {
+                $q->where('status_verifikasi', 'Diterima')
+                  ->whereHas('pengguna', function ($u) {
+                      $u->where('status_akun', 'Aktif');
+                  });
+            })
+            ->where('batas_akhir', '>=', now()->toDateString());
+    }
+
+    /**
      * Get the dynamic status based on dates.
      */
     public function getStatusLabelAttribute()
     {
-        // Jika status akun perusahaan belum disetujui (Pending / Ditolak) -> Paksa Draft
-        if ($this->perusahaan && $this->perusahaan->status_verifikasi !== 'Diterima') {
-            return 'Draft';
+        // Jika status akun perusahaan belum disetujui atau akun admin tidak aktif -> Paksa Draft
+        if ($this->perusahaan) {
+            if ($this->perusahaan->status_verifikasi !== 'Diterima' || 
+                ($this->perusahaan->pengguna && $this->perusahaan->pengguna->status_akun !== 'Aktif')) {
+                return 'Draft';
+            }
         }
 
         $today = Carbon::now('Asia/Jakarta')->format('Y-m-d');

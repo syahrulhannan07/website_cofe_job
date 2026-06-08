@@ -60,56 +60,80 @@ class LoginController extends Controller
     }
 
     public function googleAuth(Request $request) 
-{
-    $request->validate([
-        'nama_pengguna' => 'required|string',
-        'email'         => 'required|email',
-        'fcm_token'     => 'nullable|string'
-    ]);
-
-    // 1. Cek apakah email pengguna sudah terdaftar di database
-    $user = Pengguna::where('email', $request->email)->first();
-
-    if (!$user) {
-        // 2. Jika BELUM terdaftar, buat data baru sesuai kolom di gambar Anda
-        $user = Pengguna::create([
-            'nama_pengguna' => $request->nama_pengguna,
-            'email'         => $request->email,
-            'kata_sandi'    => Hash::make(Str::random(16)), // Diisi string acak karena login via Google tidak pakai password
-            'peran'         => 'Pelamar', // Otomatis diset sebagai Pelamar
-            'status_akun'   => 'Aktif',   // Status default saat akun dibuat
-            'fcm_token'     => $request->fcm_token,
-        ]);
-        
-        ProfilPelamar::create([
-            'id_pengguna' => $user->id_pengguna,
-            'nama_lengkap' => $user->nama_pengguna,
+    {
+        $request->validate([
+            'nama_pengguna' => 'required|string',
+            'email'         => 'required|email',
+            'fcm_token'     => 'nullable|string'
         ]);
 
-        $message = 'Registrasi akun Google berhasil';
-    } else {
-        // 3. Jika SUDAH terdaftar, tinggal update fcm_token (jika ada)
-        if ($request->filled('fcm_token')) {
-            $user->update(['fcm_token' => $request->fcm_token]);
+        try {
+            // 1. Cek apakah email pengguna sudah terdaftar di database
+            $user = Pengguna::where('email', $request->email)->first();
+
+            if (!$user) {
+                // 2. Jika BELUM terdaftar, buat data baru
+                $user = Pengguna::create([
+                    'nama_pengguna' => $request->nama_pengguna,
+                    'email'         => $request->email,
+                    'kata_sandi'    => Hash::make(Str::random(16)), // Diisi string acak
+                    'peran'         => 'Pelamar', // Otomatis diset sebagai Pelamar
+                    'status_akun'   => 'Aktif',
+                    'fcm_token'     => $request->fcm_token,
+                ]);
+                
+                ProfilPelamar::create([
+                    'id_pengguna' => $user->id_pengguna,
+                    'nama_lengkap' => $user->nama_pengguna,
+                ]);
+
+                $message = 'Registrasi akun Google berhasil';
+            } else {
+                // 3. Jika SUDAH terdaftar, cek status
+                if ($user->status_akun === 'Diblokir') {
+                    return response()->json([
+                        'status'  => false,
+                        'message' => 'Akun Anda telah ditangguhkan. Silakan hubungi bantuan.'
+                    ], 403);
+                }
+
+                if ($request->filled('fcm_token')) {
+                    $user->update(['fcm_token' => $request->fcm_token]);
+                }
+
+                // Pastikan profil ada
+                if ($user->peran === 'Pelamar' && !$user->profilPelamar) {
+                    ProfilPelamar::create([
+                        'id_pengguna' => $user->id_pengguna,
+                        'nama_lengkap' => $user->nama_pengguna,
+                    ]);
+                }
+
+                $message = 'Login dengan Google berhasil';
+            }
+
+            // 4. Generate Token Otentikasi
+            $token = JWTAuth::fromUser($user);
+
+            return response()->json([
+                'status'  => true,
+                'message' => $message,
+                'token'   => $token,
+                'data'    => [
+                    'id_pengguna'   => $user->id_pengguna,
+                    'nama_pengguna' => $user->nama_pengguna,
+                    'email'         => $user->email,
+                    'peran'         => $user->peran,
+                    'status_akun'   => $user->status_akun
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Terjadi kesalahan pada server saat autentikasi Google.',
+                'error'   => $e->getMessage()
+            ], 500);
         }
-        $message = 'Login dengan Google berhasil';
-    }
-
-    // 4. Generate Token Otentikasi (Sesuaikan dengan library JWT/Passport/Sanctum yang Anda pakai)
-    // Contoh jika menggunakan Passport (sesuai 'auth:api' di api.php Anda):
-    $token = JWTAuth::fromUser($user);
-
-    return response()->json([
-        'status'  => true,
-        'message' => $message,
-        'token'   => $token,
-        'data'    => [
-            'id_pengguna'   => $user->id_pengguna,
-            'nama_pengguna' => $user->nama_pengguna,
-            'email'         => $user->email,
-            'peran'         => $user->peran,
-            'status_akun'   => $user->status_akun
-            ]
-        ], 200);
     }
 }

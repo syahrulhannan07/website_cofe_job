@@ -11,11 +11,10 @@ class PerusahaanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ProfilPerusahaan::query()
+        $query = ProfilPerusahaan::aktifTerverifikasi()
             ->withCount(['lowongan' => function ($query) {
                 $query->where('status', 'Active');
-            }])
-            ->where('status_verifikasi', 'Diterima');
+            }]);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -30,7 +29,8 @@ class PerusahaanController extends Controller
 
     public function show($id)
     {
-        $perusahaan = ProfilPerusahaan::with(['pengguna', 'lowongan' => function ($query) {
+        $perusahaan = ProfilPerusahaan::aktifTerverifikasi()
+            ->with(['pengguna', 'lowongan' => function ($query) {
                 $query->where('status', 'Active')
                       ->where('batas_akhir', '>=', now()->toDateString());
             }])

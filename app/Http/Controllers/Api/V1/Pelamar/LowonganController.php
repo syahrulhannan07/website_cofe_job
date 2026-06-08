@@ -12,13 +12,8 @@ class LowonganController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lowongan::query()
-            ->with(['perusahaan'])
-            ->where('status', 'Active')
-            ->whereHas('perusahaan', function ($q) {
-                $q->where('status_verifikasi', 'Diterima');
-            })
-            ->where('batas_akhir', '>=', now()->toDateString());
+        $query = Lowongan::aktifTerverifikasi()
+            ->with(['perusahaan']);
 
         // Pencarian berdasarkan posisi atau deskripsi
         if ($request->has('search')) {
@@ -37,7 +32,8 @@ class LowonganController extends Controller
 
     public function show($id)
     {
-        $lowongan = Lowongan::with(['perusahaan', 'dokumenDibutuhkan.jenisDokumen', 'pertanyaanSeleksi'])
+        $lowongan = Lowongan::aktifTerverifikasi()
+            ->with(['perusahaan', 'dokumenDibutuhkan.jenisDokumen', 'pertanyaanSeleksi'])
             ->where('id_lowongan', $id)
             ->firstOrFail();
 

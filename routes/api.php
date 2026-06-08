@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\SuperAdminAuthController;
+use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
+use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\V1\SuperAdmin\VerifikasiPerusahaanController; // [UPDATE LOGIC]
 use App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminKafeController; // [UPDATE LOGIC]
 
@@ -20,6 +22,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/login', [LoginController::class, 'login']);
         Route::post('/portal-pusat/login', [SuperAdminAuthController::class, 'login']); // [UPDATE LOGIC]
         Route::post('/google-auth', [LoginController::class, 'googleAuth']);
+        
+        // Forgot Password (Laravel Native)
+        Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail']);
+        Route::post('/reset-password', [ResetPasswordController::class, 'reset']);
 
         Route::middleware('auth:api')->group(function () {
             Route::post('/logout', [LoginController::class, 'logout']);

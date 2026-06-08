@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../../komponen/umum/Navbar';
 import layananAutentikasi from '../../layanan/layananAutentikasi';
-import { masukDenganGoogle, kirimEmailResetPassword } from '../../layanan/firebase';
+import { masukDenganGoogle } from '../../layanan/firebase';
 
 const Masuk = () => {
     const [surel, setSurel] = useState('');
@@ -103,7 +103,7 @@ const Masuk = () => {
         setPesanResetSukses('');
 
         try {
-            await kirimEmailResetPassword(emailReset);
+            await layananAutentikasi.forgotPassword(emailReset);
             setPesanResetSukses('Email reset password telah dikirim! Silakan cek inbox atau folder spam Anda.');
             setTimeout(() => {
                 setTampilkanLupaPassword(false);
@@ -112,15 +112,7 @@ const Masuk = () => {
             }, 4000);
         } catch (error) {
             console.error('Reset password error:', error);
-            if (error.code === 'auth/user-not-found') {
-                setPesanResetGalat('Email tidak ditemukan di sistem Firebase.');
-            } else if (error.code === 'auth/invalid-email') {
-                setPesanResetGalat('Format email tidak valid.');
-            } else if (error.code === 'auth/too-many-requests') {
-                setPesanResetGalat('Terlalu banyak permintaan. Coba lagi nanti.');
-            } else {
-                setPesanResetGalat('Gagal mengirim email reset. Silakan coba lagi.');
-            }
+            setPesanResetGalat(error.response?.data?.message || 'Gagal mengirim email reset. Silakan coba lagi.');
         } finally {
             setSedangKirimReset(false);
         }
