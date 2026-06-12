@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
+use App\Notifications\Channels\WhatsAppChannel;
 
 class LamaranStatusUpdatedNotification extends Notification implements ShouldQueue
 {
@@ -29,7 +30,7 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail', FcmChannel::class];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class, WhatsAppChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -92,5 +93,17 @@ class LamaranStatusUpdatedNotification extends Notification implements ShouldQue
             'Ditolak'   => ["Status Lamaran: {$posisi}", "Terima kasih atas partisipasi Anda dalam melamar posisi {$posisi} di {$namaKafe}. Kami memohon maaf karena lamaran Anda saat ini belum dapat kami proses ke tahap selanjutnya."],
             default     => ["Pembaruan Lamaran: {$posisi}", "Lamaran Anda di {$namaKafe} telah diperbarui ke status: {$status}."],
         };
+    }
+
+    public function toWhatsApp($notifiable): string
+    {
+        $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
+        [$judul, $pesan] = $this->buildNotifikasi($this->status, $posisi, $this->namaKafe);
+
+        return "*[Cafe Job - {$judul}]*\n\n" .
+               "Halo *{$notifiable->nama_pengguna}*,\n\n" .
+               "{$pesan}\n\n" .
+               "Silakan cek detail tahapan lamaran Anda secara berkala langsung melalui aplikasi mobile Cafe Job.\n\n" .
+               "_Pesan ini dikirim secara otomatis oleh sistem rekrutmen Cafe Job._";
     }
 }

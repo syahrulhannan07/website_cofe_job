@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
+use App\Notifications\Channels\WhatsAppChannel;
 
 class LamaranSubmittedNotification extends Notification implements ShouldQueue
 {
@@ -25,7 +26,7 @@ class LamaranSubmittedNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail', FcmChannel::class];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class, WhatsAppChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -69,5 +70,17 @@ class LamaranSubmittedNotification extends Notification implements ShouldQueue
                 'route' => "/status-lamaran/{$this->lamaran->id_lamaran}",
             ]
         );
+    }
+
+    public function toWhatsApp($notifiable): string
+    {
+        $namaKafe = $this->lamaran->lowongan->perusahaan->nama_perusahaan ?? 'Kafe';
+        $posisi = $this->lamaran->lowongan->posisi ?? 'posisi';
+
+        return "*[📂 LAMARAN TERKIRIM - CAFE JOB]*\n\n" .
+               "Halo *{$notifiable->nama_pengguna}*,\n" .
+               "Lamaran Anda untuk posisi *{$posisi}* di *{$namaKafe}* telah berhasil kami terima melalui sistem.\n\n" .
+               "Pihak manajemen kafe akan segera meninjau berkas Anda. Pemberitahuan mengenai tahapan seleksi selanjutnya akan dikirimkan melalui WhatsApp dan Notifikasi Aplikasi mobile Anda.\n\n" .
+               "Terima kasih telah melamar melalui Cafe Job!";
     }
 }

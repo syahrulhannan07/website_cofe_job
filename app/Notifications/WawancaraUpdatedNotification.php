@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
+use App\Notifications\Channels\WhatsAppChannel;
 
 /**
  * Poin 10 — Pembaruan Jadwal Wawancara
@@ -35,7 +36,7 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail', FcmChannel::class];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class, WhatsAppChannel::class,];
     }
 
     public function toMail($notifiable): MailMessage
@@ -93,5 +94,37 @@ class WawancaraUpdatedNotification extends Notification implements ShouldQueue
                 'tipe'         => 'wawancara_diperbarui',
             ]
         );
+    }
+
+    public function toWhatsApp($notifiable): string
+    {
+        $tanggalStr = $this->wawancara->tanggal_wawancara
+            ? $this->wawancara->tanggal_wawancara
+                ->translatedFormat('l, d F Y - H:i') . ' WIB'
+            : 'Segera dikonfirmasi';
+
+        $lokasi = $this->wawancara->lokasi
+            ?? $this->wawancara->tempat_link
+            ?? '-';
+
+        $catatan = $this->wawancara->catatan
+            ?? 'Tidak ada catatan tambahan.';
+
+        $posisi = $this->wawancara->lamaran?->lowongan?->posisi ?? 'Posisi';
+
+        return "*[🔄 PEMBARUAN JADWAL WAWANCARA - CAFE JOB]*\n\n" .
+
+            "Halo *{$notifiable->nama_pengguna}*,\n\n" .
+
+            "Terdapat perubahan pada jadwal wawancara Anda untuk posisi *{$posisi}* di *{$this->namaKafe}*.\n\n" .
+
+            "*Jadwal Terbaru*\n" .
+            "📅 Tanggal : {$tanggalStr}\n" .
+            "📍 Lokasi/Link : {$lokasi}\n" .
+            "📝 Catatan : {$catatan}\n\n" .
+
+            "Mohon perhatikan jadwal terbaru tersebut dan lakukan konfirmasi kehadiran melalui aplikasi *Cafe Job*.\n\n" .
+
+            "Terima kasih dan semoga sukses! ☕";
     }
 }

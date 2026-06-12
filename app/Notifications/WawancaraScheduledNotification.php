@@ -11,6 +11,7 @@ use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use App\Notifications\Channels\WhatsAppChannel;
 
 /**
  * Poin 9 — Penjadwalan Wawancara
@@ -38,7 +39,7 @@ class WawancaraScheduledNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return [CustomDbChannel::class, 'mail', FcmChannel::class];
+        return [CustomDbChannel::class, 'mail', FcmChannel::class, WhatsAppChannel::class];
     }
 
     public function toMail($notifiable): MailMessage
@@ -90,5 +91,24 @@ class WawancaraScheduledNotification extends Notification implements ShouldQueue
                 'tipe'         => 'wawancara_dijadwalkan',
             ]
         );
+    }
+
+    public function toWhatsApp($notifiable): string
+    {
+        $tanggalStr = $this->wawancara->tanggal_wawancara 
+            ? $this->wawancara->tanggal_wawancara->translatedFormat('d F Y, H:i') . ' WIB'
+            : '-';
+        $lokasi = $this->wawancara->lokasi ?? '-';
+        $catatan = $this->wawancara->catatan ?? 'Tidak ada catatan khusus.';
+
+        return "*[☕ UNDANGAN WAWANCARA CAFE JOB]*\n\n" .
+               "Halo *{$notifiable->nama_pengguna}*,\n" .
+               "Selamat! Anda mendapatkan undangan sesi wawancara untuk posisi *{$this->posisi}* di *{$this->namaKafe}*.\n\n" .
+               "*Detail Jadwal:*\n" .
+               "📅 Tanggal: {$tanggalStr}\n" .
+               "📍 Lokasi/Link: {$lokasi}\n" .
+               "📝 Catatan: {$catatan}\n\n" .
+               "Mohon segera lakukan *Konfirmasi Kehadiran* Anda melalui aplikasi mobile Cafe Job pada halaman tracking status lamaran.\n\n" .
+               "Sampai jumpa di sesi wawancara!";
     }
 }

@@ -65,4 +65,23 @@ class Pengguna extends Authenticatable implements JWTSubject
     {
         return $this->fcm_token;
     }
+
+    public function routeNotificationForWhatsApp()
+    {
+        $phone = $this->profilPelamar?->nomor_telepon;
+
+        if (!$phone) {
+            return null;
+        }
+
+        // Hilangkan karakter aneh
+        $phone = str_replace(['+', ' ', '-'], '', $phone);
+
+        // Ubah 08xxxx menjadi 628xxxx
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        return $phone;
+    }
 }
