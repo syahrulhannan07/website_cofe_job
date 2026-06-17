@@ -8,6 +8,7 @@ use App\Http\Resources\V1\Admin\LowonganResource;
 use App\Models\Lowongan;
 use App\Repositories\V1\Admin\LowonganRepository;
 use App\Services\V1\Admin\LowonganService;
+use App\Services\V1\Admin\AIScoringService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -18,11 +19,13 @@ class LowonganController extends Controller
 
     protected $service;
     protected $repository;
+    protected $aiService;
 
-    public function __construct(LowonganService $service, LowonganRepository $repository)
+    public function __construct(LowonganService $service, LowonganRepository $repository, AIScoringService $aiService)
     {
         $this->service = $service;
         $this->repository = $repository;
+        $this->aiService = $aiService;
     }
 
     /**
@@ -85,14 +88,6 @@ class LowonganController extends Controller
                 $validatedData['status'] = 'Draft';
             }
             $lowongan = $this->service->createLowongan($profil->id_perusahaan, $validatedData);
-
-            // Kirim notifikasi audit ke semua Super Admin (Poin 3 - Hanya jika Draft, karena jika Active akan dikirim via event LowonganPublished)
-            if ($lowongan->status === 'Draft') {
-                $superAdmins = \App\Models\Pengguna::where('peran', 'Super_Admin')->get();
-                foreach ($superAdmins as $sa) {
-                    $sa->notify(new \App\Notifications\SuperAdminNewVacancyNotification($lowongan));
-                }
-            }
 
             if ($lowongan->status === 'Active') {
                 event(new \App\Events\LowonganPublished($lowongan));
@@ -173,8 +168,15 @@ class LowonganController extends Controller
             }
             $updated = $this->service->updateLowongan($lowongan, $data);
 
-            if ($updated->status === 'Active' && $oldStatus !== 'Active') {
-                event(new \App\Events\LowonganPublished($updated));
+            if ($updated->status === 'Active') {
+                try {
+                    $this->aiService->evaluasiLowongan($updated);
+                } catch (\Exception $e) {
+                    // Abaikan error AI, tetap lanjut
+                }
+                if ($oldStatus !== 'Active') {
+                    event(new \App\Events\LowonganPublished($updated));
+                }
             }
 
             return $this->successResponse(new LowonganResource($updated), 'Lowongan berhasil diperbarui');
@@ -225,7 +227,7 @@ class LowonganController extends Controller
 
         $this->repository->update($lowongan, ['status' => 'Active']);
 
-        event(new \App\Events\LowonganPublished($lowongan->refresh()));
+        event(new \App\Events\LowonganPublished($lowongan->fresh()));
 
         return $this->successResponse(['id' => $lowongan->id_lowongan, 'status' => 'Active'], 'Lowongan berhasil dipublikasikan');
     }

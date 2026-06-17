@@ -6,65 +6,76 @@ import searchIcon from '../../../aset/perusahaan/Search.png';
 
 const Hero = ({ pencarian, setPencarian }) => {
     return (
-        <section className="relative w-full min-h-[450px] md:min-h-[600px] bg-[#4B2E2B] rounded-[80px] overflow-hidden px-8 md:px-16 py-28 md:py-48 flex flex-col md:flex-row items-end justify-between gap-12 shadow-2xl">
-            {/* Background Drip Vector */}
-            <div className="absolute top-0 left-0 w-full h-auto pointer-events-none z-0">
-                <img 
-                    src={vectorDrip} 
-                    alt="Drip Background" 
-                    className="w-full h-auto object-cover transform rotate-0"
+        <div className="wadah-hero-perusahaan flex w-full justify-center mt-6 md:mt-8 mb-10 px-4">
+            <section className="konten-hero-perusahaan relative w-full max-w-6xl bg-[#4B2E2B] rounded-3xl overflow-hidden">
+                <div 
+                    className="absolute top-0 left-0 w-full h-[25%] lg:h-[50%] pointer-events-none z-0"
+                    style={{
+                        backgroundColor: '#C69C6D',
+                        maskImage: `url(${vectorDrip})`,
+                        maskSize: '100% 100%',
+                        maskPosition: 'top',
+                        maskRepeat: 'no-repeat',
+                        WebkitMaskImage: `url(${vectorDrip})`,
+                        WebkitMaskSize: '100% 100%',
+                        WebkitMaskPosition: 'top',
+                        WebkitMaskRepeat: 'no-repeat'
+                    }}
                 />
-            </div>
+                <div className="relative z-10 flex flex-col lg:flex-row items-stretch min-h-[340px] lg:min-h-[420px]">
+                    <div className="relative z-20 w-full lg:w-1/2 flex flex-col items-start justify-center px-6 lg:px-12 pt-24 lg:pt-40 pb-4 lg:pb-0">
+                        <div className="w-full">
+                            <motion.h1
+                                initial={{ opacity: 0, x: -30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="font-poppins font-bold text-xl md:text-3xl lg:text-4xl text-[#F3EDE6] leading-tight mb-4 md:mb-5"
+                            >
+                                Temukan Perusahaan yang tepat untuk Anda!
+                            </motion.h1>
 
-            {/* Left Content */}
-            <div className="absolute bottom-24 left-8 md:left-24 z-10 max-w-2xl text-center md:text-left">
-                <motion.h1 
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="font-poppins font-bold text-2xl md:text-[48px] text-[#F3EDE6] leading-[1.2] md:leading-[72px] mb-12 max-w-[900px] mx-auto md:mx-0"
-                >
-                    Temukan Perusahaan<br className="hidden md:block" /> yang tepat untuk Anda!
-                </motion.h1>
-
-                {/* Search Bar */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                    className="relative max-w-[747px] mx-auto md:mx-0"
-                >
-                    <div className="relative group">
-                        <div className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center">
-                            <img src={searchIcon} alt="Search" className="w-8 h-8 object-contain" />
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.3 }}
+                                className="relative max-w-sm"
+                            >
+                                <div className="relative group">
+                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center">
+                                        <img src={searchIcon} alt="" className="w-4 h-4 object-contain" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Cari Perusahaan....."
+                                        value={pencarian}
+                                        onChange={(e) => setPencarian(e.target.value)}
+                                        className="w-full h-10 bg-white border border-[#C69C6D] rounded-lg pl-10 pr-3 text-sm font-poppins text-[#4B2E2B] focus:outline-none shadow transition-all placeholder:text-[#C69C6D]/60"
+                                    />
+                                </div>
+                            </motion.div>
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Cari Perusahaan....."
-                            value={pencarian}
-                            onChange={(e) => setPencarian(e.target.value)}
-                            className="w-full h-16 md:h-[82px] bg-white border-2 border-[#C69C6D] rounded-[20px] pl-16 pr-8 text-xl font-poppins text-[#4B2E2B] focus:outline-none shadow-xl transition-all placeholder:text-[#C69C6D]/60"
-                        />
-                    </div>
-                </motion.div>
-            </div>
 
-            {/* Right Content - Hero Image */}
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="absolute bottom-24 right-8 md:right-24 z-10"
-            >
-                <div className="w-[180px] h-[180px] md:w-[255px] md:h-[255px] rounded-full overflow-hidden shadow-2xl border-4 border-white/10">
-                    <img 
-                        src={heroImg} 
-                        alt="Professional" 
-                        className="w-full h-full object-cover"
-                    />
+                        <motion.div
+                            initial={{ x: 200, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ duration: 1.2, ease: "easeOut", delay: 0.7 }}
+                            className="flex justify-end w-full mt-6 lg:hidden"
+                        >
+                            <img src={heroImg} alt="Professional" className="w-[120px] h-[95px] object-contain object-center" />
+                        </motion.div>
+                    </div>
+
+                    <motion.div
+                        initial={{ x: 200, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 1.2, ease: "easeOut", delay: 0.7 }}
+                        className="hidden lg:block absolute right-[20px] top-[70%] -translate-y-1/2 w-[220px] h-[175px] z-10"
+                    >
+                        <img src={heroImg} alt="Professional" className="w-full h-full object-contain object-center" />
+                    </motion.div>
                 </div>
-            </motion.div>
-        </section>
+            </section>
+        </div>
     );
 };
 

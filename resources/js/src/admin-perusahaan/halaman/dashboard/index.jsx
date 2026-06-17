@@ -71,7 +71,7 @@ const HalamanDashboardAdmin = () => {
     ];
 
     return (
-        <div className="halaman-dashboard-admin w-full min-h-full px-[32px] py-[30px] flex flex-col gap-[24px]">
+        <div className="halaman-dashboard-admin w-full min-h-full p-5 md:p-8 lg:p-10 flex flex-col gap-[24px] overflow-x-hidden">
             <motion.h1 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -81,7 +81,7 @@ const HalamanDashboardAdmin = () => {
             </motion.h1>
 
             {/* SECTION 1: KARTU STATISTIK */}
-            <div className="baris-kartu-statistik grid grid-cols-4 gap-[20px]">
+            <div className="baris-kartu-statistik grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[20px]">
                 {loading && !dashboardData ? (
                     <>
                         <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
@@ -114,13 +114,13 @@ const HalamanDashboardAdmin = () => {
             </motion.div>
 
             {/* SECTION 3: TABEL & STATUS */}
-            <div className="seksi-bawah-dashboard grid grid-cols-10 gap-[24px] items-stretch">
+            <div className="seksi-bawah-dashboard grid grid-cols-1 lg:grid-cols-10 gap-[24px] items-stretch">
                 <motion.div 
                     initial={{ opacity: 0, y: 50 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: 0.3 }}
-                    className="kolom-pelamar flex flex-col col-span-7 gap-[12px]"
+                    className="kolom-pelamar flex flex-col lg:col-span-7 gap-[12px]"
                 >
                     <h2 className="judul-seksi font-poppins font-bold text-[24px] text-[#4B2E2B]">
                         Pelamar Terbaru
@@ -139,7 +139,7 @@ const HalamanDashboardAdmin = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: 0.3 }}
-                    className="kolom-status flex flex-col col-span-3 gap-[12px]"
+                    className="kolom-status flex flex-col lg:col-span-3 gap-[12px]"
                 >
                     <h2 className="judul-seksi font-poppins font-bold text-[24px] text-[#4B2E2B]">
                         Status Lamaran

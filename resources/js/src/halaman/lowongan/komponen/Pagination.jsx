@@ -6,15 +6,15 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
     return (
-        <div className="w-full flex items-center justify-center gap-[10px] py-[10px] px-[36px] mt-[40px]">
+        <div className="w-full flex items-center justify-center gap-2 py-2 px-4 mt-6">
             <button 
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`w-[40px] h-[40px] rounded-[80px] flex items-center justify-center transition-colors ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                     currentPage === 1 ? 'bg-[#F3EDE6] opacity-50 cursor-not-allowed' : 'bg-[#F3EDE6] hover:bg-[#e6dfd6]'
                 }`}
             >
-                <img src={arrowKiri} alt="Previous" className="w-[30px] h-[30px] object-contain rotate-90" />
+                <img src={arrowKiri} alt="Previous" className="w-4 h-4 object-contain rotate-90" />
             </button>
             
             {(() => {
@@ -33,7 +33,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                     <button 
                         key={page}
                         onClick={() => onPageChange(page)}
-                        className={`w-[40px] h-[40px] rounded-[80px] flex items-center justify-center font-poppins font-bold text-[14px] transition-colors ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-poppins font-bold text-xs transition-colors ${
                             currentPage === page 
                                 ? 'bg-[#C69C6D] text-[#F3EDE6]' 
                                 : 'bg-[#F3EDE6] text-[#C69C6D] hover:bg-[#e6dfd6]'
@@ -47,11 +47,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             <button 
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`w-[40px] h-[40px] rounded-[80px] flex items-center justify-center transition-colors ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                     currentPage === totalPages ? 'bg-[#F3EDE6] opacity-50 cursor-not-allowed' : 'bg-[#F3EDE6] hover:bg-[#e6dfd6]'
                 }`}
             >
-                <img src={arrowKanan} alt="Next" className="w-[30px] h-[30px] object-contain" />
+                <img src={arrowKanan} alt="Next" className="w-4 h-4 object-contain" />
             </button>
         </div>
     );

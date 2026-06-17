@@ -23,7 +23,7 @@ const DaftarAdmin = ({ data, onSuspend, onAktifkan, onLihatDetail, sedangMuatDet
     };
 
     return (
-        <div className="wadah-tabel-admin bg-white rounded-[10px] border border-[#EAE4DC] overflow-hidden shadow-sm">
+        <div className="wadah-tabel-admin bg-white rounded-[10px] border border-[#EAE4DC] overflow-x-auto shadow-sm">
             {/* Header tabel */}
             <div
                 className="header-tabel grid items-center px-6"

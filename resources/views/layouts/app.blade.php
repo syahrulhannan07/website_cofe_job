@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cofe Job - @yield('title')</title>
-    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('logo title.png') }}">
     @vite('resources/css/app.css')
 </head>
 <body class="bg-cafe-bg font-sans antialiased text-cafe-dark">

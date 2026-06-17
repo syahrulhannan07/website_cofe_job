@@ -187,7 +187,7 @@ const HalamanWawancara = () => {
     if (loading && interviews.length === 0) return <LoadingKopi />;
 
     return (
-        <div className="flex-1 w-full flex flex-col p-6 lg:p-10 bg-[#F3EDE6] min-h-screen font-poppins relative overflow-x-hidden">
+        <div className="flex-1 w-full flex flex-col p-5 md:p-8 lg:p-10 bg-[#F3EDE6] min-h-screen font-poppins relative overflow-x-hidden">
             <WawancaraToolbar 
                 onAdd={handleOpenAddModal} 
                 search={search} 

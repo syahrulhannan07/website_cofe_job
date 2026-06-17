@@ -38,7 +38,7 @@ const HalamanErrorKopi = ({ code = 404, message = "Oops! Cangkir ini sepertinya 
                     </motion.div>
                 </div>
 
-                <h1 className="font-poppins font-bold text-[64px] text-[#4B2E2B] leading-none mb-2">
+                <h1 className="font-poppins font-bold text-6xl text-[#4B2E2B] leading-none mb-2">
                     {code}
                 </h1>
                 <h2 className="font-poppins font-semibold text-[24px] text-[#4B2E2B] mb-4">
@@ -50,7 +50,7 @@ const HalamanErrorKopi = ({ code = 404, message = "Oops! Cangkir ini sepertinya 
 
                 <button 
                     onClick={() => navigate('/')}
-                    className="px-10 py-3 bg-[#4B2E2B] text-white rounded-full font-poppins font-bold text-[16px] hover:bg-[#3d2523] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    className="px-8 py-3 bg-[#4B2E2B] text-white rounded-full font-poppins font-bold text-[16px] hover:bg-[#3d2523] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                     Kembali ke Beranda
                 </button>

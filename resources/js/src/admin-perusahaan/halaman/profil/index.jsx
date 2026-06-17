@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import FormProfil from './komponen/FormProfil';
 import FotoProfil from './komponen/FotoProfil';
-import FormGantiPassword from './komponen/FormGantiPassword';
 import { useAdmin } from '../../konteks/AdminContext';
 import LoadingKopi from '../../../komponen/umum/LoadingKopi';
 
@@ -36,7 +35,7 @@ const HalamanProfil = () => {
     }
 
     return (
-        <div className="halaman-profil w-full min-h-full px-[32px] py-[30px] flex flex-col gap-[64px]">
+        <div className="halaman-profil w-full min-h-full p-5 md:p-8 lg:p-10 flex flex-col gap-8 lg:gap-[64px]">
             {/* HEADER HALAMAN */}
             <motion.div 
                 initial={{ opacity: 0, x: -20 }}
@@ -72,9 +71,6 @@ const HalamanProfil = () => {
                     onUpdate={() => fetchProfil(true)}
                 />
             </motion.div>
-
-            {/* BAGIAN GANTI PASSWORD */}
-            <FormGantiPassword variants={itemVariants} />
 
             <div className="h-[40px]" />
         </div>

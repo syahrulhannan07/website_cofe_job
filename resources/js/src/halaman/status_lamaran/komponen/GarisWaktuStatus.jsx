@@ -9,9 +9,9 @@ const GarisWaktuStatus = ({ lamaran }) => {
 
     if (lamaran.length === 0) {
         return (
-            <div className="area-kosong-lamaran py-32 flex flex-col items-center justify-center text-center">
-                <div className="ikon-kosong text-[64px] mb-6 opacity-20">📂</div>
-                <p className="font-poppins font-medium text-[20px] text-[#4B2E2B]/40 italic max-w-[400px]">
+            <div className="area-kosong-lamaran py-10 flex flex-col items-center justify-center text-center">
+                <div className="ikon-kosong text-2xl mb-3 opacity-20">📂</div>
+                <p className="font-poppins font-medium text-sm text-[#4B2E2B]/40 italic max-w-[280px]">
                     Belum ada riwayat lamaran yang ditemukan.
                 </p>
             </div>
@@ -19,27 +19,27 @@ const GarisWaktuStatus = ({ lamaran }) => {
     }
 
     return (
-        <div className="wadah-timeline-lamaran relative mt-8 px-4">
-            {/* Jalur Garis Vertikal - Posisi 30px dari kiri (Pusat Simpul) */}
+        <div className="wadah-timeline-lamaran relative mt-4 px-4">
+            {/* Jalur Garis Vertikal */}
             <div 
-                className="jalur-garis absolute left-[34px] md:left-[44px] top-0 bottom-0 w-[4px]"
+                className="jalur-garis absolute left-[20px] md:left-[26px] top-0 bottom-0 w-[2px]"
                 style={{ backgroundColor: warnaGaris }}
             ></div>
 
             {/* Kontainer Item Timeline */}
-            <div className="daftar-item-timeline flex flex-col gap-12 relative">
+            <div className="daftar-item-timeline flex flex-col gap-5 relative">
                 {lamaran.map((item) => (
                     <div key={item.id} className="bungkus-item-timeline flex items-center">
                         {/* Simpul Timeline (Biji Kopi) - Tetap di tengah garis */}
-                        <div className="area-simpul flex-shrink-0 w-[45px] md:w-[65px] flex justify-center z-20">
+                        <div className="area-simpul flex-shrink-0 w-[24px] md:w-[32px] flex justify-center z-20">
                             <div 
-                                className="simpul-kopi w-[45px] h-[45px] md:w-[65px] md:h-[65px] rounded-full flex items-center justify-center shadow-lg"
+                                className="simpul-kopi w-[24px] h-[24px] md:w-[32px] md:h-[32px] rounded-full flex items-center justify-center shadow-lg"
                                 style={{ backgroundColor: warnaSimpul }}
                             >
                                 <img 
                                     src={coffeeBeansIcon} 
                                     alt="Ikon Kopi" 
-                                    className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                                    className="w-3 h-3 md:w-4 md:h-4 object-contain"
                                     style={{ 
                                         filter: 'sepia(1) saturate(1.5) brightness(1.2)' // Memberikan efek tan/gold yang cerah
                                     }}
@@ -48,7 +48,7 @@ const GarisWaktuStatus = ({ lamaran }) => {
                         </div>
 
                         {/* Kartu Status Utama - Memberi jarak dari simpul */}
-                        <div className="wadah-kartu-lamaran flex-grow ml-6 md:ml-10">
+                        <div className="wadah-kartu-lamaran flex-grow ml-3 md:ml-4">
                             <KartuStatus data={item} />
                         </div>
                     </div>

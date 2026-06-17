@@ -66,17 +66,17 @@ const AturUlangSandi = () => {
 
     return (
         <div className="min-h-screen bg-[#F3EDE6] font-poppins flex items-center justify-center p-4">
-            <div className="w-full max-w-[450px]">
+            <div className="w-full max-w-md">
 
                 {/* Logo / Branding */}
                 <div className="text-center mb-6">
-                    <h1 className="text-[28px] font-bold text-[#4B2E2B] font-jakarta">
+                    <h1 className="text-3xl font-bold text-[#4B2E2B] font-jakarta">
                         Cofe <span className="text-[#C69C6D]">Job</span>
                     </h1>
                 </div>
 
                 {/* Card */}
-                <div className="bg-white rounded-[30px] p-8 md:p-10 shadow-lg">
+                <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg">
 
                     {/* Status: Form (kode valid) */}
                     {status === 'form' && (
@@ -166,7 +166,7 @@ const AturUlangSandi = () => {
                                 <button
                                     type="submit"
                                     disabled={sedangMemproses}
-                                    className="w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-[50px] hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center cursor-pointer"
+                                    className="w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-full hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center cursor-pointer"
                                 >
                                     {sedangMemproses ? 'Memproses...' : 'Simpan Kata Sandi Baru'}
                                 </button>
@@ -188,7 +188,7 @@ const AturUlangSandi = () => {
                             </p>
                             <button
                                 onClick={() => navigate('/masuk')}
-                                className="w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-[50px] hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] flex items-center justify-center cursor-pointer"
+                                className="w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-full hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] flex items-center justify-center cursor-pointer"
                             >
                                 Masuk Sekarang
                             </button>
@@ -209,7 +209,7 @@ const AturUlangSandi = () => {
                             </p>
                             <button
                                 onClick={() => navigate('/masuk')}
-                                className="w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-[50px] hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] flex items-center justify-center cursor-pointer"
+                                className="w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-full hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] flex items-center justify-center cursor-pointer"
                             >
                                 Kembali ke Halaman Login
                             </button>

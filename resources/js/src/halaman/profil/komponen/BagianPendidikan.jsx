@@ -74,58 +74,58 @@ const BagianPendidikan = ({ initialData, onRefresh }) => {
     };
 
     return (
-        <div className="bagian-pendidikan bg-[#C69C6D] rounded-[25px] p-8 md:p-10 relative overflow-hidden shadow-sm w-full min-h-[250px] flex flex-col justify-center">
-            <div className="vektor-latar absolute bottom-0 left-0 w-full opacity-30 pointer-events-none z-0">
-                <img src={backgroundVector} alt="" className="w-full h-auto object-cover" />
+        <div className="bagian-pendidikan bg-[#C69C6D] rounded-2xl p-6 relative overflow-hidden shadow-sm w-full flex flex-col justify-center">
+            <div className="vektor-latar absolute inset-0 w-full h-full opacity-20 pointer-events-none z-0">
+                <img src={backgroundVector} alt="" className="w-full h-full object-cover" />
             </div>
 
-            <div className="area-header relative z-10 flex justify-between items-center mb-6">
-                <h2 className="judul-seksi font-poppins font-semibold text-[28px] md:text-[32px] text-[#4B2E2B]">
+            <div className="area-header relative z-10 flex justify-between items-center mb-5">
+                <h2 className="judul-seksi font-poppins font-semibold text-xl md:text-2xl text-[#4B2E2B]">
                     Pendidikan
                 </h2>
                 <button 
                     onClick={() => handleOpenModal()}
-                    className="tombol-tambah flex items-center gap-2 border-[3px] border-[#4B2E2B] rounded-[20px] px-6 py-2 hover:bg-[#4B2E2B]/10 transition-colors"
+                    className="tombol-tambah flex items-center gap-2 border-[3px] border-[#4B2E2B] rounded-xl px-4 py-1.5 hover:bg-[#4B2E2B]/10 transition-colors"
                 >
-                    <img src={pencilIcon} alt="" className="w-8 h-8" />
-                    <span className="font-poppins font-bold text-[20px] md:text-[24px] text-[#4B2E2B]">Tambah</span>
+                    <img src={pencilIcon} alt="" className="w-5 h-5" />
+                    <span className="font-poppins font-bold text-sm md:text-base text-[#4B2E2B]">Tambah</span>
                 </button>
             </div>
 
-            <div className="area-konten-list relative z-10 flex flex-col gap-6">
+            <div className="area-konten-list relative z-10 flex flex-col gap-4">
                 {listPendidikan.map((item, index) => (
-                    <div key={item.id_pendidikan} className="pendidikan-item flex gap-6 relative group">
+                    <div key={item.id_pendidikan} className="pendidikan-item flex gap-4 relative group">
                         <div className="timeline-pendidikan flex flex-col items-center relative">
-                            <div className="wadah-ikon w-[60px] h-[60px] bg-white border-2 border-[#4B2E2B] rounded-[20px] flex items-center justify-center z-10 shadow-sm">
-                                <img src={graduationCapIcon} alt="" className="w-11 h-11" />
+                            <div className="wadah-ikon w-10 h-10 bg-white border-2 border-[#4B2E2B] rounded-xl flex items-center justify-center z-10 shadow-sm">
+                                <img src={graduationCapIcon} alt="" className="w-6 h-6" />
                             </div>
                             {index !== listPendidikan.length - 1 && (
-                                <div className="garis-timeline absolute top-[60px] bottom-[-24px] w-[2px] bg-[#4B2E2B] opacity-50 z-0"></div>
+                                <div className="garis-timeline absolute top-10 bottom-[-16px] w-[2px] bg-[#4B2E2B] opacity-50 z-0"></div>
                             )}
                         </div>
 
-                        <div className="info-pendidikan pt-1 flex flex-col justify-center flex-1">
+                        <div className="info-pendidikan pt-0.5 flex flex-col justify-center flex-1">
                             <div className="flex justify-between items-start">
-                                <h3 className="nama-institusi font-poppins font-semibold text-[18px] md:text-[22px] text-[#4B2E2B] leading-tight">
+                                <h3 className="nama-institusi font-poppins font-semibold text-sm md:text-base text-[#4B2E2B] leading-tight">
                                     {item.institusi} - {item.tingkat} {item.jurusan}
                                 </h3>
-                                <div className="opsi-item flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="opsi-item flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 
                                         onClick={() => handleOpenModal(item)} 
-                                        className="tombol-opsi-edit bg-[#4B2E2B] text-[#C69C6D] px-4 py-1 rounded-full font-poppins text-[14px] font-bold hover:scale-105 transition-all shadow-sm"
+                                        className="tombol-opsi-edit bg-[#4B2E2B] text-[#C69C6D] px-3 py-0.5 rounded-full font-poppins text-xs font-bold hover:scale-105 transition-all shadow-sm"
                                     >
                                         Edit
                                     </button>
                                     <button 
                                         onClick={() => handleHapus(item.id_pendidikan)} 
-                                        className="tombol-opsi-hapus bg-red-700 text-white w-[28px] h-[28px] flex items-center justify-center rounded-full font-bold hover:scale-110 transition-all shadow-sm"
+                                        className="tombol-opsi-hapus bg-red-700 text-white w-5 h-5 flex items-center justify-center rounded-full font-bold hover:scale-110 transition-all shadow-sm text-xs"
                                         title="Hapus"
                                     >
                                         ×
                                     </button>
                                 </div>
                             </div>
-                            <p className="rentang-waktu font-poppins font-medium text-[16px] md:text-[18px] text-[#4B2E2B]/80 mt-1">
+                            <p className="rentang-waktu font-poppins font-medium text-xs md:text-sm text-[#4B2E2B]/80 mt-0.5">
                                 {formatTanggal(item.tahun_mulai)} - {item.tahun_selesai ? formatTanggal(item.tahun_selesai) : 'Sekarang'}
                             </p>
                         </div>
@@ -136,52 +136,27 @@ const BagianPendidikan = ({ initialData, onRefresh }) => {
             {/* Modal Pendidikan */}
             {isModalOpen && (
                 <div className="modal-overlay fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-                    <div className="modal-konten bg-[#F3EDE6] rounded-[25px] p-8 w-full max-w-[600px] shadow-2xl">
-                        <h3 className="judul-modal font-poppins font-bold text-[24px] text-[#4B2E2B] mb-6">
+                    <div className="modal-konten bg-[#F3EDE6] rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                        <h3 className="judul-modal font-poppins font-bold text-lg text-[#4B2E2B] mb-4">
                             {editId ? 'Edit Pendidikan' : 'Tambah Pendidikan'}
                         </h3>
-                        <div className="flex flex-col gap-4">
-                            <input 
-                                className="input-modal h-[50px] px-4 rounded-lg bg-[#E3CEB6] border-none outline-none" 
-                                placeholder="Institusi" 
-                                value={form.institusi}
-                                onChange={(e) => setForm({...form, institusi: e.target.value})}
-                            />
-                            <input 
-                                className="input-modal h-[50px] px-4 rounded-lg bg-[#E3CEB6] border-none outline-none" 
-                                placeholder="Jurusan" 
-                                value={form.jurusan}
-                                onChange={(e) => setForm({...form, jurusan: e.target.value})}
-                            />
-                            <input 
-                                className="input-modal h-[50px] px-4 rounded-lg bg-[#E3CEB6] border-none outline-none" 
-                                placeholder="Tingkat (Contoh: S1, SMK)" 
-                                value={form.tingkat}
-                                onChange={(e) => setForm({...form, tingkat: e.target.value})}
-                            />
-                            <div className="flex gap-4">
+                        <div className="flex flex-col gap-3">
+                            <input className="input-modal h-10 px-3 rounded-lg bg-[#E3CEB6] border-none outline-none text-sm" placeholder="Institusi" value={form.institusi} onChange={(e) => setForm({...form, institusi: e.target.value})} />
+                            <input className="input-modal h-10 px-3 rounded-lg bg-[#E3CEB6] border-none outline-none text-sm" placeholder="Jurusan" value={form.jurusan} onChange={(e) => setForm({...form, jurusan: e.target.value})} />
+                            <input className="input-modal h-10 px-3 rounded-lg bg-[#E3CEB6] border-none outline-none text-sm" placeholder="Tingkat (Contoh: S1, SMK)" value={form.tingkat} onChange={(e) => setForm({...form, tingkat: e.target.value})} />
+                            <div className="flex gap-3">
                                 <div className="flex-1">
-                                    <label className="text-[14px] text-[#4B2E2B] mb-1 block">Tanggal Mulai</label>
-                                    <input 
-                                        type="date"
-                                        className="input-modal w-full h-[50px] px-4 rounded-lg bg-[#E3CEB6] border-none outline-none" 
-                                        value={form.tahun_mulai}
-                                        onChange={(e) => setForm({...form, tahun_mulai: e.target.value})}
-                                    />
+                                    <label className="text-xs text-[#4B2E2B] mb-0.5 block">Tanggal Mulai</label>
+                                    <input type="date" className="input-modal w-full h-10 px-3 rounded-lg bg-[#E3CEB6] border-none outline-none text-sm" value={form.tahun_mulai} onChange={(e) => setForm({...form, tahun_mulai: e.target.value})} />
                                 </div>
                                 <div className="flex-1">
-                                    <label className="text-[14px] text-[#4B2E2B] mb-1 block">Tanggal Selesai</label>
-                                    <input 
-                                        type="date"
-                                        className="input-modal w-full h-[50px] px-4 rounded-lg bg-[#E3CEB6] border-none outline-none" 
-                                        value={form.tahun_selesai}
-                                        onChange={(e) => setForm({...form, tahun_selesai: e.target.value})}
-                                    />
+                                    <label className="text-xs text-[#4B2E2B] mb-0.5 block">Tanggal Selesai</label>
+                                    <input type="date" className="input-modal w-full h-10 px-3 rounded-lg bg-[#E3CEB6] border-none outline-none text-sm" value={form.tahun_selesai} onChange={(e) => setForm({...form, tahun_selesai: e.target.value})} />
                                 </div>
                             </div>
-                            <div className="flex justify-end gap-4 mt-4">
-                                <button onClick={() => setIsModalOpen(false)} className="px-6 py-2 rounded-lg border border-[#4B2E2B] text-[#4B2E2B]">Batal</button>
-                                <button onClick={handleSimpan} className="px-6 py-2 rounded-lg bg-[#4B2E2B] text-white">Simpan</button>
+                            <div className="flex justify-end gap-3 mt-3">
+                                <button onClick={() => setIsModalOpen(false)} className="px-4 py-1.5 rounded-lg border border-[#4B2E2B] text-[#4B2E2B] text-sm">Batal</button>
+                                <button onClick={handleSimpan} className="px-4 py-1.5 rounded-lg bg-[#4B2E2B] text-white text-sm">Simpan</button>
                             </div>
                         </div>
                     </div>

@@ -20,22 +20,22 @@ const AreaUpload = ({ config, file, onChange, statusUpload, pesanGalat, isWide =
     const sudahUpload = !!file && statusUpload !== 'uploading';
 
     return (
-        <div className={`pembungkus-area-upload flex bg-white rounded-[20px] border-2 border-[#C69C6D] p-8 transition-all duration-300 ${isWide ? 'flex-col md:flex-row md:items-center md:gap-12' : 'flex-col gap-6'} ${isWide ? 'md:col-span-2' : ''}`}>
+        <div className={`pembungkus-area-upload flex bg-white rounded-xl border-2 border-[#C69C6D] p-5 transition-all duration-300 ${isWide ? 'flex-col md:flex-row md:items-center md:gap-4' : 'flex-col gap-4'} ${isWide ? 'md:col-span-2' : ''}`}>
             {/* Header Card: Icon + Text */}
-            <div className={`flex items-center gap-4 ${isWide ? 'md:min-w-[250px]' : ''}`}>
-                <div className="w-[60px] h-[60px] bg-[#4B2E2B] rounded-[8px] flex items-center justify-center shrink-0">
-                    <img src={getIconForDoc(config.nama_dokumen)} alt={config.nama_dokumen} className="w-7 h-7 object-contain" style={{ filter: 'invert(75%) sepia(18%) saturate(913%) hue-rotate(345deg) brightness(87%) contrast(85%)' }} />
+            <div className={`flex items-center gap-3 ${isWide ? 'md:min-w-[200px]' : ''}`}>
+                <div className="w-10 h-10 bg-[#4B2E2B] rounded-md flex items-center justify-center shrink-0">
+                    <img src={getIconForDoc(config.nama_dokumen)} alt={config.nama_dokumen} className="w-5 h-5 object-contain" style={{ filter: 'invert(75%) sepia(18%) saturate(913%) hue-rotate(345deg) brightness(87%) contrast(85%)' }} />
                 </div>
                 <div className="flex flex-col text-left">
-                    <h3 className="font-poppins font-semibold text-[18px] text-[#4B2E2B] leading-tight">{config.nama_dokumen}</h3>
-                    {config.wajib && <p className="font-poppins text-[14px] text-[#4B2E2B] opacity-60 mt-1 font-medium">Dibutuhkan</p>}
+                    <h3 className="font-poppins font-semibold text-[15px] text-[#4B2E2B] leading-tight">{config.nama_dokumen}</h3>
+                    {config.wajib && <p className="font-poppins text-[12px] text-[#4B2E2B] opacity-60 mt-0.5 font-medium">Dibutuhkan</p>}
                 </div>
             </div>
 
             {/* Dashed Upload Area */}
             <div
                 onClick={() => { if (statusUpload !== 'uploading') inputRef.current.click() }}
-                className={`relative flex flex-col items-center justify-center rounded-[10px] border-2 border-dashed cursor-pointer transition-all duration-300 py-8 px-6 flex-1
+                className={`relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed cursor-pointer transition-all duration-300 py-5 px-4 flex-1
                     ${sudahUpload ? 'border-[#6B8E23] bg-[#6B8E23]/5' : 'border-[#4B2E2B] border-opacity-30 bg-[#F8E8D5] bg-opacity-50 hover:bg-opacity-80'}
                     ${statusUpload === 'uploading' ? 'border-[#F7B750] bg-[#F7B750]/5 cursor-wait' : ''}`}
             >
@@ -76,7 +76,7 @@ const BoxPendukung = ({ config, file, onChange, statusUpload }) => {
     return (
         <div 
             onClick={() => { if (statusUpload !== 'uploading') inputRef.current.click() }}
-            className={`pembungkus-box-pendukung flex items-center gap-3 p-4 bg-[#F8E8D5] bg-opacity-50 rounded-[10px] border-2 border-dashed border-[#4B2E2B] border-opacity-30 cursor-pointer hover:bg-opacity-80 transition-all
+            className={`pembungkus-box-pendukung flex items-center gap-2 p-3 bg-[#F8E8D5] bg-opacity-50 rounded-lg border-2 border-dashed border-[#4B2E2B] border-opacity-30 cursor-pointer hover:bg-opacity-80 transition-all
                 ${sudahUpload ? 'border-[#6B8E23] bg-[#6B8E23]/5' : ''}
                 ${statusUpload === 'uploading' ? 'border-[#F7B750] bg-[#F7B750]/5 cursor-wait' : ''}`}
         >
@@ -147,18 +147,18 @@ const Step1Upload = ({ data, onChange, dokumenWajib = [], idLamaran }) => {
     const docOpsional = dokumenWajib.filter(d => !d.wajib);
 
     return (
-        <div className="pembungkus-tahap-unggah w-full flex flex-col gap-12">
+        <div className="pembungkus-tahap-unggah w-full flex flex-col gap-8">
             {/* Banner Instruksi Hijau */}
-            <div className="w-full bg-[#6B8E23] rounded-[50px] px-12 py-10">
-                <h2 className="font-poppins font-bold text-[32px] text-white leading-tight">Unggah Dokumen</h2>
-                <p className="font-poppins font-medium text-[20px] text-white/90 mt-4 leading-relaxed max-w-[1100px]">
+            <div className="w-full bg-[#6B8E23] rounded-2xl px-6 py-6">
+                <h2 className="font-poppins font-bold text-2xl text-white leading-tight">Unggah Dokumen</h2>
+                <p className="font-poppins font-medium text-[15px] text-white/90 mt-2 leading-relaxed max-w-3xl">
                     Harap berikan kredensial yang diperlukan untuk melengkapi lamaran Anda. Berkas lamaran Anda akan ditinjau oleh HRD.
                 </p>
             </div>
 
             {/* Grid Dokumen Wajib */}
             {docWajib.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {docWajib.map((config, index) => (
                         <AreaUpload 
                             key={config.id_jenis_dokumen} 
@@ -175,14 +175,14 @@ const Step1Upload = ({ data, onChange, dokumenWajib = [], idLamaran }) => {
 
             {/* Seksi Dokumen Pendukung */}
             {docOpsional.length > 0 && (
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4">
                     <div>
-                        <h3 className="font-poppins font-bold text-[36px] text-[#4B2E2B]">Dokumen Pendukung</h3>
-                        <p className="font-poppins font-medium text-[20px] text-[#4B2E2B] opacity-80 mt-1">
+                        <h3 className="font-poppins font-bold text-xl text-[#4B2E2B]">Dokumen Pendukung</h3>
+                        <p className="font-poppins font-medium text-[14px] text-[#4B2E2B] opacity-80 mt-0.5">
                             Upload untuk dokumen pendukung seperti sertifikat dan lainnya
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         {docOpsional.map((item) => (
                             <BoxPendukung 
                                 key={item.id_jenis_dokumen} 

@@ -226,7 +226,7 @@ const DetailPelamar = ({ lowongan, onBack, onSelectPelamar }) => {
             <div className="w-full bg-transparent overflow-x-auto no-scrollbar">
                 <div className="min-w-[900px] w-full">
                     {/* Table Header */}
-                    <div className="grid grid-cols-12 px-[46px] h-[63px] items-center bg-[#EAE4DC] rounded-t-[10px]">
+                    <div className="grid grid-cols-12 px-4 md:px-[46px] h-[63px] items-center bg-[#EAE4DC] rounded-t-[10px]">
                         <div className="col-span-3 font-poppins font-semibold text-[13px] text-[#4B2E2B]">Nama Pelamar</div>
                         <div className="col-span-3 font-poppins font-semibold text-[13px] text-[#4B2E2B]">Tanggal Melamar</div>
                         <div className="col-span-3 font-poppins font-semibold text-[13px] text-[#4B2E2B]">Pendidikan</div>
@@ -240,7 +240,7 @@ const DetailPelamar = ({ lowongan, onBack, onSelectPelamar }) => {
                             <LoadingKopi fullScreen={false} />
                         ) : applicants.length > 0 ? (
                             applicants.map((app, index) => (
-                                <div key={app.id_lamaran} className={`grid grid-cols-12 items-center px-[46px] h-[63px] ${index !== applicants.length - 1 ? 'border-b border-[#CCCCCC]/80' : ''} hover:bg-black/5 transition-colors`}>
+                                <div key={app.id_lamaran} className={`grid grid-cols-12 items-center px-4 md:px-[46px] h-[63px] ${index !== applicants.length - 1 ? 'border-b border-[#CCCCCC]/80' : ''} hover:bg-black/5 transition-colors`}>
                                     <div className="col-span-3 flex flex-col justify-center">
                                         <span className="font-poppins font-semibold text-[13px] text-[#4B2E2B] leading-[19.5px] truncate mr-2">{app.pelamar.nama_lengkap}</span>
                                         <span className="font-poppins font-normal text-[10px] text-[#4B2E2B] leading-[15px] truncate mr-2">{app.pelamar.email}</span>

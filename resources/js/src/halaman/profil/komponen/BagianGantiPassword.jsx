@@ -74,7 +74,7 @@ const BagianGantiPassword = ({ isOpen, onClose }) => {
                 }
             }}
         >
-            <div id="bagian-ganti-password" className="modal-konten bg-white rounded-[30px] p-8 md:p-10 w-full max-w-[480px] shadow-2xl relative animate-[fadeIn_0.3s_ease-out]">
+            <div id="bagian-ganti-password" className="modal-konten bg-white rounded-2xl p-6 md:p-8 w-full max-w-[480px] shadow-2xl relative animate-[fadeIn_0.3s_ease-out]">
                 {/* Tombol Tutup */}
                 <button
                     type="button"
@@ -191,7 +191,7 @@ const BagianGantiPassword = ({ isOpen, onClose }) => {
                         <button
                             type="submit"
                             disabled={sedangMemuat}
-                            className="tombol-ganti w-full bg-[#4B2E2B] h-[46px] text-white font-bold text-[15px] rounded-[50px] hover:bg-[#3a2320] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
+                            className="tombol-ganti w-full bg-[#4B2E2B] h-[46px] text-white font-bold text-[15px] rounded-full hover:bg-[#3a2320] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
                         >
                             <Lock size={16} />
                             {sedangMemuat ? 'Menyimpan...' : 'Ubah Password'}

@@ -102,6 +102,11 @@ Route::prefix('v1')->group(function () {
         Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'batalkan']);
     });
 
+    // Chatbot AI (Protected)
+    Route::middleware(['auth:api', 'role:Pelamar'])->group(function () {
+        Route::post('/chatbot/ask', [\App\Http\Controllers\Api\V1\Pelamar\ChatBotController::class, 'ask']);
+    });
+
     // Tracking Lamaran & Wawancara (Protected)
     Route::middleware(['auth:api', 'role:Pelamar'])->prefix('pelamar/lamaran')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'index']);
@@ -166,6 +171,16 @@ Route::prefix('v1')->group(function () {
         Route::put('/akun-kafe/{id}/suspend', [SuperAdminKafeController::class, 'suspend']);
         Route::get('/lowongan/{id}', [SuperAdminKafeController::class, 'showLowongan']); // Detail satu lowongan
         Route::put('/lowongan/{id}/status', [SuperAdminKafeController::class, 'updateLowonganStatus']); // Update status lowongan
+
+        // AI Detection Log
+        Route::prefix('ai-deteksi')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'index']);
+            Route::get('/statistik', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'statistik']);
+            Route::get('/pengaturan', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'pengaturan']);
+            Route::put('/pengaturan', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'updatePengaturan']);
+            Route::get('/{id}', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'show']);
+            Route::post('/{id}/override', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'override']);
+        });
     });
 
     Route::middleware(['auth:api', 'role:Super_Admin'])->prefix('superadmin')->group(function () {

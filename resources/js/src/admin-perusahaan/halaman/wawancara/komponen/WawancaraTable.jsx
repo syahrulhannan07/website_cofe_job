@@ -31,8 +31,8 @@ const WawancaraTable = ({ interviews, onEdit, onDelete, onSelesai }) => {
     };
 
     return (
-        <div className="bg-white rounded-[10px] overflow-hidden shadow-sm border border-black/5">
-            <table className="w-full text-left border-collapse">
+        <div className="bg-white rounded-[10px] overflow-x-auto shadow-sm border border-black/5">
+            <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
                     <tr className="bg-[#EBE4DC] h-[63px]">
                         <th className="px-6 font-semibold text-[13px] text-[#4B2E2B] font-poppins">Nama Pelamar</th>

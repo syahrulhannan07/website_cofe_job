@@ -306,7 +306,7 @@ const TambahLowongan = () => {
             <div className="relative bg-white w-full max-w-[896px] rounded-[24px] shadow-sm flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 border border-[#4B2E2B]/5">
                 
                 {/* Header (222:1101) */}
-                <div className="bg-[#4B2E2B] px-10 py-8 flex items-center justify-between border-b border-[#F5F5F4]">
+                <div className="bg-[#4B2E2B] px-6 md:px-10 py-6 md:py-8 flex items-center justify-between border-b border-[#F5F5F4]">
                     <div className="flex flex-col gap-1">
                         <h2 className="font-poppins font-semibold text-[28px] text-white leading-tight">
                             {isEdit ? 'Edit Lowongan' : 'Tambah Lowongan Baru'}
@@ -318,7 +318,7 @@ const TambahLowongan = () => {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 px-10 py-10 flex flex-col gap-10">
+                <div className="flex-1 px-6 md:px-10 py-6 md:py-10 flex flex-col gap-10">
                     
                     {/* Form Fields */}
                     <div className="flex flex-col gap-8">
@@ -582,7 +582,7 @@ const TambahLowongan = () => {
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="bg-[#F9FAFB] px-10 md:pl-12 md:pr-20 py-8 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-[#E7E5E4]">
+                <div className="bg-[#F9FAFB] px-6 md:pl-12 md:pr-20 py-6 md:py-8 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-[#E7E5E4]">
                     <div className="flex flex-col max-w-[480px]">
                         <p className="font-poppins text-[#4B2E2B]/60 text-[13px] leading-relaxed">
                             Pastikan semua informasi sudah sesuai. Dengan mengklik <span className="font-bold text-[#4B2E2B]">Publikasikan</span>, lowongan akan segera ditayangkan dan dapat dilamar oleh kandidat.

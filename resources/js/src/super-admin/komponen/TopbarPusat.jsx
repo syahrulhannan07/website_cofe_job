@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ikonNotifikasi from '../aset/sidebar/Notification.png';
 import api from '../../layanan/api';
 
-const TopbarPusat = () => {
+const TopbarPusat = ({ setSidebarTerbuka }) => {
     const [namaPengguna, setNamaPengguna] = useState("Super Admin");
     const peranSuperAdmin = "Super Admin";
 
@@ -109,7 +109,19 @@ const TopbarPusat = () => {
         <header className="wadah-topbar-pusat w-full h-[100px] flex flex-col justify-center px-[40px] bg-transparent flex-shrink-0 relative">
             <div className="area-konten-topbar flex items-center justify-between w-full h-full pb-[10px]">
                 
-                {/* Ikon Notifikasi Kiri & Dropdown */}
+                {/* Hamburger mobile + Ikon Notifikasi */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setSidebarTerbuka((prev) => !prev)}
+                        className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#4B2E2B]/10 transition-colors"
+                        aria-label="Buka menu"
+                    >
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 6H21" stroke="#4B2E2B" strokeWidth="2.5" strokeLinecap="round"/>
+                            <path d="M6 12H18" stroke="#4B2E2B" strokeWidth="2.5" strokeLinecap="round"/>
+                            <path d="M10 18H14" stroke="#4B2E2B" strokeWidth="2.5" strokeLinecap="round"/>
+                        </svg>
+                    </button>
                 <div className="relative flex items-center" ref={dropdownRef}>
                     <button
                         onClick={() => {
@@ -188,6 +200,7 @@ const TopbarPusat = () => {
                             </div>
                         </div>
                     )}
+                </div>
                 </div>
 
                 {/* Info Profil Kanan (Tanpa Avatar) */}

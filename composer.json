@@ -13,6 +13,7 @@
         "laravel/reverb": "^1.10",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
+        "openai-php/client": "*",
         "php-open-source-saver/jwt-auth": "2.8"
     },
     "require-dev": {

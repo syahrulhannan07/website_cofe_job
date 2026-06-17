@@ -105,7 +105,7 @@ const FotoProfil = ({ variants, data, onUpdate }) => {
     const statusStyle = getStatusStyle(data?.status_verifikasi);
 
     return (
-        <div className="area-kanan-profil flex flex-col gap-[13px] w-[289px]">
+        <div className="area-kanan-profil flex flex-col gap-[13px] w-full lg:w-[289px]">
             <input 
                 type="file" 
                 ref={fileInputRef} 

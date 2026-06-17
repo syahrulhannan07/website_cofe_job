@@ -18,11 +18,10 @@ const BagianHero = () => {
               }
               return prev + 1;
           });
-      }, 50); // Kecepatan ketik
+      }, 50);
       return () => clearInterval(interval);
   }, [totalChars]);
 
-  // Fungsi untuk memotong teks sesuai jumlah karakter yang sudah "diketik"
   const getVisibleText = () => {
       if (charsShown <= titleLine1.length) {
           return { l1: titleLine1.slice(0, charsShown), l2: "" };
@@ -36,50 +35,42 @@ const BagianHero = () => {
   const visibleText = getVisibleText();
 
   return (
-    <div className="wadah-hero flex w-full justify-center mt-6 md:mt-[40px] mb-10 px-4">
-      <section className="konten-hero relative w-full max-w-[1300px] min-h-[400px] lg:h-[684px] bg-[#4b2e2b] rounded-[40px] md:rounded-[80px] overflow-hidden flex flex-col lg:flex-row items-center px-8 py-10 lg:p-0">
-
-        {/* Teks Utama */}
-        <div className="area-teks-utama relative lg:absolute z-20 lg:w-[660px] lg:left-[90px] lg:top-[98px] text-center lg:text-left mt-4 lg:mt-0">
-            {/* Teks Tersembunyi untuk mempertahankan ukuran (mencegah layout shift) */}
-            <h1 className="judul-bayangan font-poppins font-[700] text-4xl md:text-[50px] lg:text-[64px] leading-tight md:leading-[1.2] lg:leading-[96px] text-transparent select-none">
+    <div className="wadah-hero flex w-full justify-center mt-6 md:mt-8 mb-10 px-4">
+      <section className="konten-hero relative w-full max-w-6xl bg-[#4b2e2b] rounded-3xl overflow-hidden">
+        <div className="flex flex-col lg:flex-row items-stretch min-h-[360px] lg:min-h-[420px]">
+          <div className="relative z-20 w-full lg:w-1/2 flex items-center px-6 lg:px-12 py-8 lg:py-0">
+            <div className="relative w-full">
+              <h1 className="font-poppins font-bold text-3xl md:text-4xl lg:text-5xl leading-tight text-transparent select-none">
                 Temukan Karir <br className="hidden md:block" />
                 Kopimu di Cofe Job!
-            </h1>
-            
-            {/* Teks yang diketik (absolute di atas teks tersembunyi) */}
-            <h1 className="judul-ketik absolute top-0 left-0 w-full font-poppins font-[700] text-4xl md:text-[50px] lg:text-[64px] leading-tight md:leading-[1.2] lg:leading-[96px] text-[#f3ede6]">
+              </h1>
+              <h1 className="absolute inset-0 font-poppins font-bold text-3xl md:text-4xl lg:text-5xl leading-tight text-[#f3ede6]">
                 {visibleText.l1}
                 <br className="hidden md:block" />
                 {visibleText.l2}
-            </h1>
+              </h1>
+            </div>
+          </div>
+
+          <div className="relative w-full lg:w-1/2 h-[250px] lg:h-[420px] overflow-hidden">
+            <motion.div
+              initial={{ x: 200, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
+              className="absolute right-[-30px] top-[-40px] w-[440px] lg:w-[500px] h-[500px] lg:h-[580px] opacity-50 md:opacity-100 pointer-events-none z-0"
+            >
+              <img src={vektorHero} alt="" aria-hidden="true" className="w-full h-full object-contain" />
+            </motion.div>
+            <motion.div
+              initial={{ x: 200, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 1.2, ease: "easeOut", delay: 0.7 }}
+              className="absolute right-0 bottom-0 w-[340px] lg:w-[420px] h-[260px] lg:h-[320px] z-10"
+            >
+              <img src={gambarHero} alt="Barista Cofe Job" className="w-full h-full object-contain object-bottom" />
+            </motion.div>
+          </div>
         </div>
-
-        {/* Vektor Blob Dekoratif */}
-        <motion.div 
-            initial={{ x: 200, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
-            className="vektor-dekoratif absolute opacity-50 md:opacity-100 right-[-100px] top-[-50px] lg:left-[567px] lg:top-[-91px] w-[500px] lg:w-[734px] lg:h-[864px] pointer-events-none z-0"
-        >
-            <img
-               src={vektorHero}
-               alt=""
-               aria-hidden="true"
-               className="gambar-vektor w-full h-full object-contain"
-            />
-        </motion.div>
-
-        {/* Gambar Barista */}
-        <motion.div 
-            initial={{ x: 200, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 1.2, ease: "easeOut", delay: 0.7 }}
-            className="area-gambar-barista relative lg:absolute z-10 w-[90%] max-w-[500px] lg:max-w-none lg:w-[856px] h-auto lg:h-[490px] lg:left-[444px] lg:top-[194px] mt-8 lg:mt-0 self-center lg:self-end"
-        >
-           <img src={gambarHero} alt="Barista Cofe Job" className="gambar-barista w-full h-full object-contain object-bottom" />
-        </motion.div>
-
       </section>
     </div>
   );

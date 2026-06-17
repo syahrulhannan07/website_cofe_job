@@ -6,7 +6,7 @@ import Footer from '../komponen/umum/Footer';
 const TataLetakUtama = () => {
     return (
         <div className="min-h-screen bg-[#F3EDE6] flex flex-col justify-between items-center overflow-x-hidden">
-            <div className="w-full flex flex-col items-center">
+            <div className="w-full flex-1 flex flex-col items-center">
                 <div id="app-navbar" className="w-full">
                     <Navbar />
                 </div>

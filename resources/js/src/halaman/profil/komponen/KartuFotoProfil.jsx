@@ -85,10 +85,10 @@ const KartuFotoProfil = () => {
     };
 
     return (
-        <div className="kartu-foto-profil bg-[#C69C6D] rounded-[25px] p-10 flex flex-col items-center justify-center shadow-lg w-full h-full min-h-[460px] relative z-10">
-            <div className="wadah-foto relative mb-6">
+        <div className="kartu-foto-profil bg-[#C69C6D] rounded-2xl p-6 flex flex-col items-center justify-center shadow-lg w-full h-full min-h-[360px] relative z-10">
+            <div className="wadah-foto relative mb-4">
                 <div 
-                    className={`bingkai-foto w-[256px] h-[289px] bg-[#E3CEB6] rounded-[25px] overflow-hidden flex items-center justify-center relative ${loading ? 'opacity-50' : ''}`}
+                    className={`bingkai-foto w-[180px] h-[200px] bg-[#E3CEB6] rounded-2xl overflow-hidden flex items-center justify-center relative ${loading ? 'opacity-50' : ''}`}
                     style={{ 
                         boxShadow: '0px 0px 5px 8px rgba(167, 129, 93, 1)' 
                     }}
@@ -103,7 +103,7 @@ const KartuFotoProfil = () => {
                     />
                     {loading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                         </div>
                     )}
                 </div>
@@ -119,13 +119,13 @@ const KartuFotoProfil = () => {
                 <button 
                     onClick={handleCameraClick}
                     disabled={loading}
-                    className="tombol-unggah-foto absolute bottom-[-10px] right-[-10px] bg-[#6B8E23] w-[55px] h-[55px] rounded-full flex items-center justify-center shadow-md hover:bg-[#5a7a1d] transition-colors z-20 disabled:opacity-50"
+                    className="tombol-unggah-foto absolute bottom-[-8px] right-[-8px] bg-[#6B8E23] w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:bg-[#5a7a1d] transition-colors z-20 disabled:opacity-50"
                 >
-                    <img src={cameraIcon} alt="Ganti Foto" className="w-8 h-8" />
+                    <img src={cameraIcon} alt="Ganti Foto" className="w-5 h-5" />
                 </button>
             </div>
 
-            <h3 className="label-foto font-poppins font-semibold text-[32px] text-[#4B2E2B] mt-6">
+            <h3 className="label-foto font-poppins font-semibold text-xl text-[#4B2E2B] mt-4">
                 Foto Profil
             </h3>
         </div>

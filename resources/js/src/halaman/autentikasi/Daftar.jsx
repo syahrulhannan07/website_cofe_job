@@ -131,34 +131,34 @@ const Daftar = () => {
     };
 
     return (
-        <div className="wadah-halaman-daftar min-h-screen bg-[#F3EDE6] font-poppins flex flex-col overflow-x-hidden">
+        <div className="wadah-halaman-daftar min-h-screen bg-[#F3EDE6] font-poppins flex flex-col overflow-x-hidden overflow-y-auto">
             <Navbar />
             
             {/* Main Content Area */}
             <div className="area-konten-utama flex-1 flex flex-col md:flex-row w-full max-w-[1440px] mx-auto py-8">
                 
                 {/* Sisi Kiri: Sidebar Cokelat (Menempel di kiri) */}
-                <div className="sisi-kiri-sidebar hidden md:flex w-[40%] max-w-[413px] min-h-[600px] bg-[#4B2E2B] rounded-r-[50px] flex-col justify-start pt-[130px] px-10 shadow-lg">
+                <div className="sisi-kiri-sidebar hidden md:flex w-[40%] max-w-[413px] min-h-[500px] bg-[#4B2E2B] rounded-r-3xl flex-col justify-start pt-[130px] px-8 shadow-lg">
                     <div className="teks-ajakan w-full">
-                        <span className="teks-baris-1 text-[#C69C6D] text-[32px] lg:text-[36px] font-jakarta font-[800] leading-[1.4] break-words block">
+                        <span className="teks-baris-1 text-[#C69C6D] text-2xl lg:text-3xl font-jakarta font-[800] leading-[1.4] break-words block">
                             Gabung bersama
                         </span>
-                        <span className="teks-baris-2 text-[#F3EDE6] text-[32px] lg:text-[36px] font-jakarta italic font-[800] leading-[1.4] break-words block mt-[-5px]">
+                        <span className="teks-baris-2 text-[#F3EDE6] text-2xl lg:text-3xl font-jakarta italic font-[800] leading-[1.4] break-words block mt-[-5px]">
                             di cofe job.
                         </span>
                     </div>
                 </div>
 
                 {/* Sisi Kanan: Area Tabs & Form */}
-                <div className="sisi-kanan-form w-full md:w-[60%] flex flex-col items-center justify-center p-6 lg:p-10">
-                    <div className="wadah-konten flex flex-col items-center w-full max-w-[500px] mx-auto gap-6">
+                <div className="sisi-kanan-form w-full md:w-[60%] flex flex-col items-center justify-center p-6 lg:p-8">
+                    <div className="wadah-konten flex flex-col items-center w-full max-w-md mx-auto gap-6">
                         
                         {/* Tab Seleksi Peran */}
-                        <div className="tab-seleksi-peran w-full h-[60px] bg-[#C69C6D] rounded-[50px] flex p-[4px] items-center shadow-sm">
+                        <div className="tab-seleksi-peran w-full h-[60px] bg-[#C69C6D] rounded-full flex p-[4px] items-center shadow-sm">
                             <button
                                 type="button"
                                 onClick={() => setPeran('Pelamar')}
-                                className={`tombol-tab flex-1 h-full rounded-[50px] flex items-center justify-center transition-all ${
+                                className={`tombol-tab flex-1 h-full rounded-full flex items-center justify-center transition-all ${
                                     peran === 'Pelamar' ? 'bg-white text-[#4B2E2B] shadow-sm' : 'text-[#4B2E2B] hover:bg-white/20'
                                 }`}
                             >
@@ -167,7 +167,7 @@ const Daftar = () => {
                             <button
                                 type="button"
                                 onClick={() => setPeran('Admin_Perusahaan')}
-                                className={`tombol-tab flex-1 h-full rounded-[50px] flex items-center justify-center transition-all ${
+                                className={`tombol-tab flex-1 h-full rounded-full flex items-center justify-center transition-all ${
                                     peran === 'Admin_Perusahaan' ? 'bg-white text-[#4B2E2B] shadow-sm' : 'text-[#4B2E2B] hover:bg-white/20'
                                 }`}
                             >
@@ -176,7 +176,7 @@ const Daftar = () => {
                         </div>
 
                         {/* Form Daftar */}
-                        <div className="wadah-form-daftar w-full bg-white rounded-[40px] p-8 md:p-10 shadow-lg">
+                        <div className="wadah-form-daftar w-full bg-white rounded-3xl p-6 md:p-8 shadow-lg">
                             <div className="header-form mb-6 text-center md:text-left">
                                 <h1 className="judul-form text-[22px] font-bold text-[#4B2E2B] mb-1">
                                     {peran === 'Pelamar' ? 'Buat Akun untuk Careermu!' : 'Buat Akun untuk Bisnismu!'}
@@ -413,7 +413,7 @@ const Daftar = () => {
                                     <button
                                         type="submit"
                                         disabled={sedangMemuat}
-                                        className="tombol-daftar w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-[50px] hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center"
+                                        className="tombol-daftar w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-full hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center"
                                     >
                                         {sedangMemuat ? 'Memproses...' : 'Daftar'}
                                     </button>
@@ -435,7 +435,7 @@ const Daftar = () => {
                                         type="button"
                                         onClick={menanganiGoogleDaftar}
                                         disabled={sedangMemuatGoogle}
-                                        className="tombol-google w-full h-[46px] bg-white border-2 border-[#4B2E2B] rounded-[50px] flex items-center justify-center gap-3 hover:bg-[#F9F5F0] transition-all shadow-sm active:scale-[0.98] disabled:opacity-70 cursor-pointer"
+                                        className="tombol-google w-full h-[46px] bg-white border-2 border-[#4B2E2B] rounded-full flex items-center justify-center gap-3 hover:bg-[#F9F5F0] transition-all shadow-sm active:scale-[0.98] disabled:opacity-70 cursor-pointer"
                                     >
                                         {/* Google Icon SVG */}
                                         <svg width="20" height="20" viewBox="0 0 48 48">

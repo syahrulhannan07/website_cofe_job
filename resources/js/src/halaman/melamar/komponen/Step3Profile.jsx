@@ -6,30 +6,30 @@ import BagianPendidikan from '../../profil/komponen/BagianPendidikan';
 import BagianKeahlian from '../../profil/komponen/BagianKeahlian';
 import BagianPengalaman from '../../profil/komponen/BagianPengalaman';
 
-const FieldTextarea = ({ label, field, value, onChange, onBlur, placeholder, rows = 8 }) => (
-    <div className="bg-[#C69C6D] rounded-[10px] p-8 flex flex-col gap-4 w-full">
-        <label className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">{label}</label>
+const FieldTextarea = ({ label, field, value, onChange, onBlur, placeholder, rows = 5 }) => (
+    <div className="bg-[#C69C6D] rounded-lg p-5 flex flex-col gap-3 w-full">
+        <label className="font-poppins font-semibold text-[15px] text-[#4B2E2B]">{label}</label>
         <textarea
             rows={rows}
             value={value || ''}
             onChange={(e) => onChange(field, e.target.value)}
             onBlur={() => onBlur(field, value)}
             placeholder={placeholder}
-            className="w-full bg-white rounded-[10px] px-6 py-4 font-poppins font-medium text-[14px] text-[#4B2E2B] placeholder:text-[#4B2E2B]/30 focus:outline-none focus:ring-2 focus:ring-[#4B2E2B]/10 resize-none transition-all border-none"
+            className="w-full bg-white rounded-lg px-4 py-3 font-poppins font-medium text-[13px] text-[#4B2E2B] placeholder:text-[#4B2E2B]/30 focus:outline-none focus:ring-2 focus:ring-[#4B2E2B]/10 resize-none transition-all border-none"
         />
     </div>
 );
 
 const FieldInput = ({ label, field, value, isEditing, onChange, placeholder, type = "text" }) => (
-    <div className="flex flex-col gap-2 w-full">
-        <label className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">{label}</label>
+    <div className="flex flex-col gap-1.5 w-full">
+        <label className="font-poppins font-semibold text-[15px] text-[#4B2E2B]">{label}</label>
         <input
             type={type}
             value={value || ''}
             onChange={(e) => isEditing && onChange(field, e.target.value)}
             placeholder={placeholder}
             readOnly={!isEditing}
-            className={`w-full rounded-[10px] px-6 py-3 font-poppins font-medium text-[16px] text-[#4B2E2B] placeholder:text-[#4B2E2B]/30 focus:outline-none transition-all ${
+            className={`w-full rounded-lg px-4 py-2.5 font-poppins font-medium text-[14px] text-[#4B2E2B] placeholder:text-[#4B2E2B]/30 focus:outline-none transition-all ${
                 isEditing 
                     ? 'bg-white border-2 border-[#4B2E2B]/30 focus:border-[#4B2E2B]' 
                     : 'bg-white/80 border-none opacity-90'
@@ -39,13 +39,13 @@ const FieldInput = ({ label, field, value, isEditing, onChange, placeholder, typ
 );
 
 const FieldSelect = ({ label, field, value, isEditing, onChange, options }) => (
-    <div className="flex flex-col gap-2 w-full">
-        <label className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">{label}</label>
+    <div className="flex flex-col gap-1.5 w-full">
+        <label className="font-poppins font-semibold text-[15px] text-[#4B2E2B]">{label}</label>
         <select
             value={value || ''}
             onChange={(e) => isEditing && onChange(field, e.target.value)}
             disabled={!isEditing}
-            className={`w-full rounded-[10px] px-6 py-3 font-poppins font-medium text-[16px] text-[#4B2E2B] focus:outline-none transition-all appearance-none cursor-pointer ${
+            className={`w-full rounded-lg px-4 py-2.5 font-poppins font-medium text-[14px] text-[#4B2E2B] focus:outline-none transition-all appearance-none cursor-pointer ${
                 isEditing 
                     ? 'bg-white border-2 border-[#4B2E2B]/30 focus:border-[#4B2E2B]' 
                     : 'bg-white/80 border-none opacity-90'
@@ -186,22 +186,22 @@ const Step3Profile = ({ data, onChange }) => {
     };
 
     return (
-        <div className="pembungkus-tahap-profil w-full flex flex-col gap-10">
+        <div className="pembungkus-tahap-profil w-full flex flex-col gap-6">
             {/* Banner Instruksi Hijau */}
-            <div className="w-full bg-[#6B8E23] rounded-[50px] px-12 py-10">
-                <h2 className="font-poppins font-semibold text-[32px] text-white leading-tight">
+            <div className="w-full bg-[#6B8E23] rounded-2xl px-6 py-6">
+                <h2 className="font-poppins font-semibold text-2xl text-white leading-tight">
                     Perbarui Profile
                 </h2>
-                <p className="font-poppins font-medium text-[20px] text-white/90 mt-4 leading-relaxed max-w-[1100px]">
+                <p className="font-poppins font-medium text-[15px] text-white/90 mt-2 leading-relaxed max-w-3xl">
                     Harap periksa kelengkapan data diri, memperbaruinya jika perlu untuk melengkapi lamaran Anda. Profile Anda sangat diperlukan untuk perusahaan yang akan ditinjau oleh HRD
                 </p>
             </div>
 
             {/* Layout 2 Kolom */}
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
                 
                 {/* Kolom Kiri — Form Dinamis Profil */}
-                <div className="pembungkus-kolom-kiri flex-1 bg-[#F5F1EA] rounded-[40px] p-8 border border-[#4B2E2B]/10 flex flex-col gap-8 w-full">
+                <div className="pembungkus-kolom-kiri flex-1 bg-[#F5F1EA] rounded-2xl p-4 border border-[#4B2E2B]/10 flex flex-col gap-6 w-full">
                     
                     {/* Tentang Saya (Textarea biasa, tapi di-save onBlur) */}
                     <FieldTextarea 
@@ -231,13 +231,13 @@ const Step3Profile = ({ data, onChange }) => {
                 </div>
 
                 {/* Kolom Kanan — Kartu Info Personal */}
-                <div className="pembungkus-kolom-kanan w-full lg:w-[480px] bg-[#C69C6D] rounded-[40px] p-10 flex flex-col gap-8">
+                <div className="pembungkus-kolom-kanan w-full lg:w-80 bg-[#C69C6D] rounded-2xl p-5 flex flex-col gap-6">
                     {/* Avatar Section */}
-                    <div className="flex justify-center mb-2">
+                    <div className="flex justify-center mb-1">
                         <div className="relative">
                             <div 
                                 onClick={() => { if (isEditingDasar && !uploadingFoto) handleCameraClick() }}
-                                className={`w-[158px] h-[158px] rounded-full border-4 border-[#4B2E2B]/20 overflow-hidden flex items-center justify-center bg-[#F3EDE6] relative group ${uploadingFoto ? 'opacity-50' : ''} ${isEditingDasar && !uploadingFoto ? 'cursor-pointer hover:border-[#4B2E2B]/40' : ''} transition-all`}
+                                className={`w-24 h-24 rounded-full border-4 border-[#4B2E2B]/20 overflow-hidden flex items-center justify-center bg-[#F3EDE6] relative group ${uploadingFoto ? 'opacity-50' : ''} ${isEditingDasar && !uploadingFoto ? 'cursor-pointer hover:border-[#4B2E2B]/40' : ''} transition-all`}
                             >
                                 <img 
                                     src={profilData?.foto_profil 
@@ -282,7 +282,7 @@ const Step3Profile = ({ data, onChange }) => {
                     </div>
 
                     {/* Personal Info Fields */}
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4">
                         <FieldInput 
                             label="Nama Lengkap" 
                             field="nama_lengkap"
@@ -342,13 +342,13 @@ const Step3Profile = ({ data, onChange }) => {
                         <div className="flex flex-col gap-3 mt-4">
                             <button 
                                 onClick={handleSimpanDasar}
-                                className="w-full bg-[#4B2E2B] text-white py-4 rounded-[50px] font-poppins font-semibold text-[20px] text-center hover:bg-[#3d2523] transition-all active:scale-95"
+                                className="w-full bg-[#4B2E2B] text-white py-2.5 rounded-full font-poppins font-semibold text-[15px] text-center hover:bg-[#3d2523] transition-all active:scale-95"
                             >
                                 Simpan Perubahan
                             </button>
                             <button 
                                 onClick={toggleEditDasar}
-                                className="w-full bg-transparent border-2 border-[#4B2E2B] text-[#4B2E2B] py-4 rounded-[50px] font-poppins font-semibold text-[20px] text-center hover:bg-[#4B2E2B]/5 transition-all active:scale-95"
+                                className="w-full bg-transparent border-2 border-[#4B2E2B] text-[#4B2E2B] py-2.5 rounded-full font-poppins font-semibold text-[15px] text-center hover:bg-[#4B2E2B]/5 transition-all active:scale-95"
                             >
                                 Batal
                             </button>

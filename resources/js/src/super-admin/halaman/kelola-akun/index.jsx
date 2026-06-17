@@ -163,7 +163,7 @@ const HalamanKelolaAkun = () => {
     };
 
     return (
-        <div className="min-h-screen" style={{ background: '#F4ECE9', padding: '40px 40px 60px' }}>
+        <div className="min-h-screen p-4 md:p-6 lg:p-10" style={{ background: '#F4ECE9' }}>
 
             {/* Toast */}
             {notifikasi && (
@@ -186,7 +186,7 @@ const HalamanKelolaAkun = () => {
             </div>
 
             {/* ── Stats Cards (351:558 + 351:572) ── */}
-            <div className="flex gap-4 mb-8" style={{ alignItems: 'stretch' }}>
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
                 <CardTotalAdmin
                     nilai={sedangMemuat ? '—' : `${totalAdmin} Pengguna`}
                     tren="+12% bulan ini"
@@ -197,9 +197,9 @@ const HalamanKelolaAkun = () => {
             </div>
 
             {/* ── Search + Filter (355:160: 355:143 + 355:149) ── */}
-            <div className="flex items-center justify-between gap-4 mb-6 w-full">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6 w-full">
                 {/* Search Input — 355:143 */}
-                <div className="relative" style={{ flex: '1 1 0', maxWidth: 400 }}>
+                <div className="relative w-full md:max-w-[400px]">
                     <img
                         src={ikonSearch}
                         alt="cari"

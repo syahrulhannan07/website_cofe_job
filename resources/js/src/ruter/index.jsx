@@ -15,6 +15,7 @@ import Masuk from '../halaman/autentikasi/Masuk';
 import Daftar from '../halaman/autentikasi/Daftar';
 import AturUlangSandi from '../halaman/autentikasi/AturUlangSandi';
 import Melamar from '../halaman/melamar';
+import HalamanBantuanAi from '../halaman/bantuan-ai';
 
 // Fitur Admin Perusahaan
 import DashboardAdmin from '../admin-perusahaan/halaman/dashboard';
@@ -29,6 +30,7 @@ import LoginSuperAdmin    from '../super-admin/halaman/masuk';
 import VerifikasiSuperAdmin from '../super-admin/halaman/verifikasi';
 import KelolaAkunSuperAdmin from '../super-admin/halaman/kelola-akun';
 import HalamanDetailLowonganSuperAdmin from '../super-admin/halaman/kelola-akun/HalamanDetailLowonganSuperAdmin';
+import HalamanAiDeteksi from '../super-admin/halaman/ai-deteksi';
 
 const ruter = createBrowserRouter([
     // --- Rute Publik (Pelamar) ---
@@ -42,6 +44,7 @@ const ruter = createBrowserRouter([
             { path: 'profil', element: <Profil /> },
             { path: 'status-lamaran', element: <StatusLamaran /> },
             { path: 'status-lamaran/:id', element: <DetailStatusLamaran /> },
+            { path: 'bantuan-ai', element: <HalamanBantuanAi /> },
         ],
     },
 
@@ -90,6 +93,7 @@ const ruter = createBrowserRouter([
             { path: 'dashboard',   element: <DashboardSuperAdmin /> },
             { path: 'verifikasi',  element: <VerifikasiSuperAdmin /> },
             { path: 'kelola-akun', element: <KelolaAkunSuperAdmin /> },
+            { path: 'ai-deteksi', element: <HalamanAiDeteksi /> },
         ],
     },
 ]);

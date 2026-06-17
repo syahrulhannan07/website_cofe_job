@@ -54,8 +54,7 @@ const StatusLamaran = () => {
 
     return (
         <div className="halaman-status-lamaran-induk w-full min-h-screen bg-[#F3EDE6]">
-            {/* Konten Utama Terpusat */}
-            <main className="wadah-konten-maksimal w-full max-w-[1300px] mx-auto px-6 py-16 md:py-24">
+            <main className="wadah-konten-maksimal w-full max-w-5xl mx-auto px-4 py-8 md:py-12">
                 
                 {/* Bagian Filter & Pencarian */}
                 <section className="area-interaksi-status relative z-30">
@@ -85,8 +84,8 @@ const StatusLamaran = () => {
             </main>
 
             {/* Dekorasi Latar Belakang Halus */}
-            <div className="dekorasi-lingkaran absolute top-0 right-0 w-[500px] h-[500px] bg-[#4B2E2B]/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
-            <div className="dekorasi-lingkaran-2 absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#C69C6D]/10 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
+            <div className="dekorasi-lingkaran absolute top-0 right-0 w-[300px] h-[300px] bg-[#4B2E2B]/5 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
+            <div className="dekorasi-lingkaran-2 absolute bottom-0 left-0 w-[250px] h-[250px] bg-[#C69C6D]/10 rounded-full blur-[60px] -z-10 pointer-events-none"></div>
         </div>
     );
 };

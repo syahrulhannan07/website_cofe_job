@@ -54,7 +54,7 @@ const Perusahaan = () => {
         <motion.main 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="wadah-halaman-perusahaan w-full min-h-screen bg-[#F3EDE6] pt-24 pb-20"
+            className="wadah-halaman-perusahaan w-full min-h-screen bg-[#F3EDE6] pb-20"
         >
             {sedangMemuat && daftarPerusahaan.length === 0 ? (
                 <LoadingKopi pesan="Menyiapkan Daftar Kafe..." />

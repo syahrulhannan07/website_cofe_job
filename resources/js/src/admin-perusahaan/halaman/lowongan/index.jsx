@@ -98,7 +98,7 @@ const HalamanLowongan = () => {
     }
 
     return (
-        <div className="flex-1 w-full flex flex-col p-8 lg:p-10 bg-[#F3EDE6] min-h-screen">
+        <div className="flex-1 w-full flex flex-col p-5 md:p-8 lg:p-10 bg-[#F3EDE6] min-h-screen overflow-x-hidden">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
                 <div>
@@ -110,10 +110,10 @@ const HalamanLowongan = () => {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
                     <button 
                         onClick={() => navigate('/admin/lowongan/tambah')}
-                        className="h-[40px] w-[180px] bg-[#4B2E2B] hover:bg-[#4B2E2B]/90 text-[#F3EDE6] rounded-full flex items-center justify-center gap-[6px] transition-all"
+                        className="h-[40px] w-full sm:w-[180px] bg-[#4B2E2B] hover:bg-[#4B2E2B]/90 text-[#F3EDE6] rounded-full flex items-center justify-center gap-[6px] transition-all"
                     >
                         <img 
                             src={PlusIcon} 
@@ -123,7 +123,7 @@ const HalamanLowongan = () => {
                         <span className="font-poppins text-[13px] font-normal">Tambah Lowongan</span>
                     </button>
 
-                    <div className="relative group w-[205px]">
+                    <div className="relative group w-full sm:w-[205px]">
                         <img 
                             src={SearchIcon} 
                             alt="Search" 

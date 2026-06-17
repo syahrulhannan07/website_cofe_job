@@ -120,35 +120,35 @@ const Masuk = () => {
     };
 
     return (
-        <div className="wadah-halaman-masuk min-h-screen bg-[#F3EDE6] font-poppins flex flex-col overflow-x-hidden">
+        <div className="wadah-halaman-masuk min-h-screen bg-[#F3EDE6] font-poppins flex flex-col overflow-x-hidden overflow-y-auto">
             <Navbar />
             
             {/* Main Content Area */}
             <div className="area-konten-utama flex-1 flex flex-col md:flex-row w-full max-w-[1440px] mx-auto py-8">
                 
                 {/* Sisi Kiri: Sidebar Cokelat (Menempel di kiri) */}
-                <div className="sisi-kiri-sidebar hidden md:flex w-[40%] max-w-[413px] min-h-[600px] bg-[#4B2E2B] rounded-r-[50px] flex-col justify-start pt-[130px] px-10 shadow-lg">
+                <div className="sisi-kiri-sidebar hidden md:flex w-[40%] max-w-[413px] min-h-[500px] bg-[#4B2E2B] rounded-r-3xl flex-col justify-start pt-[130px] px-8 shadow-lg">
                     <div className="teks-ajakan w-full">
-                        <span className="teks-baris-1 text-[#C69C6D] text-[32px] lg:text-[36px] font-jakarta font-[800] leading-[1.4] break-words block">
+                        <span className="teks-baris-1 text-[#C69C6D] text-2xl lg:text-3xl font-jakarta font-[800] leading-[1.4] break-words block">
                             Gabung bersama
                         </span>
-                        <span className="teks-baris-2 text-[#F3EDE6] text-[32px] lg:text-[36px] font-jakarta italic font-[800] leading-[1.4] break-words block mt-[-5px]">
+                        <span className="teks-baris-2 text-[#F3EDE6] text-2xl lg:text-3xl font-jakarta italic font-[800] leading-[1.4] break-words block mt-[-5px]">
                             di cofe job.
                         </span>
                     </div>
                 </div>
 
                 {/* Sisi Kanan: Area Tabs & Form */}
-                <div className="sisi-kanan-form w-full md:w-[60%] flex flex-col items-center justify-center p-6 lg:p-10">
-                    <div className="wadah-konten flex flex-col items-center w-full max-w-[500px] mx-auto gap-6">
+                <div className="sisi-kanan-form w-full md:w-[60%] flex flex-col items-center justify-center p-6 lg:p-8">
+                    <div className="wadah-konten flex flex-col items-center w-full max-w-md mx-auto gap-6">
                         
                         {/* Tab Static (Masuk) */}
-                        <div className="tab-masuk w-full h-[60px] bg-[#C69C6D] rounded-[50px] flex items-center justify-center shadow-sm">
+                        <div className="tab-masuk w-full h-[60px] bg-[#C69C6D] rounded-full flex items-center justify-center shadow-sm">
                             <span className="teks-tab text-[18px] font-bold text-[#4B2E2B]">Masuk</span>
                         </div>
 
                         {/* Form Login */}
-                        <div className="wadah-form-login w-full bg-white rounded-[40px] p-8 md:p-10 shadow-lg">
+                        <div className="wadah-form-login w-full bg-white rounded-3xl p-6 md:p-8 shadow-lg">
                             <div className="header-form mb-6 text-center md:text-left">
                                 <h1 className="judul-form text-[22px] font-bold text-[#4B2E2B] mb-1">Masuk dan temukan Careermu!</h1>
                             </div>
@@ -242,7 +242,7 @@ const Masuk = () => {
                                     <button
                                         type="submit"
                                         disabled={sedangMemuat}
-                                        className="tombol-masuk w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-[50px] hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center"
+                                        className="tombol-masuk w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-full hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center"
                                     >
                                         {sedangMemuat ? 'Memproses...' : 'Masuk'}
                                     </button>
@@ -261,7 +261,7 @@ const Masuk = () => {
                                 type="button"
                                 onClick={menanganiGoogleLogin}
                                 disabled={sedangMemuatGoogle}
-                                className="tombol-google w-full h-[46px] bg-white border-2 border-[#4B2E2B] rounded-[50px] flex items-center justify-center gap-3 hover:bg-[#F9F5F0] transition-all shadow-sm active:scale-[0.98] disabled:opacity-70 cursor-pointer"
+                                className="tombol-google w-full h-[46px] bg-white border-2 border-[#4B2E2B] rounded-full flex items-center justify-center gap-3 hover:bg-[#F9F5F0] transition-all shadow-sm active:scale-[0.98] disabled:opacity-70 cursor-pointer"
                             >
                                 {/* Google Icon SVG */}
                                 <svg width="20" height="20" viewBox="0 0 48 48">
@@ -282,7 +282,7 @@ const Masuk = () => {
             {/* Modal Lupa Password */}
             {tampilkanLupaPassword && (
                 <div className="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="modal-konten bg-white rounded-[30px] p-8 md:p-10 w-full max-w-[450px] shadow-2xl relative animate-[fadeIn_0.3s_ease-out]">
+                    <div className="modal-konten bg-white rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl relative animate-[fadeIn_0.3s_ease-out]">
                         {/* Tombol Tutup */}
                         <button
                             type="button"
@@ -338,7 +338,7 @@ const Masuk = () => {
                             <button
                                 type="submit"
                                 disabled={sedangKirimReset}
-                                className="tombol-kirim-reset w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-[50px] hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center"
+                                className="tombol-kirim-reset w-full bg-[#C69C6D] h-[46px] text-[#4B2E2B] font-bold text-[16px] rounded-full hover:bg-[#b88c5d] transition-all shadow-md active:scale-[0.98] disabled:opacity-70 flex items-center justify-center"
                             >
                                 {sedangKirimReset ? 'Mengirim...' : 'Kirim Link Reset'}
                             </button>

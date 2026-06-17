@@ -107,7 +107,7 @@ const Lowongan = () => {
     }
 
     return (
-        <div className="w-full min-h-screen bg-[#F3EDE6] flex flex-col font-poppins relative overflow-x-hidden">
+        <div className="w-full flex-1 bg-[#F3EDE6] flex flex-col font-poppins relative overflow-x-hidden">
             <HeaderHero
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
@@ -118,13 +118,13 @@ const Lowongan = () => {
             />
 
             {/* Explore Section (Frame 81) - Dark Background */}
-            <div className="w-full bg-[#4B2E2B] py-[80px] pb-[128px]">
-                <div className="max-w-[1232px] mx-auto px-4 flex flex-col items-center lg:items-start">
-                    <h2 className="font-poppins font-bold text-[36px] leading-[54px] text-[#F3EDE6] mb-[40px] text-left">
+            <div className="w-full bg-[#4B2E2B] py-12 flex-1">
+                <div className="max-w-5xl mx-auto px-4 flex flex-col items-center lg:items-start">
+                    <h2 className="font-poppins font-bold text-3xl leading-snug text-[#F3EDE6] mb-6 text-left">
                         Eksplorasi Karir
                     </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px] w-full min-h-[500px]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full min-h-72">
                         {sedangMemuat ? (
                             <div className="col-span-1 md:col-span-2 lg:col-span-3">
                                 <LoadingKopi fullScreen={false} gelapBg={true} pesan="Menyeduh Lowongan Terbaik..." />
@@ -147,8 +147,8 @@ const Lowongan = () => {
                                 </div>
                             ))
                         ) : (
-                            <div className="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center items-center h-[300px]">
-                                <p className="font-poppins text-[20px] text-[#F3EDE6]/70">
+                            <div className="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center items-center h-[200px]">
+                                <p className="font-poppins text-sm text-[#F3EDE6]/70">
                                     Tidak ada lowongan yang sesuai dengan kriteria pencarian Anda.
                                 </p>
                             </div>

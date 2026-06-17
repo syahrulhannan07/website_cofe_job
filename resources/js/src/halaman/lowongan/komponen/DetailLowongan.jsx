@@ -18,18 +18,15 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
     const navigate = useNavigate();
     const { state } = useLocation();
     
-    // Gunakan data dari prop atau state rute jika tersedia agar tampilan muncul instan
     const [dataLowongan, setDataLowongan] = useState(lowonganProp || state?.job || null);
     const [sedangMemuat, setSedangMemuat] = useState(!lowonganProp && !state?.job);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Mengambil data detail lowongan dari API Laravel berdasarkan ID
-        // Jika data sudah ada dari state, pengambilan API tetap dilakukan di background untuk memastikan data terbaru
         const ambilDetailLowongan = async () => {
             try {
                 if (!dataLowongan) setSedangMemuat(true);
-                const respons = await api.get(`/lowongan/${id}`, { timeout: 10000 }); // 10 detik timeout
+                const respons = await api.get(`/lowongan/${id}`, { timeout: 10000 });
                 if (respons.data.status === 'success') {
                     setDataLowongan(respons.data.data);
                     setError(null);
@@ -47,7 +44,6 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
                 setSedangMemuat(false);
             }
         };
-
         if (id) {
             ambilDetailLowongan();
         }
@@ -58,7 +54,6 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
         if (token) {
             navigate('/melamar', { state: { lowongan: dataLowongan } });
         } else {
-            // Jika belum login, arahkan ke login
             navigate('/masuk');
         }
     };
@@ -67,7 +62,6 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
         navigate(-1);
     };
 
-    // Tampilkan Halaman Error jika terjadi masalah
     if (error === 404) {
         return <HalamanErrorKopi code={404} message="Lowongan Tidak Ditemukan" subMessage="Maaf, lowongan yang Anda cari tidak tersedia atau sudah ditutup." />;
     }
@@ -88,34 +82,24 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
     const perusahaan = lowongan.perusahaan;
 
     return (
-        <div className="w-full min-h-screen bg-[#F3EDE6] font-poppins pb-[100px] flex flex-col">
-            {/* Header Lowongan - Banner Atas */}
-            <div className="banner-header-lowongan w-full h-[300px] bg-[#4B2E2B] flex items-center justify-center shrink-0">
-                <div className="w-full max-w-[1440px] px-[50px] flex flex-col md:flex-row justify-between items-center gap-8">
-                    
-                    {/* Info Utama Lowongan */}
-                    <div className="info-utama-lowongan flex items-center gap-[30px] md:gap-[50px]">
-                        <div className="foto-profil-perusahaan-kecil w-[120px] h-[120px] md:w-[150px] md:h-[150px] bg-[#F3EDE6] rounded-[15px] flex items-center justify-center overflow-hidden shrink-0">
-                            <img 
-                                src={lowongan.logo_kafe || placeholderProfile} 
-                                alt={lowongan.nama_kafe} 
-                                className="w-full h-full object-cover" 
-                            />
+        <div className="w-full min-h-screen bg-[#F3EDE6] font-poppins pb-12 flex flex-col">
+            <div className="w-full h-[180px] bg-[#4B2E2B] flex items-center shrink-0">
+                <div className="w-full max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-4 md:gap-6">
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-[#F3EDE6] rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+                            <img src={lowongan.logo_kafe || placeholderProfile} alt={lowongan.nama_kafe} className="w-full h-full object-cover" />
                         </div>
-                        
-                        <div className="flex flex-col gap-[8px]">
-                            <h1 className="font-poppins font-extrabold text-[28px] md:text-[36px] text-[#F3EDE6] leading-[1.2]">
+                        <div className="flex flex-col gap-1">
+                            <h1 className="font-poppins font-bold text-xl md:text-2xl text-[#F3EDE6] leading-tight">
                                 {lowongan.posisi}
                             </h1>
-                            <p className="font-poppins font-normal text-[18px] md:text-[20px] text-[#F3EDE6] leading-[1.2]">
+                            <p className="font-poppins font-normal text-sm md:text-base text-[#F3EDE6]">
                                 {lowongan.nama_kafe}
                             </p>
-                            
-                            {/* Lokasi Kecamatan */}
-                            <div className="bg-[#F3EDE6] rounded-[25px] h-[24px] inline-flex items-center justify-center px-[12px] w-fit mt-[4px]">
-                                <div className="flex items-center gap-[6px]">
-                                    <img src={iconLokasiMini} alt="Location" className="w-[10px] h-[12px] object-contain" />
-                                    <span className="font-inter font-normal text-[12px] text-[#4B2E2B] leading-[1]">
+                            <div className="bg-[#F3EDE6] rounded-full h-5 inline-flex items-center px-2.5 w-fit">
+                                <div className="flex items-center gap-1">
+                                    <img src={iconLokasiMini} alt="Location" className="w-[9px] h-[11px] object-contain" />
+                                    <span className="font-inter font-normal text-[10px] text-[#4B2E2B] leading-none">
                                         {lowongan.lokasi}
                                     </span>
                                 </div>
@@ -123,132 +107,94 @@ const DetailLowongan = ({ lowongan: lowonganProp }) => {
                         </div>
                     </div>
 
-                    {/* Tombol Aksi */}
-                    <div className="flex flex-col gap-[15px] md:gap-[20px]">
-                        <button 
-                            onClick={handleLamar}
-                            className="w-[200px] h-[55px] md:h-[61px] bg-[#C69C6D] rounded-[12px] font-inter font-bold text-[18px] md:text-[20px] text-[#F3EDE6] hover:bg-[#b0895f] transition-colors flex items-center justify-center"
-                        >
+                    <div className="flex gap-3">
+                        <button onClick={handleLamar} className="h-10 px-6 bg-[#C69C6D] rounded-lg font-inter font-bold text-sm text-[#F3EDE6] hover:bg-[#b0895f] transition-colors flex items-center justify-center">
                             Lamar Sekarang
                         </button>
-                        <button 
-                            onClick={handleBack}
-                            className="w-[200px] h-[55px] md:h-[61px] border border-[#F3EDE6] rounded-[12px] font-inter font-bold text-[20px] md:text-[24px] text-[#C69C6D] hover:bg-[#F3EDE6]/10 transition-colors flex items-center justify-center gap-[10px]"
-                        >
-                            <img src={leftArrow} alt="Back" className="w-[30px] md:w-[37px] h-[40px] md:h-[50px] object-contain" />
-                            Kembali...
+                        <button onClick={handleBack} className="h-10 px-4 border border-[#F3EDE6] rounded-lg font-inter font-bold text-sm text-[#C69C6D] hover:bg-[#F3EDE6]/10 transition-colors flex items-center justify-center gap-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/></svg>
+                            Kembali
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Konten Utama */}
-            <div className="w-full max-w-[1440px] mx-auto px-[30px] md:px-[50px] mt-[40px] flex flex-col lg:flex-row gap-[40px] lg:gap-[113px]">
-                
-                {/* Deskripsi & Kualifikasi */}
-                <div className="flex-1 flex flex-col max-w-full lg:max-w-[788px]">
-                    <h2 className="font-poppins font-extrabold text-[24px] text-[#4B2E2B] mb-[9px]">
-                        Deskripsi Pekerjaan
-                    </h2>
-                    <div className="area-deskripsi-pekerjaan font-poppins font-normal text-[15px] text-[#C69C6D] leading-[1.8] mb-[64px] text-justify whitespace-pre-line">
+            <div className="w-full max-w-6xl mx-auto px-6 mt-6 flex flex-col lg:flex-row gap-8 lg:gap-12">
+                <div className="flex-1 flex flex-col">
+                    <h2 className="font-poppins font-bold text-lg text-[#4B2E2B] mb-2">Deskripsi Pekerjaan</h2>
+                    <div className="font-poppins font-normal text-sm text-[#C69C6D] leading-relaxed mb-8 text-justify whitespace-pre-line">
                         {lowongan.deskripsi}
                     </div>
 
-                    <h2 className="font-poppins font-extrabold text-[24px] text-[#4B2E2B] mb-[21px]">
-                        Persyaratan & Kualifikasi
-                    </h2>
-                    <div className="daftar-syarat-kualifikasi font-poppins font-normal text-[15px] text-[#C69C6D] leading-[1.8] text-justify whitespace-pre-line">
+                    <h2 className="font-poppins font-bold text-lg text-[#4B2E2B] mb-3">Persyaratan & Kualifikasi</h2>
+                    <div className="font-poppins font-normal text-sm text-[#C69C6D] leading-relaxed text-justify whitespace-pre-line">
                         {lowongan.persyaratan}
                     </div>
                 </div>
 
-                {/* Sidebar Ringkasan Perusahaan */}
-                <div className="w-full lg:w-[550px] shrink-0 flex flex-col">
-                    <div className="kartu-ringkasan-kafe w-full border-[3px] border-[#C69C6D] rounded-[50px] overflow-hidden bg-transparent flex flex-col relative min-h-[700px] lg:h-[802px]">
-                        
-                        {/* Banner Kartu */}
-                        <div className="w-full h-[173px] bg-[#C69C6D] shrink-0" />
-                        
-                        {/* Logo Perusahaan */}
-                        <div className="absolute top-[82px] left-[40px] w-[160px] h-[160px] bg-[#F3EDE6] rounded-[15px] flex items-center justify-center border border-[#C69C6D]/20 shadow-lg overflow-hidden">
-                            <img 
-                                src={perusahaan?.logo_perusahaan || placeholderProfile} 
-                                alt={perusahaan?.nama_perusahaan} 
-                                className="w-full h-full object-cover" 
-                            />
+                <div className="w-full lg:w-[380px] shrink-0 flex flex-col">
+                    <div className="w-full border-2 border-[#C69C6D] rounded-2xl overflow-hidden bg-transparent flex flex-col relative">
+                        <div className="w-full h-[100px] bg-[#C69C6D] shrink-0" />
+                        <div className="absolute top-[40px] left-6 w-[80px] h-[80px] bg-[#F3EDE6] rounded-lg flex items-center justify-center border border-[#C69C6D]/20 shadow-lg overflow-hidden">
+                            <img src={perusahaan?.logo_perusahaan || placeholderProfile} alt={perusahaan?.nama_perusahaan} className="w-full h-full object-cover" />
                         </div>
-
-                        {/* Detail Info Perusahaan */}
-                        <div className="detail-info-perusahaan flex flex-col px-[40px] mt-[90px] h-full relative pb-[40px]">
-                            <div className="flex items-center gap-[10px] mb-[15px]">
-                                <h3 className="font-poppins font-extrabold text-[24px] text-[#C69C6D] line-clamp-1">
+                        <div className="flex flex-col px-6 mt-12 pb-6">
+                            <div className="flex items-center gap-2 mb-3">
+                                <h3 className="font-poppins font-bold text-base text-[#C69C6D] line-clamp-1">
                                     {perusahaan?.nama_perusahaan}
                                 </h3>
                                 {perusahaan?.status_verifikasi === 'Diterima' && (
-                                    <img src={verifiedBadge} alt="Verified" className="w-[24px] h-[24px] object-contain" />
+                                    <img src={verifiedBadge} alt="Verified" className="w-4 h-4 object-contain" />
                                 )}
                             </div>
-                            
-                            <p className="font-poppins font-normal text-[16px] text-[#C69C6D] leading-[24px] mb-[30px]">
-                                “{perusahaan?.deskripsi || "Perusahaan kafe yang berdedikasi memberikan pengalaman kopi terbaik."}”
+                            <p className="font-poppins font-normal text-sm text-[#C69C6D] leading-snug mb-4">
+                                &ldquo;{perusahaan?.deskripsi || "Perusahaan kafe yang berdedikasi memberikan pengalaman kopi terbaik."}&rdquo;
                             </p>
-                            
-                            <div className="w-full border-t border-[#C69C6D] pt-[30px] flex flex-col gap-[25px] flex-grow">
-                                
-                                {/* Info Berdiri */}
-                                <div className="flex items-start gap-[15px]">
-                                    <div className="w-[30px] h-[30px] flex items-center justify-start shrink-0">
-                                        <img src={calendarIcon} alt="Calendar" className="w-[24px] h-[24px] object-contain" />
+                            <div className="w-full border-t border-[#C69C6D] pt-4 flex flex-col gap-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-5 h-5 flex items-center justify-start shrink-0">
+                                        <img src={calendarIcon} alt="Calendar" className="w-4 h-4 object-contain" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-poppins font-semibold text-[15px] text-[#C69C6D] leading-tight">Berdiri</span>
-                                        <span className="font-poppins font-normal text-[14px] text-[#4B2E2B] mt-1">
+                                        <span className="font-poppins font-semibold text-xs text-[#C69C6D] leading-tight">Berdiri</span>
+                                        <span className="font-poppins font-normal text-xs text-[#4B2E2B] mt-0.5">
                                             {perusahaan?.tanggal_berdiri || "-"}
                                         </span>
                                     </div>
                                 </div>
-
-                                {/* Info Lokasi */}
-                                <div className="flex items-start gap-[15px]">
-                                    <div className="w-[30px] h-[30px] flex items-center justify-start shrink-0">
-                                        <img src={iconLocation} alt="Location" className="w-[24px] h-[24px] object-contain" />
+                                <div className="flex items-start gap-3">
+                                    <div className="w-5 h-5 flex items-center justify-start shrink-0">
+                                        <img src={iconLocation} alt="Location" className="w-4 h-4 object-contain" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-poppins font-semibold text-[15px] text-[#C69C6D] leading-tight">Lokasi</span>
-                                        <span className="font-poppins font-normal text-[14px] text-[#4B2E2B] mt-1">
+                                        <span className="font-poppins font-semibold text-xs text-[#C69C6D] leading-tight">Lokasi</span>
+                                        <span className="font-poppins font-normal text-xs text-[#4B2E2B] mt-0.5">
                                             {perusahaan?.alamat_perusahaan}
                                             {perusahaan?.kecamatan && !perusahaan?.alamat_perusahaan?.includes(perusahaan?.kecamatan) && `, ${perusahaan?.kecamatan}`}
                                             {", Indramayu"}
                                         </span>
                                     </div>
                                 </div>
-
-                                {/* Info Lowongan Aktif */}
-                                <div className="flex items-start gap-[15px]">
-                                    <div className="w-[30px] h-[30px] flex items-center justify-start shrink-0">
-                                        <img src={briefcaseIcon} alt="Jobs" className="w-[24px] h-[24px] object-contain" />
+                                <div className="flex items-start gap-3">
+                                    <div className="w-5 h-5 flex items-center justify-start shrink-0">
+                                        <img src={briefcaseIcon} alt="Jobs" className="w-4 h-4 object-contain" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-poppins font-semibold text-[15px] text-[#C69C6D] leading-tight">Lowongan Aktif</span>
-                                        <span className="font-poppins font-normal text-[14px] text-[#4B2E2B] mt-1">
+                                        <span className="font-poppins font-semibold text-xs text-[#C69C6D] leading-tight">Lowongan Aktif</span>
+                                        <span className="font-poppins font-normal text-xs text-[#4B2E2B] mt-0.5">
                                             {perusahaan?.jumlah_lowongan} Lowongan
                                         </span>
                                     </div>
                                 </div>
-
                             </div>
-
-                            {/* Tombol Profil */}
-                            <button 
-                                onClick={() => navigate(`/perusahaan/${perusahaan?.id_perusahaan}`)}
-                                className="w-full max-w-[467px] h-[51px] bg-[#C69C6D] rounded-[25px] font-poppins font-extrabold text-[20px] md:text-[24px] text-[#F3EDE6] mt-[40px] hover:bg-[#b0895f] transition-colors self-center"
+                            <button onClick={() => navigate(`/perusahaan/${perusahaan?.id_perusahaan}`)}
+                                className="w-full h-10 bg-[#C69C6D] rounded-full font-poppins font-bold text-sm text-[#F3EDE6] mt-6 hover:bg-[#b0895f] transition-colors"
                             >
                                 Lihat Profil Perusahaan
                             </button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );

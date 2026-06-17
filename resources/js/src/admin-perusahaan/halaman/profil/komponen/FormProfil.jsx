@@ -150,7 +150,7 @@ const FormProfil = ({ variants, data, onUpdate }) => {
     return (
         <motion.div 
             variants={variants}
-            className="area-form-profil w-full lg:w-[718px] min-h-[548px] bg-[#EAE4DC] border border-[#CCCCCC] rounded-[20px] p-[40px] relative shadow-sm flex flex-col justify-between"
+            className="area-form-profil w-full lg:w-[718px] min-h-[548px] bg-[#EAE4DC] border border-[#CCCCCC] rounded-[20px] p-6 md:p-[40px] relative shadow-sm flex flex-col justify-between"
         >
             {/* TOMBOL EDIT (PencilSquare) */}
             <button 
@@ -376,7 +376,7 @@ const FormProfil = ({ variants, data, onUpdate }) => {
                             <button 
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="tombol-simpan w-[189px] h-[48px] bg-[#4B2E2B] hover:bg-[#F5B759] text-[#F3EDE6] hover:text-[#4B2E2B] font-poppins font-bold text-[16px] rounded-[50px] transition-all duration-300 shadow-md flex items-center justify-center disabled:opacity-70"
+                                className="tombol-simpan w-full md:w-[189px] h-[48px] bg-[#4B2E2B] hover:bg-[#F5B759] text-[#F3EDE6] hover:text-[#4B2E2B] font-poppins font-bold text-[16px] rounded-[50px] transition-all duration-300 shadow-md flex items-center justify-center disabled:opacity-70"
                             >
                                 {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
                             </button>

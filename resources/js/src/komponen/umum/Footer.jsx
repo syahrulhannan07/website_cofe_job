@@ -3,10 +3,10 @@ import React from 'react';
 const Footer = () => {
   return (
     <div className="wadah-footer flex w-full justify-center bg-[#4b2e2b]">
-      <footer className="konten-footer flex flex-col items-center w-full max-w-[1440px] py-12 gap-12 px-6 lg:px-12">
+      <footer className="konten-footer flex flex-col items-center w-full max-w-7xl py-8 gap-6 px-6 lg:px-10">
 
         {/* Kolom-kolom Atas */}
-        <div className="area-kolom-atas grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 w-full max-w-[1280px]">
+        <div className="area-kolom-atas grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-6xl">
 
           {/* Kolom 1: Brand */}
           <div className="kolom-brand flex flex-col gap-4">
@@ -60,7 +60,7 @@ const Footer = () => {
         </div>
 
         {/* Baris Bawah: Copyright & Bahasa */}
-        <div className="area-baris-bawah flex flex-col-reverse md:flex-row justify-between items-center w-full max-w-[1280px] pt-8 border-t border-[#e6dcd3] gap-4">
+        <div className="area-baris-bawah flex flex-col-reverse md:flex-row justify-between items-center w-full max-w-6xl pt-8 border-t border-[#e6dcd3] gap-4">
           <span className="teks-copyright font-inter font-normal text-sm text-[#f3ede6] text-center md:text-left">
             © 2024 CAFE Indramayu. Brewing Careers Daily.
           </span>

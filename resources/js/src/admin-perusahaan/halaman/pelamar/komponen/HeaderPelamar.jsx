@@ -7,23 +7,23 @@ const HeaderPelamar = ({ stats, activeFilter, setActiveFilter, onSearch }) => {
     const filters = ['All', 'Active', 'Draft', 'Closed'];
 
     return (
-        <div className="flex flex-wrap items-center gap-[19px] mb-[30px] w-full max-w-[1055px]">
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-[19px] mb-[30px] w-full max-w-[1055px]">
             {/* Card Lowongan */}
-            <div className="flex-1 min-w-[200px] lg:max-w-[256px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] px-4 flex items-center shrink-0">
+            <div className="flex-1 w-full sm:w-auto min-w-[200px] lg:max-w-[256px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] px-4 flex items-center shrink-0">
                 <img src={BriefcaseIcon} alt="Lowongan" className="w-[30px] h-[30px] object-contain mr-3" />
                 <span className="font-poppins text-[15px] text-[#4B2E2B] mr-auto">Lowongan</span>
                 <span className="font-poppins font-semibold text-[24px] text-[#4B2E2B] leading-none">{stats.totalLowongan}</span>
             </div>
 
             {/* Card Total Pelamar */}
-            <div className="flex-1 min-w-[200px] lg:max-w-[256px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] px-4 flex items-center shrink-0">
+            <div className="flex-1 w-full sm:w-auto min-w-[200px] lg:max-w-[256px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] px-4 flex items-center shrink-0">
                 <img src={GroupIcon} alt="Total Pelamar" className="w-[30px] h-[30px] object-contain mr-3" />
                 <span className="font-poppins text-[15px] text-[#4B2E2B] mr-auto whitespace-nowrap">Total Pelamar</span>
                 <span className="font-poppins font-semibold text-[24px] text-[#4B2E2B] leading-none">{stats.totalPelamar}</span>
             </div>
 
             {/* Search Bar */}
-            <div className="flex-1 min-w-[166px] lg:max-w-[166px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-full px-5 flex items-center gap-2 shrink-0">
+            <div className="flex-1 w-full sm:w-auto min-w-[166px] lg:max-w-[166px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-full px-5 flex items-center gap-2 shrink-0">
                 <img src={SearchIcon} alt="Search" className="w-[20px] h-[20px] object-contain" />
                 <input 
                     type="text" 
@@ -34,7 +34,7 @@ const HeaderPelamar = ({ stats, activeFilter, setActiveFilter, onSearch }) => {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex-[2] min-w-[300px] lg:max-w-[320px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] p-[5px] flex items-center shrink-0">
+            <div className="flex-[2] w-full sm:w-auto min-w-[260px] sm:min-w-[300px] lg:max-w-[320px] h-[54px] bg-[#EAE4DC] border border-[#CCCCCC]/80 rounded-[10px] p-[5px] flex items-center shrink-0">
                 {filters.map((filter) => (
                     <button
                         key={filter}

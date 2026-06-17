@@ -392,8 +392,9 @@ class RecruitmentFlowTest extends TestCase
         $idLowongan = $lowonganResponse->json('data.id');
 
         // MODIFIKASI: Wajib di-publish lewat endpoint agar statusnya valid menjadi 'Active'
-        $this->withHeader('Authorization', 'Bearer ' . $adminToken)
+        $publishResponse = $this->withHeader('Authorization', 'Bearer ' . $adminToken)
             ->postJson("/api/v1/admin/lowongan/{$idLowongan}/publish");
+        $publishResponse->assertStatus(200);
 
         // 2. Login Pelamar & Inisiasi lamaran
         app('auth')->forgetGuards();

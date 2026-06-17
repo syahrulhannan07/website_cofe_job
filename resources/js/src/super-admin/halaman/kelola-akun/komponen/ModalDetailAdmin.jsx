@@ -15,6 +15,7 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
     const [dropdownBuka, setDropdownBuka] = useState(false);
     const [sedangProses, setSedangProses] = useState(false);
     const [skalaModal, setSkalaModal] = useState(1);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     useEffect(() => {
         if (admin) {
@@ -22,20 +23,21 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
         }
     }, [admin]);
 
-    // Proportional auto-scaling to prevent scrollbars and fit viewport
     useEffect(() => {
-        if (!admin) return;
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Proportional auto-scaling for desktop only
+    useEffect(() => {
+        if (!admin || isMobile) return;
 
         const hitungSkala = () => {
             const tTinggi = window.innerHeight;
             const tLebar = window.innerWidth;
-
-            // Height margin 40px, design base is 666px
             const skalaH = (tTinggi - 40) / 666;
-            // Width margin 40px, design base is 973px
             const skalaW = (tLebar - 40) / 973;
-
-            // Limit scaling between 0.65 and 1.0
             const skalaAkhir = Math.min(1.0, Math.max(0.65, Math.min(skalaH, skalaW)));
             setSkalaModal(skalaAkhir);
         };
@@ -44,7 +46,7 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
         hitungSkala();
 
         return () => window.removeEventListener('resize', hitungSkala);
-    }, [admin]);
+    }, [admin, isMobile]);
 
     if (!admin) return null;
 
@@ -75,10 +77,14 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
             role="dialog"
             aria-modal="true"
         >
-            {/* Modal Box: Width 973px, Height 666px, responsive absolute center scaling */}
+            {/* Modal Box: full screen on mobile, fixed 973x666 centered on desktop */}
             <div
-                className="konten-modal bg-[#FAF8F6] rounded-[20px] shadow-[0_25px_60px_-15px_rgba(43,24,16,0.4)] overflow-hidden flex flex-col absolute transition-all duration-300 animate-in fade-in zoom-in-95 duration-200"
-                style={{
+                className={`konten-modal bg-[#FAF8F6] shadow-[0_25px_60px_-15px_rgba(43,24,16,0.4)] flex flex-col transition-all duration-300 animate-in fade-in zoom-in-95 duration-200 ${
+                    isMobile
+                        ? 'w-full h-full rounded-none overflow-y-auto'
+                        : 'rounded-[20px] overflow-hidden absolute'
+                }`}
+                style={isMobile ? {} : {
                     width: '973px',
                     height: '666px',
                     maxWidth: '973px',
@@ -98,11 +104,13 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
                     ×
                 </button>
 
-                {/* ── PROFILE HEADER CARD (W:973 H:144) ── */}
+                {/* ── PROFILE HEADER CARD ── */}
                 <div
-                    className="header-modal w-full bg-white px-8 flex items-center justify-between border-b border-[#EAE4DC] relative flex-shrink-0"
+                    className={`header-modal w-full bg-white px-4 md:px-8 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#EAE4DC] relative flex-shrink-0 gap-4 ${
+                        isMobile ? 'py-4' : ''
+                    }`}
                     style={{
-                        height: '144px',
+                        minHeight: isMobile ? 'auto' : '144px',
                         boxShadow: '0 4px 20px -4px rgba(67, 44, 35, 0.08)',
                     }}
                 >
@@ -158,7 +166,7 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
                     </div>
 
                     {/* Status Controller (Dropdown & Simpan Button) */}
-                    <div className="pembungkus-kontrol flex items-center gap-3 pr-8">
+                    <div className="pembungkus-kontrol flex items-center gap-3 md:pr-8 w-full md:w-auto justify-end md:justify-start">
                         {/* Dropdown Menu Container */}
                         <div className="pembungkus-dropdown relative">
                             <button
@@ -220,10 +228,10 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
                     </div>
                 </div>
 
-                {/* ── SPLITSCREEN BODY GRID (3 columns: Left 1.1, Right 1.9) ── */}
-                <div className="badan-modal flex-1 grid grid-cols-3 gap-8 p-8 overflow-hidden">
+                {/* ── SPLITSCREEN BODY GRID (responsive: stack on mobile, 3 cols on desktop) ── */}
+                <div className={`badan-modal flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 p-4 md:p-8 ${isMobile ? 'overflow-visible' : 'overflow-hidden'}`}>
                     {/* Left Column: TENTANG CAFE & Alamat (1 col span) — Figma 356:484 */}
-                    <div className="kolom-kiri col-span-1 flex flex-col h-full pr-2">
+                    <div className="kolom-kiri md:col-span-1 flex flex-col h-full md:pr-2">
                         {/* Premium White Card Container */}
                         <div className="kartu-tentang bg-white rounded-[20px] border border-[#EAE4DC]/60 p-8 flex flex-col justify-between h-full shadow-[0_8px_30px_-6px_rgba(67,44,35,0.03)]">
                             <div>
@@ -259,8 +267,8 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
                         </div>
                     </div>
 
-                    {/* Right Columns: Lowongan Bento Grid (2 col span) */}
-                    <div className="kolom-kanan col-span-2 flex flex-col h-full pl-2 overflow-hidden">
+                    {/* Right Columns: Lowongan Bento Grid (2 col span on desktop) */}
+                    <div className={`kolom-kanan md:col-span-2 flex flex-col h-full md:pl-2 ${isMobile ? '' : 'overflow-hidden'}`}>
                         <h3
                             className="judul-lowongan font-bold text-[18px] text-[#2B1810] mb-5 flex-shrink-0"
                             style={{ fontFamily: 'Poppins, sans-serif' }}
@@ -268,8 +276,8 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
                             Lowongan Kafe
                         </h3>
 
-                        {/* Bento Grid layout with 3 vacancy cards */}
-                        <div className="grid-lowongan grid grid-cols-2 gap-4 flex-1 overflow-y-auto pr-1" style={{ gridAutoRows: '1fr' }}>
+                        {/* Bento Grid layout with vacancy cards */}
+                        <div className={`grid-lowongan grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 ${isMobile ? '' : 'overflow-y-auto'} md:pr-1`} style={{ gridAutoRows: '1fr' }}>
                             {lowonganReal.map((l) => {
                                 const statusNorm = (l.status || '').toLowerCase();
                                 const isAktif = statusNorm === 'aktif' || statusNorm === 'active';

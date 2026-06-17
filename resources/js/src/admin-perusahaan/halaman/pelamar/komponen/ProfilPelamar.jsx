@@ -310,7 +310,7 @@ const ProfilPelamar = ({ pelamar }) => {
                 <div className="flex flex-col gap-8 w-full">
                     
                     {/* Section - Tentang Saya (160:814) */}
-                    <div className="flex flex-col gap-4 p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
+                    <div className="flex flex-col gap-4 p-5 md:p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
                         <div className="flex items-center gap-2">
                             <div className="flex items-center justify-center w-[16px] h-[16px]">
                                 <img src={TentangIcon} alt="Tentang" className="w-full h-full object-contain" />
@@ -323,7 +323,7 @@ const ProfilPelamar = ({ pelamar }) => {
                     </div>
 
                     {/* Section - Identitas Pelamar (160:822) */}
-                    <div className="flex flex-col gap-8 p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
+                    <div className="flex flex-col gap-8 p-5 md:p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
                         <div className="flex items-center gap-2">
                             <div className="flex items-center justify-center w-[20px] h-[20px]">
                                 <img src={IdentitasIcon} alt="Identitas" className="w-full h-full object-contain" />
@@ -361,7 +361,7 @@ const ProfilPelamar = ({ pelamar }) => {
                     </div>
 
                     {/* Section - Pendidikan (160:859) */}
-                    <div className="flex flex-col gap-8 p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
+                    <div className="flex flex-col gap-8 p-5 md:p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
                         <div className="flex items-center gap-2">
                             <div className="flex items-center justify-center w-[20px] h-[20px]">
                                 <img src={KualifikasiIcon} alt="Pendidikan" className="w-full h-full object-contain" />
@@ -385,7 +385,7 @@ const ProfilPelamar = ({ pelamar }) => {
                     </div>
 
                     {/* Section - Skill (160:882) */}
-                    <div className="flex flex-col gap-8 p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
+                    <div className="flex flex-col gap-8 p-5 md:p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
                         <div className="flex items-center gap-2">
                             <div className="flex items-center justify-center w-[20px] h-[20px]">
                                 <img src={SkillIcon} alt="Skill" className="w-full h-full object-contain" />
@@ -402,7 +402,7 @@ const ProfilPelamar = ({ pelamar }) => {
                     </div>
 
                     {/* Section - Pengalaman Kerja (160:901) */}
-                    <div className="flex flex-col gap-8 p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
+                    <div className="flex flex-col gap-8 p-5 md:p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
                         <div className="flex items-center gap-2">
                             <div className="flex items-center justify-center w-[20px] h-[20px]">
                                 <img src={PengalamanIcon} alt="Pengalaman" className="w-full h-full object-contain" />
@@ -439,7 +439,7 @@ const ProfilPelamar = ({ pelamar }) => {
                 <div className="flex flex-col gap-8 w-full shrink-0">
                     
                     {/* Section - Pertanyaan Perusahaan (160:951) */}
-                    <div className="flex flex-col gap-8 p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
+                    <div className="flex flex-col gap-8 p-5 md:p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
                         <div className="flex items-start gap-3">
                             <div className="flex items-center justify-center w-[24px] h-[24px] mt-1">
                                 <img src={PertanyaanIcon} alt="Pertanyaan" className="w-full h-full object-contain" />
@@ -486,7 +486,7 @@ const ProfilPelamar = ({ pelamar }) => {
                     </div>
 
                     {/* Section - Dokumen Terlampir (160:975) */}
-                    <div className="flex flex-col gap-8 p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
+                    <div className="flex flex-col gap-8 p-5 md:p-8 bg-white rounded-[12px] shadow-sm border border-[#F5F5F4]">
                         <div className="flex items-center gap-3">
                             <div className="flex items-center justify-center w-[24px] h-[24px]">
                                 <img src={FolderIcon} alt="Dokumen" className="w-full h-full object-contain" />

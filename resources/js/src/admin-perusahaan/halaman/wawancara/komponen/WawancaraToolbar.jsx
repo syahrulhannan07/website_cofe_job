@@ -3,9 +3,9 @@ import SearchIcon from '../../../aset/pelamar/Search.svg';
 
 const WawancaraToolbar = ({ onAdd, search, setSearch }) => {
     return (
-        <div className="flex flex-row justify-between items-center mb-10 gap-4">
-            <div className="min-w-0 flex-1">
-                <h1 className="font-bold text-[24px] md:text-[28px] leading-tight text-[#4B2E2B] whitespace-nowrap">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-10 gap-4">
+            <div className="min-w-0 w-full lg:flex-1">
+                <h1 className="font-bold text-[24px] md:text-[28px] leading-tight text-[#4B2E2B]">
                     Manajemen Jadwal Wawancara
                 </h1>
                 <p className="text-[13px] md:text-[14px] leading-relaxed text-[#4B2E2B]/60 mt-0.5">
@@ -13,16 +13,16 @@ const WawancaraToolbar = ({ onAdd, search, setSearch }) => {
                 </p>
             </div>
             
-            <div className="flex flex-row items-center gap-3 md:gap-4 shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full lg:w-auto">
                 <button 
                     onClick={onAdd}
-                    className="w-[180px] md:w-[208px] h-[36px] md:h-[40px] flex items-center justify-center gap-2 bg-[#4B2E2B] text-[#EBE4DC] rounded-full hover:bg-[#3D2523] transition-all text-[11px] md:text-[13px] font-medium shrink-0"
+                    className="w-full sm:w-[180px] md:w-[208px] h-[36px] md:h-[40px] flex items-center justify-center gap-2 bg-[#4B2E2B] text-[#EBE4DC] rounded-full hover:bg-[#3D2523] transition-all text-[11px] md:text-[13px] font-medium shrink-0"
                 >
                     <span className="text-[16px] md:text-[18px] mb-0.5">+</span>
                     Jadwalkan Wawancara
                 </button>
 
-                <div className="relative w-[150px] md:w-[180px]">
+                    <div className="relative w-full sm:w-[150px] md:w-[180px]">
                     <input
                         type="text"
                         placeholder="Cari pelamar"

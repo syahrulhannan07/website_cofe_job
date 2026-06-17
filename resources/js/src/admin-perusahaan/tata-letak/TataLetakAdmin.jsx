@@ -10,6 +10,7 @@ const TataLetakAdminContent = () => {
     const location = useLocation();
     const { identitas, fetchDashboard, error } = useAdmin();
     const [menuAktif, setMenuAktif] = useState('dashboard');
+    const [sidebarTerbuka, setSidebarTerbuka] = useState(false);
 
     const menanganiLogout = () => {
         localStorage.removeItem('token');
@@ -44,6 +45,7 @@ const TataLetakAdminContent = () => {
         else if (path.includes('lowongan')) setMenuAktif('lowongan');
         else if (path.includes('wawancara')) setMenuAktif('wawancara');
         else setMenuAktif('dashboard');
+        setSidebarTerbuka(false);
     }, [location.pathname]);
 
     // Jika terjadi error (misal 404 atau timeout)
@@ -67,12 +69,14 @@ const TataLetakAdminContent = () => {
             <SidebarAdmin 
                 menuAktif={menuAktif} 
                 setMenuAktif={setMenuAktif} 
-                menanganiLogout={menanganiLogout} 
+                menanganiLogout={menanganiLogout}
+                sidebarTerbuka={sidebarTerbuka}
+                setSidebarTerbuka={setSidebarTerbuka}
             />
 
             <div className="area-kanan-admin flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-                {!isHalamanProfil && <TopbarAdmin identitas={identitas} />}
-                <main className={`konten-halaman-admin flex-1 min-h-0 overflow-y-auto bg-[#F3EDE6] ${isHalamanProfil ? 'pt-[20px]' : ''}`}>
+                <TopbarAdmin identitas={identitas} setSidebarTerbuka={setSidebarTerbuka} />
+                <main className="konten-halaman-admin flex-1 min-h-0 overflow-y-auto bg-[#F3EDE6]">
                     <Outlet />
                 </main>
             </div>

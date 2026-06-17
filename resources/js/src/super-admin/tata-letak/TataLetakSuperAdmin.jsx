@@ -11,6 +11,7 @@ const TataLetakSuperAdmin = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [menuAktif, setMenuAktif] = useState('dashboard');
+    const [sidebarTerbuka, setSidebarTerbuka] = useState(false);
 
     const menanganiLogout = () => {
         localStorage.removeItem('token');
@@ -24,8 +25,10 @@ const TataLetakSuperAdmin = () => {
         const path = location.pathname;
         if (path.includes('verifikasi')) setMenuAktif('verifikasi');
         else if (path.includes('kelola-akun')) setMenuAktif('kelola-akun');
+        else if (path.includes('ai-deteksi')) setMenuAktif('ai-deteksi');
         else if (path.includes('laporan-sistem')) setMenuAktif('laporan-sistem');
         else setMenuAktif('dashboard');
+        setSidebarTerbuka(false);
     }, [location.pathname]);
 
     return (
@@ -34,12 +37,14 @@ const TataLetakSuperAdmin = () => {
             <SidebarPusat 
                 menuAktif={menuAktif} 
                 setMenuAktif={setMenuAktif} 
-                menanganiLogout={menanganiLogout} 
+                menanganiLogout={menanganiLogout}
+                sidebarTerbuka={sidebarTerbuka}
+                setSidebarTerbuka={setSidebarTerbuka}
             />
 
             {/* Area Kanan */}
             <div className="area-kanan-super flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-                <TopbarPusat />
+                <TopbarPusat setSidebarTerbuka={setSidebarTerbuka} />
                 <main className="konten-halaman-super flex-1 min-h-0 overflow-y-auto bg-[#F4ECE9]">
                     <Outlet />
                 </main>

@@ -4,17 +4,21 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\V1\PenggunaRepository;
+use App\Repositories\V1\Admin\LowonganRepository;
+use App\Services\V1\Admin\AIScoringService;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Daftarkan layanan aplikasi ke Service Container.
-     */
     public function register(): void
     {
-        // Daftarkan PenggunaRepository sebagai Singleton
         $this->app->singleton(PenggunaRepository::class, function ($app) {
             return new PenggunaRepository();
+        });
+
+        $this->app->singleton(AIScoringService::class, function ($app) {
+            return new AIScoringService(
+                $app->make(LowonganRepository::class)
+            );
         });
     }
 

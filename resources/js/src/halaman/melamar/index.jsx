@@ -240,35 +240,35 @@ const Melamar = () => {
                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.4, ease: 'easeOut' }}
-                    className="bg-white rounded-[30px] border border-[#EAE4DC]/80 p-12 max-w-[520px] text-center shadow-[0_25px_60px_-15px_rgba(75,46,43,0.06)] flex flex-col items-center"
+                    className="bg-white rounded-2xl border border-[#EAE4DC]/80 p-5 max-w-sm text-center shadow-[0_25px_60px_-15px_rgba(75,46,43,0.06)] flex flex-col items-center"
                 >
                     {/* Premium Checkmark Badge */}
-                    <div className="w-20 h-20 bg-[#6B8E23]/10 border-4 border-[#6B8E23]/20 rounded-full flex items-center justify-center mb-8 relative">
-                        <div className="w-14 h-14 bg-[#6B8E23] rounded-full flex items-center justify-center shadow-md shadow-[#6B8E23]/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" className="w-6 h-6">
+                    <div className="w-16 h-16 bg-[#6B8E23]/10 border-4 border-[#6B8E23]/20 rounded-full flex items-center justify-center mb-5 relative">
+                        <div className="w-11 h-11 bg-[#6B8E23] rounded-full flex items-center justify-center shadow-md shadow-[#6B8E23]/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3" className="w-5 h-5">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                         </div>
                     </div>
 
-                    <h1 className="font-poppins font-bold text-[30px] leading-tight text-[#2B1810] mb-3">
+                    <h1 className="font-poppins font-bold text-xl leading-tight text-[#2B1810] mb-2">
                         Lamaran Berhasil Dikirim
                     </h1>
                     
-                    <p className="font-poppins font-medium text-[15px] text-[#827470] mb-8 leading-relaxed max-w-[400px]">
+                    <p className="font-poppins font-medium text-[14px] text-[#827470] mb-5 leading-relaxed max-w-xs">
                         Berkas lamaran Anda telah berhasil dikirimkan ke perusahaan. Tim rekrutmen akan meninjau kualifikasi Anda dan menghubungi Anda melalui email atau telepon jika terpilih untuk tahap seleksi selanjutnya.
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row gap-3.5 w-full justify-center">
+                    <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
                         <button 
                             onClick={() => navigate('/status-lamaran')}
-                            className="px-8 py-3.5 bg-[#4B2E2B] text-white rounded-full font-poppins font-bold text-[15px] hover:bg-[#3d2523] transition-all duration-300 shadow-md shadow-[#4B2E2B]/10 hover:shadow-lg active:scale-[0.98] cursor-pointer"
+                            className="px-5 py-2.5 bg-[#4B2E2B] text-white rounded-full font-poppins font-bold text-[13px] hover:bg-[#3d2523] transition-all duration-300 shadow-md shadow-[#4B2E2B]/10 hover:shadow-lg active:scale-[0.98] cursor-pointer"
                         >
                             Lihat Status Lamaran
                         </button>
                         <button 
                             onClick={() => navigate('/')}
-                            className="px-8 py-3.5 border-2 border-[#4B2E2B] text-[#4B2E2B] rounded-full font-poppins font-bold text-[15px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-[0.98] cursor-pointer"
+                            className="px-5 py-2.5 border-2 border-[#4B2E2B] text-[#4B2E2B] rounded-full font-poppins font-bold text-[13px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-[0.98] cursor-pointer"
                         >
                             Kembali ke Beranda
                         </button>
@@ -283,17 +283,17 @@ const Melamar = () => {
         <div className="pembungkus-utama-melamar w-full flex flex-col bg-[#F3EDE6] min-h-screen">
 
             {/* Header Banner */}
-            <div className="w-full bg-[#4B2E2B] py-12 px-6">
-                <div className="max-w-[1300px] mx-auto text-center flex flex-col items-center">
-                    <h1 className="font-poppins font-bold text-[36px] text-white leading-tight">
+            <div className="w-full bg-[#4B2E2B] py-8 px-4">
+                <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
+                    <h1 className="font-poppins font-bold text-2xl text-white leading-tight">
                         Selesaikan Lamaran Sekarang!
                     </h1>
-                    <p className="font-poppins font-medium text-[16px] text-white mt-4 opacity-90">
+                    <p className="font-poppins font-medium text-[14px] text-white mt-2 opacity-90">
                         Ikuti beberapa tahap untuk melamar pekerjaan tersebut
                     </p>
                     {infoLowongan && (
-                        <div className="mt-6 inline-flex items-center gap-2 bg-white/10 rounded-full px-6 py-2 backdrop-blur-sm border border-white/20">
-                            <span className="font-poppins text-[14px] text-white">
+                        <div className="mt-4 inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 backdrop-blur-sm border border-white/20">
+                            <span className="font-poppins text-[12px] text-white">
                                 Melamar untuk: <span className="font-bold">{infoLowongan.posisi}</span> di <span className="font-bold">{infoLowongan.nama_kafe}</span>
                             </span>
                         </div>
@@ -302,7 +302,7 @@ const Melamar = () => {
             </div>
 
             {/* Konten Utama */}
-            <main className="flex-1 w-full max-w-[1300px] mx-auto px-6 py-12 flex flex-col">
+            <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-6 flex flex-col">
                 {/* Progress Bar */}
                 <ProgressBar stepSaatIni={stepSaatIni} />
 
@@ -341,43 +341,43 @@ const Melamar = () => {
 
                 {/* Tombol Navigasi (Step 1-3) */}
                 {stepSaatIni < 4 && (
-                    <div className="flex items-center justify-end gap-4 mt-12">
+                    <div className="flex items-center justify-end gap-3 mt-8">
                         <button
                             onClick={kembali}
-                            className="flex items-center gap-3 px-10 py-4 border-2 border-[#4B2E2B]/10 bg-[#F5F1EA] text-[#4B2E2B] rounded-[10px] font-poppins font-semibold text-[18px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-95"
+                            className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#4B2E2B]/10 bg-[#F5F1EA] text-[#4B2E2B] rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-95"
                         >
-                            <img src={iconKembali} alt="back" className="w-5 h-5" />
+                            <img src={iconKembali} alt="back" className="w-4 h-4" />
                             Kembali
                         </button>
 
                         <button
                             onClick={lanjut}
-                            className="flex items-center gap-3 px-12 py-4 bg-[#4B2E2B] text-white rounded-[10px] font-poppins font-semibold text-[18px] hover:bg-[#3d2523] transform transition-all duration-300 active:scale-95"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-[#4B2E2B] text-white rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#3d2523] transform transition-all duration-300 active:scale-95"
                         >
                             Lanjut
-                            <img src={iconLanjut} alt="next" className="w-5 h-5" />
+                            <img src={iconLanjut} alt="next" className="w-4 h-4" />
                         </button>
                     </div>
                 )}
 
                 {/* Tombol Navigasi Akhir (Step 4) */}
                 {stepSaatIni === 4 && (
-                    <div className="flex items-center justify-end gap-4 mt-12">
+                    <div className="flex items-center justify-end gap-3 mt-8">
                         <button
                             onClick={kembali}
-                            className="flex items-center gap-3 px-10 py-4 border-2 border-[#4B2E2B]/10 bg-[#F5F1EA] text-[#4B2E2B] rounded-[10px] font-poppins font-semibold text-[18px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-95"
+                            className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#4B2E2B]/10 bg-[#F5F1EA] text-[#4B2E2B] rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-95"
                         >
-                            <img src={iconKembali} alt="back" className="w-5 h-5" />
+                            <img src={iconKembali} alt="back" className="w-4 h-4" />
                             Kembali
                         </button>
 
                         <button
                             onClick={kirimLamaran}
                             disabled={sedangMengirim}
-                            className="flex items-center gap-3 px-12 py-4 bg-[#4B2E2B] text-white rounded-[10px] font-poppins font-semibold text-[18px] hover:bg-[#3d2523] transform transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-[#4B2E2B] text-white rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#3d2523] transform transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {sedangMengirim ? 'Mengirim...' : 'Kirim lamaran'}
-                            <img src={iconSent} alt="sent" className="w-6 h-6 object-contain" />
+                            {sedangMengirim ? 'Mengirim...' : 'Kirim Lamaran'}
+                            <img src={iconSent} alt="sent" className="w-4 h-4 object-contain" />
                         </button>
                     </div>
                 )}

@@ -25,55 +25,55 @@ const getIconForDoc = (nama_dokumen) => {
 };
 
 const ReviewCard = ({ title, children, className = "" }) => (
-    <div className={`pembungkus-kartu-review bg-[#F5F1EA] rounded-[24px] p-8 border border-[#4B2E2B]/5 ${className}`}>
-        {title && <h3 className="font-poppins font-bold text-[32px] text-[#4B2E2B] mb-8 leading-none">{title}</h3>}
+    <div className={`pembungkus-kartu-review bg-[#F5F1EA] rounded-xl p-5 border border-[#4B2E2B]/5 ${className}`}>
+        {title && <h3 className="font-poppins font-bold text-xl text-[#4B2E2B] mb-5 leading-none">{title}</h3>}
         {children}
     </div>
 );
 
 const InfoItem = ({ icon, label, value }) => (
-    <div className="flex items-start gap-4">
+    <div className="flex items-start gap-3">
         {icon ? (
-            <div className="w-8 h-8 flex items-center justify-center shrink-0 mt-1">
-                <img src={icon} alt={label} className="w-6 h-6 object-contain" />
+            <div className="w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
+                <img src={icon} alt={label} className="w-4 h-4 object-contain" />
             </div>
         ) : (
-            <div className="w-8 h-8 flex items-center justify-center shrink-0 mt-1">
-                <div className="w-3 h-3 bg-[#4B2E2B]/30 rounded-full" />
+            <div className="w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-2 h-2 bg-[#4B2E2B]/30 rounded-full" />
             </div>
         )}
         <div className="flex flex-col">
-            <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">{label}</span>
-            <span className="font-poppins font-medium text-[16px] text-[#4B2E2B]/70">{value || '-'}</span>
+            <span className="font-poppins font-semibold text-[15px] text-[#4B2E2B]">{label}</span>
+            <span className="font-poppins font-medium text-[14px] text-[#4B2E2B]/70">{value || '-'}</span>
         </div>
     </div>
 );
 
 const QuestionBox = ({ question, answer }) => (
-    <div className="pembungkus-kotak-pertanyaan bg-white rounded-[12px] p-5 border border-[#C5C8B5]/20 flex flex-col gap-2">
-        <p className="font-poppins font-semibold text-[16px] text-[#4B2E2B]">{question}</p>
-        <p className="font-poppins font-bold text-[18px] text-[#4B2E2B]">{answer || '-'}</p>
+    <div className="pembungkus-kotak-pertanyaan bg-white rounded-lg p-4 border border-[#C5C8B5]/20 flex flex-col gap-1.5">
+        <p className="font-poppins font-semibold text-[14px] text-[#4B2E2B]">{question}</p>
+        <p className="font-poppins font-bold text-[15px] text-[#4B2E2B]">{answer || '-'}</p>
     </div>
 );
 
 const DocumentItem = ({ icon, name, category, size, onClick }) => (
-    <div className="pembungkus-item-dokumen bg-white rounded-[12px] p-4 border border-[#C5C8B5]/20 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#79582E]/10 rounded-[8px] flex items-center justify-center">
-                <img src={icon} alt="doc" className="w-6 h-6 object-contain" style={{ filter: 'invert(75%) sepia(18%) saturate(913%) hue-rotate(345deg) brightness(87%) contrast(85%)' }} />
+    <div className="pembungkus-item-dokumen bg-white rounded-lg p-3 border border-[#C5C8B5]/20 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#79582E]/10 rounded-md flex items-center justify-center">
+                <img src={icon} alt="doc" className="w-5 h-5 object-contain" style={{ filter: 'invert(75%) sepia(18%) saturate(913%) hue-rotate(345deg) brightness(87%) contrast(85%)' }} />
             </div>
             <div className="flex flex-col">
                 <span 
                     onClick={onClick}
-                    className="font-poppins font-bold text-[16px] text-[#4B2E2B] truncate max-w-[300px] md:max-w-md cursor-pointer hover:underline hover:text-blue-600 transition-colors"
+                    className="font-poppins font-bold text-[14px] text-[#4B2E2B] truncate max-w-[200px] md:max-w-sm cursor-pointer hover:underline hover:text-blue-600 transition-colors"
                     title="Klik untuk meninjau dokumen"
                 >
                     {name}
                 </span>
-                <span className="font-poppins font-bold text-[12px] text-[#4B2E2B]/40 uppercase tracking-widest">{category} {size ? `• ${size}` : ''}</span>
+                <span className="font-poppins font-bold text-[10px] text-[#4B2E2B]/40 uppercase tracking-widest">{category} {size ? `• ${size}` : ''}</span>
             </div>
         </div>
-        <img src={iconCheck} alt="checked" className="w-6 h-6" />
+        <img src={iconCheck} alt="checked" className="w-5 h-5" />
     </div>
 );
 
@@ -103,23 +103,23 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [], onEd
     };
 
     return (
-        <div className="pembungkus-tahap-tinjauan w-full flex flex-col gap-10">
+        <div className="pembungkus-tahap-tinjauan w-full flex flex-col gap-6">
             {/* Banner Instruksi Hijau */}
-            <div className="w-full bg-[#6B8E23] rounded-[50px] px-12 py-10">
-                <h2 className="font-poppins font-semibold text-[32px] text-white leading-tight">
+            <div className="w-full bg-[#6B8E23] rounded-2xl px-6 py-6">
+                <h2 className="font-poppins font-semibold text-2xl text-white leading-tight">
                     Review dan Kirim
                 </h2>
-                <p className="font-poppins font-medium text-[20px] text-white/90 mt-4 leading-relaxed max-w-[1100px]">
+                <p className="font-poppins font-medium text-[15px] text-white/90 mt-2 leading-relaxed max-w-3xl">
                     Harap periksa ringkasan seluruh kelengkapan data lamaran, jika dirasa sudah lengkap kirim lamaran Anda. Lamaran Anda akan ditinjau oleh HRD.
                 </p>
             </div>
 
             {/* Top Row — Profil & Pertanyaan */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Kartu Profil */}
-                <ReviewCard className="relative min-h-[480px]">
-                    <div className="flex items-center gap-6 mb-8">
-                        <div className="w-[100px] h-[100px] rounded-full bg-[#F3EDE6] overflow-hidden border-2 border-[#4B2E2B]/10 flex items-center justify-center">
+                <ReviewCard className="relative min-h-80">
+                    <div className="flex items-center gap-4 mb-5">
+                        <div className="w-14 h-14 rounded-full bg-[#F3EDE6] overflow-hidden border-2 border-[#4B2E2B]/10 flex items-center justify-center">
                             <img 
                                 src={profilData?.foto_profil 
                                     ? (profilData.foto_profil.startsWith('http') ? profilData.foto_profil : `/storage/${profilData.foto_profil}`)
@@ -128,18 +128,18 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [], onEd
                                 className="w-full h-full object-cover" 
                             />
                         </div>
-                        <h2 className="font-poppins font-bold text-[40px] text-[#4B2E2B] leading-tight">{profilData?.nama_lengkap || 'User'}</h2>
+                        <h2 className="font-poppins font-bold text-2xl text-[#4B2E2B] leading-tight">{profilData?.nama_lengkap || 'User'}</h2>
                     </div>
 
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-2">
                             <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">Tentang Saya</span>
-                            <p className="font-poppins font-medium text-[15px] text-[#4B2E2B]/80 leading-relaxed">
+                            <p className="font-poppins font-medium text-[13px] text-[#4B2E2B]/80 leading-relaxed">
                                 {profilData?.tentang_saya || profil.tentangSaya || 'Tidak ada deskripsi.'}
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 border-t border-[#4B2E2B]/10 pt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 border-t border-[#4B2E2B]/10 pt-4">
                             <InfoItem icon={iconLocation} label="Alamat" value={profilData?.alamat} />
                             <InfoItem icon={iconEmail} label="Email" value={profilData?.pengguna?.email} />
                             <InfoItem icon={iconPhone} label="No Telephone" value={profilData?.nomor_telepon} />
@@ -148,8 +148,8 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [], onEd
                         </div>
 
                         {/* Pendidikan */}
-                        <div className="flex flex-col gap-3 mt-4 border-t border-[#4B2E2B]/10 pt-6">
-                            <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">Pendidikan</span>
+                        <div className="flex flex-col gap-2 mt-3 border-t border-[#4B2E2B]/10 pt-4">
+                            <span className="font-poppins font-semibold text-[15px] text-[#4B2E2B]">Pendidikan</span>
                             {profilData?.pendidikan?.length > 0 ? (
                                 <div className="flex flex-col gap-2">
                                     {profilData.pendidikan.map(p => (
@@ -165,8 +165,8 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [], onEd
                         </div>
 
                         {/* Pengalaman Kerja */}
-                        <div className="flex flex-col gap-3 mt-2">
-                            <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">Pengalaman Kerja</span>
+                        <div className="flex flex-col gap-2 mt-1">
+                            <span className="font-poppins font-semibold text-[15px] text-[#4B2E2B]">Pengalaman Kerja</span>
                             {profilData?.pengalaman_kerja?.length > 0 ? (
                                 <div className="flex flex-col gap-4">
                                     {profilData.pengalaman_kerja.map(p => {
@@ -194,8 +194,8 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [], onEd
                         </div>
 
                         {/* Keahlian (Skill) */}
-                        <div className="flex flex-col gap-3 mt-2">
-                            <span className="font-poppins font-semibold text-[18px] text-[#4B2E2B]">Keahlian (Skill)</span>
+                        <div className="flex flex-col gap-2 mt-1">
+                            <span className="font-poppins font-semibold text-[15px] text-[#4B2E2B]">Keahlian (Skill)</span>
                             {profilData?.skills?.length > 0 ? (
                                 <div className="flex flex-wrap gap-2">
                                     {profilData.skills.map(s => (
@@ -208,13 +208,13 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [], onEd
                         </div>
                     </div>
 
-                    <button onClick={onEditProfil} className="absolute bottom-6 right-6 w-10 h-10 bg-white rounded-full flex items-center justify-center border border-[#4B2E2B]/10 hover:bg-gray-50 transition-all shadow-sm cursor-pointer" title="Kembali Edit Profil">
-                        <img src={iconEdit} alt="edit" className="w-5 h-5" />
+                    <button onClick={onEditProfil} className="absolute bottom-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center border border-[#4B2E2B]/10 hover:bg-gray-50 transition-all shadow-sm cursor-pointer" title="Kembali Edit Profil">
+                        <img src={iconEdit} alt="edit" className="w-4 h-4" />
                     </button>
                 </ReviewCard>
 
                 {/* Kartu Pertanyaan */}
-                <ReviewCard title="Pertanyaan Perusahaan" className="flex flex-col gap-6 h-fit">
+                <ReviewCard title="Pertanyaan Perusahaan" className="flex flex-col gap-4 h-fit">
                     {pertanyaanSeleksi.length === 0 ? (
                         <p className="font-poppins text-[#4B2E2B] opacity-70">Tidak ada pertanyaan khusus.</p>
                     ) : (
@@ -233,7 +233,7 @@ const Step4Review = ({ formData, dokumenWajib = [], pertanyaanSeleksi = [], onEd
             </div>
 
             {/* Bottom Section — Dokumen Terlampir */}
-            <ReviewCard title="Dokumen Terlampir" className="w-full flex flex-col gap-4">
+            <ReviewCard title="Dokumen Terlampir" className="w-full flex flex-col gap-3">
                 {dokumenWajib.map((doc) => {
                     const file = upload[doc.id_jenis_dokumen];
                     if (!file) return null; // Hanya tampilkan yang sudah diupload

@@ -108,7 +108,7 @@ const HalamanPelamar = () => {
 
     if (selectedPelamar) {
         return (
-            <div className="flex-1 w-full flex flex-col p-5 md:p-8 lg:p-10 bg-[#F4ECE9] min-h-screen overflow-x-hidden">
+            <div className="flex-1 w-full flex flex-col p-5 md:p-8 lg:p-10 bg-[#F3EDE6] min-h-screen overflow-x-hidden">
                 <ProfilPelamar pelamar={selectedPelamar} />
             </div>
         );
@@ -116,7 +116,7 @@ const HalamanPelamar = () => {
 
     if (selectedLowongan) {
         return (
-            <div className="flex-1 w-full flex flex-col p-5 md:p-8 lg:p-10 bg-[#F4ECE9] min-h-screen overflow-x-hidden">
+            <div className="flex-1 w-full flex flex-col p-5 md:p-8 lg:p-10 bg-[#F3EDE6] min-h-screen overflow-x-hidden">
                 <DetailPelamar 
                     lowongan={selectedLowongan} 
                     onBack={() => setSelectedLowongan(null)}
@@ -127,7 +127,7 @@ const HalamanPelamar = () => {
     }
 
     return (
-        <div className="flex-1 w-full flex flex-col p-5 md:p-8 lg:p-10 bg-[#F4ECE9] min-h-screen overflow-x-hidden">
+        <div className="flex-1 w-full flex flex-col p-5 md:p-8 lg:p-10 bg-[#F3EDE6] min-h-screen overflow-x-hidden">
             {/* Statistik, Search & Filter */}
             <HeaderPelamar 
                 stats={stats} 
