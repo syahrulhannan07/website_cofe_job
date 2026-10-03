@@ -17,6 +17,10 @@ const Daftar = () => {
     const [namaPengelola, setNamaPengelola] = useState('');
     const [alamat, setAlamat] = useState('');
     const [dokumen, setDokumen] = useState(null);
+    const [fotoOutlet, setFotoOutlet] = useState(null);  // NEW: Foto Outlet
+    
+    // NEW: Tag Lokasi Geografis/Pinpoint
+    const [tagLokasi, setTagLokasi] = useState('');
     
     // State Umum
     const [surel, setSurel] = useState('');
@@ -35,44 +39,63 @@ const Daftar = () => {
         e.preventDefault();
         setSedangMemuat(true);
         setPesanGalat('');
-        setPesanSukses('');
+        setPesanSukses='';
 
+        // Validasi kata sandi
         if (kataSandi !== konfirmasiKataSandi) {
             setPesanGalat('Kata sandi dan konfirmasi tidak cocok.');
             setSedangMemuat(false);
             return;
         }
 
-        try {
-            let payload;
-            let endpoint;
+        // VALIDASI BARU: Pastikan dokumen diunggah untuk perusahaan
+        if (peran === 'Admin_Perusahaan' && !dokumen) {
+            setPesanGalat('Dokumen Izin Usaha/NIB wajib diunggah untuk keperluan verifikasi.');
+            setSedangMemuat(false);
+            return;
+        }
 
-            if (peran === 'Pelamar') {
-                endpoint = '/auth/daftar-pelamar';
-                payload = {
-                    nama_pengguna: namaLengkap,
-                    email: surel,
-                    kata_sandi: kataSandi,
-                    konfirmasi_kata_sandi: konfirmasiKataSandi,
-                    peran: peran
-                };
-            } else {
-                endpoint = '/auth/register/perusahaan'; // Match backend route
-                payload = new FormData();
-                payload.append('nama_kafe', namaCafe);
-                payload.append('nama_pengelola', namaPengelola);
-                payload.append('email', surel);
-                payload.append('kata_sandi', kataSandi);
-                payload.append('konfirmasi_kata_sandi', konfirmasiKataSandi);
-                payload.append('alamat', alamat);
-                if (dokumen) {
-                    payload.append('dokumen_legalitas', dokumen);
-                }
+        // VALIDASI BARU: Pastikan tag lokasi diisi untuk perusahaan
+        if (peran === 'Admin_Perusahaan' && !tagLokasi) {
+            setPesanGalat('Tag lokasi geografis wajib diisi.');
+            setSedangMemuat(false);
+            return;
+        }
+
+        if (peran === 'Pelamar') {
+            endpoint = '/auth/daftar-pelamar';
+            payload = {
+                nama_pengguna: namaLengkap,
+                email: surel,
+                kata_sandi: kataSandi,
+                konfirmasi_kata_sandi: konfirmasiKataSandi,
+                peran: peran
+            };
+        } else {
+            endpoint = '/auth/register/perusahaan';
+            payload = new FormData();
+            payload.append('nama_kafe', namaCafe);
+            payload.append('nama_pengelola', namaPengelola);
+            payload.append('email', surel);
+            payload.append('kata_sandi', kataSandi);
+            payload.append('konfirmasi_kata_sandi', konfirmasiKataSandi);
+            payload.append('alamat', alamat);
+            if (dokumen) {
+                payload.append('dokumen_legalitas', dokumen);
             }
-            
+            // NEW: Append foto outlet ke payload
+            if (fotoOutlet) {
+                payload.append('foto_outlet', fotoOutlet);
+            }
+            // NEW: Append tag lokasi ke payload
+            payload.append('tag_lokasi', tagLokasi);
+        }
+        
+        try {
             await layananAutentikasi.daftar(payload, endpoint);
 
-            setPesanSukses('Pendaftaran berhasil! Silakan login.');
+            // UPDATED SUCCESS MESSAGE sesuai use case
+            setPesanSukses('Pendaftaran berhasil. Akun Anda sedang ditinjau oleh Super Admin. Harap tunggu persetujuan.');
             setTimeout(() => {
                 navigate('/masuk');
             }, 2000);
@@ -397,6 +420,45 @@ const Daftar = () => {
                                                         {dokumen ? dokumen.name : 'Upload dengan format Pdf (max 10mb)'}
                                                     </span>
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        {/* NEW: Foto Outlet Field */}
+                                        <div className="grup-input my-4">
+                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2">Foto Outlet</label>
+                                            <div className="area-upload relative w-full h-[120px] bg-[#F5E8DF] rounded-[10px] border border-[#4B2E2B] flex flex-col items-center justify-center cursor-pointer hover:bg-[#ebdccc] transition-colors overflow-hidden">
+                                                <input 
+                                                    type="file" 
+                                                    onChange={(e) => setFotoOutlet(e.target.files[0])} 
+                                                    className="input-file absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                                                    accept="image/*" 
+                                                />
+                                                <div className="konten-upload flex flex-col items-center z-0">
+                                                    <img src={CloudUploadFill} alt="Upload Icon" className="ikon-upload w-[40px] h-[40px]" />
+                                                    <span className="teks-upload text-[13px] text-[#4B2E2B] mt-2 font-medium px-4 text-center">
+                                                        {fotoOutlet ? fotoOutlet.name : 'Upload foto outlet kafe'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* NEW: Tag Lokasi Geografis/Pinpoint Field */}
+                                        <div className="grup-input my-4">
+                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2">Tag Lokasi Geografis/Pinpoint</label>
+                                            <div className="relative">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4B2E2B]/50">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                                                    </svg>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={tagLokasi}
+                                                    onChange={(e) => setTagLokasi(e.target.value)}
+                                                    placeholder="Contoh: Jl. Contoh No. 123, Kota X"
+                                                    className="input-field w-full pl-12 pr-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"
+                                                    required
+                                                />
                                             </div>
                                         </div>
                                     </>
