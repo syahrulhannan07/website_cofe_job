@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../../komponen/umum/Navbar';
 import layananAutentikasi from '../../layanan/layananAutentikasi';
@@ -16,11 +16,16 @@ const Daftar = () => {
     // State Form Perusahaan
     const [namaCafe, setNamaCafe] = useState('');
     const [namaPengelola, setNamaPengelola] = useState('');
-    const [markerPos, setMarkerPos] = useState(null);  // Posisi marker: {lat, lng}
-    const [tagLokasi, setTagLokasi] = useState('');
-    const [statusLokasi, setStatusLokasi] = useState('');
+    const [alamat, setAlamat] = useState('');
     const [dokumen, setDokumen] = useState(null);
     const [fotoOutlet, setFotoOutlet] = useState(null);  // NEW: Foto Outlet
+    
+    // NEW: Tag Lokasi Geografis/Pinpoint
+    const [tagLokasi, setTagLokasi] = useState('');
+    
+    // NEW: State posisi marker peta
+    const [markerLat, setMarkerLat] = useState(-6.200000);
+    const [markerLng, setMarkerLng] = useState(106.816670);
     
     // State Umum
     const [surel, setSurel] = useState('');
@@ -35,69 +40,11 @@ const Daftar = () => {
     
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (peran !== 'Admin_Perusahaan') return;
-
-        const query = tagLokasi.trim();
-        if (!query) {
-            setStatusLokasi('');
-            return;
-        }
-
-        const koordinat = query.match(/^(-?\d+(?:\.\d+)?)\s*[,;]\s*(-?\d+(?:\.\d+)?)$/);
-        if (koordinat) {
-            const lat = Number(koordinat[1]);
-            const lng = Number(koordinat[2]);
-            if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
-                setMarkerPos({ lat, lng });
-                setStatusLokasi('Pin dipindahkan ke koordinat tersebut.');
-            } else {
-                setStatusLokasi('Koordinat tidak valid.');
-            }
-            return;
-        }
-
-        const controller = new AbortController();
-        const timeoutId = window.setTimeout(async () => {
-            setStatusLokasi('Mencari lokasi...');
-            try {
-                const params = new URLSearchParams({
-                    format: 'jsonv2',
-                    limit: '1',
-                    countrycodes: 'id',
-                    q: query,
-                });
-                const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
-                    headers: { Accept: 'application/json' },
-                    signal: controller.signal,
-                });
-                if (!response.ok) throw new Error('Location search failed');
-
-                const [result] = await response.json();
-                if (result) {
-                    setMarkerPos({ lat: Number(result.lat), lng: Number(result.lon) });
-                    setStatusLokasi(`Lokasi ditemukan: ${result.display_name}`);
-                } else {
-                    setStatusLokasi('Lokasi tidak ditemukan. Coba masukkan alamat lebih lengkap.');
-                }
-            } catch (error) {
-                if (error.name !== 'AbortError') {
-                    setStatusLokasi('Lokasi tidak dapat dicari. Geser pin untuk menentukan titiknya.');
-                }
-            }
-        }, 1000);
-
-        return () => {
-            window.clearTimeout(timeoutId);
-            controller.abort();
-        };
-    }, [peran, tagLokasi]);
-
     const menanganiDaftar = async (e) => {
         e.preventDefault();
         setSedangMemuat(true);
         setPesanGalat('');
-        setPesanSukses('');
+        setPesanSukses='';
 
         // Validasi kata sandi
         if (kataSandi !== konfirmasiKataSandi) {
@@ -113,8 +60,13 @@ const Daftar = () => {
             return;
         }
 
-        let endpoint;
-        let payload;
+        // VALIDASI BARU: Pastikan tag lokasi diisi untuk perusahaan
+        if (peran === 'Admin_Perusahaan' && !tagLokasi) {
+            setPesanGalat('Tag lokasi geografis wajib diisi.');
+            setSedangMemuat(false);
+            return;
+        }
+
         if (peran === 'Pelamar') {
             endpoint = '/auth/daftar-pelamar';
             payload = {
@@ -132,7 +84,7 @@ const Daftar = () => {
             payload.append('email', surel);
             payload.append('kata_sandi', kataSandi);
             payload.append('konfirmasi_kata_sandi', konfirmasiKataSandi);
-            payload.append('alamat', tagLokasi);
+            payload.append('alamat', alamat);
             if (dokumen) {
                 payload.append('dokumen_legalitas', dokumen);
             }
@@ -140,6 +92,8 @@ const Daftar = () => {
             if (fotoOutlet) {
                 payload.append('foto_outlet', fotoOutlet);
             }
+            // NEW: Append tag lokasi ke payload
+            payload.append('tag_lokasi', tagLokasi);
         }
         
         try {
@@ -329,7 +283,7 @@ const Daftar = () => {
                                                         value={namaPengelola}
                                                         onChange={(e) => setNamaPengelola(e.target.value)}
                                                         placeholder="Nama HRD/Pengelola"
-                                                        className="input-field w-full pl-12 pr-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#4B2E2B] transition-all text-[#4B2E2B]"
+                                                        className="input-field w-full pl-12 pr-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"
                                                         required
                                                     />
                                                 </div>
@@ -434,27 +388,58 @@ const Daftar = () => {
 
                                 {peran === 'Admin_Perusahaan' && (
                                     <>
-                                        <div className="grup-input my-4">
-                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="dokumenLegalitas">NIB / Dokumen Izin Usaha</label>
-                                            <div className="area-upload relative w-full h-[120px] bg-[#F5E8DF] rounded-[10px] border border-[#4B2E2B] flex flex-col items-center justify-center cursor-pointer hover:bg-[#ebdccc] transition-colors overflow-hidden">
+                                        <div className="grup-input">
+                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="alamat">Alamat</label>
+                                            <div className="relative">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4B2E2B]/50">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" />
+                                                    </svg>
+                                                </div>
                                                 <input
-                                                    id="dokumenLegalitas"
-                                                    type="file"
-                                                    onChange={(e) => setDokumen(e.target.files?.[0] || null)}
-                                                    className="input-file absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    id="alamat"
+                                                    type="text"
+                                                    value={alamat}
+                                                    onChange={(e) => setAlamat(e.target.value)}
+                                                    placeholder="Alamat lengkap kafe"
+                                                    className="input-field w-full pl-12 pr-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"
                                                     required
                                                 />
+                                            </div>
+                                        </div>
+
+                                        <MapLokasi
+                                            initialLat={markerLat}
+                                            initialLng={markerLng}
+                                            onLocationChange={(lat, lng) => {
+                                                setMarkerLat(lat);
+                                                setMarkerLng(lng);
+                                                // Update tagLokasi with coordinates format when marker is dragged
+                                                setTagLokasi(`Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`);
+                                            }}
+                                        />
+
+                                        <div className="grup-input">
+                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2">Dokumen Izin Usaha/NIB</label>
+                                            <div className="area-upload relative w-full h-[120px] bg-[#F5E8DF] rounded-[10px] border border-[#4B2E2B] flex flex-col items-center justify-center cursor-pointer hover:bg-[#ebdccc] transition-colors overflow-hidden">
+                                                <input 
+                                                    type="file" 
+                                                    onChange={(e) => setDokumen(e.target.files[0])} 
+                                                    className="input-file absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                                                    accept=".pdf,.jpg,.jpeg,.png" 
+                                                    required 
+                                                />
                                                 <div className="konten-upload flex flex-col items-center z-0">
-                                                    <img src={CloudUploadFill} alt="" className="ikon-upload w-[40px] h-[40px]" />
+                                                    <img src={CloudUploadFill} alt="Upload Icon" className="ikon-upload w-[40px] h-[40px]" />
                                                     <span className="teks-upload text-[13px] text-[#4B2E2B] mt-2 font-medium px-4 text-center">
-                                                        {dokumen ? dokumen.name : 'Unggah NIB atau dokumen izin usaha (PDF/JPG/PNG, maks. 5 MB)'}
+                                                        {dokumen ? dokumen.name : 'Upload dengan format Pdf (max 10mb)'}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Foto Outlet Field - di atas alamat */}
+                                        {/* NEW: Foto Outlet Field */}
                                         <div className="grup-input my-4">
                                             <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2">Foto Outlet</label>
                                             <div className="area-upload relative w-full h-[120px] bg-[#F5E8DF] rounded-[10px] border border-[#4B2E2B] flex flex-col items-center justify-center cursor-pointer hover:bg-[#ebdccc] transition-colors overflow-hidden">
@@ -473,41 +458,22 @@ const Daftar = () => {
                                             </div>
                                         </div>
 
-                                        {/* Lokasi kafe */}
-                                        <div className="grup-input">
-                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="tagLokasi">Tag Lokasi Geografis</label>
+                                        {/* NEW: Tag Lokasi Geografis/Pinpoint Field */}
+                                        <div className="grup-input my-4">
+                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2">Tag Lokasi Geografis/Pinpoint</label>
                                             <div className="relative">
                                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4B2E2B]/50">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
                                                     </svg>
                                                 </div>
                                                 <input
-                                                    id="tagLokasi"
                                                     type="text"
                                                     value={tagLokasi}
                                                     onChange={(e) => setTagLokasi(e.target.value)}
-                                                    placeholder="Alamat atau koordinat (contoh: -6.326, 108.321)"
-                                                    className="input-field w-full pl-12 pr-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#4B2E2B] transition-all text-[#4B2E2B]"
+                                                    placeholder="Contoh: Jl. Contoh No. 123, Kota X"
+                                                    className="input-field w-full pl-12 pr-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"
                                                     required
-                                                />
-                                            </div>
-                                            <p aria-live="polite" className="mt-2 min-h-5 text-sm text-[#6E625A]">
-                                                {statusLokasi}
-                                            </p>
-                                        </div>
-
-                                        <div className="grup-input">
-                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2">Titik lokasi di peta</label>
-                                            <div className="overflow-hidden rounded-xl border border-[#4B2E2B]">
-                                                <MapLokasi
-                                                    latitude={markerPos?.lat ?? -6.2}
-                                                    longitude={markerPos?.lng ?? 106.81667}
-                                                    onLocationChange={(lat, lng) => {
-                                                        setMarkerPos({ lat, lng });
-                                                        setTagLokasi(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-                                                    }}
                                                 />
                                             </div>
                                         </div>
@@ -532,7 +498,7 @@ const Daftar = () => {
                                 </div>
                             </form>
 
-                            {/* Google Sign Up — hanya tampil untuk Pelamar */}
+                            {/* Google Sign Up â€” hanya tampil untuk Pelamar */}
                             {peran === 'Pelamar' && (
                                 <>
                                     {/* Divider */}
