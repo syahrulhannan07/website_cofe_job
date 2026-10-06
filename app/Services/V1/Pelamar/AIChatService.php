@@ -11,15 +11,14 @@ use Illuminate\Support\Facades\Log;
 class AIChatService
 {
     protected ?ProfilPelamar $profilPelamar = null;
-    protected string $baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
 
     public function chat(array $messages, ?int $userId = null): array
     {
-        $apiKey = config('ai.groq_api_key');
+        $apiKey = config('ai.gemini_api_key');
         if (empty($apiKey)) {
             return [
                 'role' => 'assistant',
-                'content' => 'Maaf, layanan AI sedang tidak tersedia saat ini. Silakan coba lagi nanti.',
+                'content' => 'Maaf, layanan bantuan AI sedang tidak tersedia. Silakan coba lagi.',
             ];
         }
 
@@ -29,7 +28,7 @@ class AIChatService
         }
 
         try {
-            $response = $this->callGroq(
+            $response = $this->callGemini(
                 $this->buildIntentPrompt(),
                 $this->buildMessages($messages),
                 0.3,
@@ -40,7 +39,7 @@ class AIChatService
             if (!$response) {
                 return [
                     'role' => 'assistant',
-                    'content' => 'Maaf, terjadi kesalahan saat memproses pesan Anda. Silakan coba lagi.',
+                    'content' => 'Maaf, layanan bantuan AI sedang tidak tersedia. Silakan coba lagi.',
                 ];
             }
 
@@ -56,13 +55,13 @@ class AIChatService
                 'content' => $response,
             ];
         } catch (\Exception $e) {
-            Log::error('Groq API exception', [
+            Log::error('Gemini API exception', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
             return [
                 'role' => 'assistant',
-                'content' => 'Maaf, terjadi kesalahan saat memproses pesan Anda. Silakan coba lagi.',
+                'content' => 'Maaf, layanan bantuan AI sedang tidak tersedia. Silakan coba lagi.',
             ];
         }
     }
@@ -91,11 +90,11 @@ class AIChatService
         }
 
         $phase2Messages = array_merge(
-            [['role' => 'system', 'content' => $this->buildSystemPrompt() . "\n\n" . $konteks]],
+            [['role' => 'user', 'content' => $this->buildSystemPrompt() . "\n\n" . $konteks]],
             $this->buildMessages($messages)
         );
 
-        $response = $this->callGroq(
+        $response = $this->callGemini(
             $this->buildSystemPrompt() . "\n\n" . $konteks,
             $this->buildMessages($messages),
             0.7,
@@ -113,25 +112,56 @@ class AIChatService
         ];
     }
 
-    protected function callGroq(string $systemPrompt, array $messages, float $temperature, int $maxTokens, string $apiKey): ?string
+    protected function callGemini(string $systemPrompt, array $messages, float $temperature, int $maxTokens, string $apiKey): ?string
     {
+        $model = config('ai.gemini_model', 'gemini-1.5-flash');
+        $baseUrl = config('ai.gemini_base_url', 'https://generativelanguage.googleapis.com/v1beta/models');
+
+        $geminiMessages = [];
+        
+        if (!empty($systemPrompt)) {
+            $geminiMessages[] = [
+                'role' => 'user',
+                'parts' => [['text' => $systemPrompt]]
+            ];
+            $geminiMessages[] = [
+                'role' => 'model',
+                'parts' => [['text' => 'Baik, saya memahami peran saya sebagai CafeBot. Saya siap membantu.']]
+            ];
+        }
+
+        foreach ($messages as $msg) {
+            $role = $msg['role'] === 'assistant' ? 'model' : 'user';
+            $geminiMessages[] = [
+                'role' => $role,
+                'parts' => [['text' => $msg['content']]]
+            ];
+        }
+
         $payload = [
-            'model' => config('ai.groq_model', 'llama-3.3-70b-versatile'),
-            'messages' => array_merge(
-                [['role' => 'system', 'content' => $systemPrompt]],
-                $messages
-            ),
-            'temperature' => $temperature,
-            'max_tokens' => $maxTokens,
+            'contents' => $geminiMessages,
+            'generationConfig' => [
+                'temperature' => $temperature,
+                'maxOutputTokens' => $maxTokens,
+                'topP' => 0.95,
+                'topK' => 40,
+            ],
+            'safetySettings' => [
+                ['category' => 'HARM_CATEGORY_HARASSMENT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                ['category' => 'HARM_CATEGORY_HATE_SPEECH', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                ['category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                ['category' => 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+            ],
         ];
 
+        $url = "{$baseUrl}/{$model}:generateContent?key={$apiKey}";
+
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apiKey,
             'Content-Type' => 'application/json',
-        ])->timeout(30)->post($this->baseUrl, $payload);
+        ])->timeout(30)->post($url, $payload);
 
         if ($response->failed()) {
-            Log::error('Groq API gagal', [
+            Log::error('Gemini API gagal', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
@@ -139,7 +169,16 @@ class AIChatService
         }
 
         $data = $response->json();
-        return $data['choices'][0]['message']['content'] ?? null;
+        
+        if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
+            return $data['candidates'][0]['content']['parts'][0]['text'];
+        }
+
+        if (isset($data['candidates'][0]['finishReason']) && $data['candidates'][0]['finishReason'] !== 'STOP') {
+            Log::warning('Gemini API finish reason not STOP', ['finishReason' => $data['candidates'][0]['finishReason']]);
+        }
+
+        return null;
     }
 
     protected function formatLowonganFallback(array $lowongan): string
@@ -200,7 +239,7 @@ class AIChatService
 
     protected function buildMessages(array $messages): array
     {
-        $groqMessages = [];
+        $geminiMessages = [];
         $foundUser = false;
 
         foreach ($messages as $msg) {
@@ -210,13 +249,13 @@ class AIChatService
 
             $foundUser = true;
 
-            $groqMessages[] = [
-                'role' => $msg['role'] === 'assistant' ? 'assistant' : 'user',
+            $geminiMessages[] = [
+                'role' => $msg['role'] === 'assistant' ? 'model' : 'user',
                 'content' => $msg['content'],
             ];
         }
 
-        return $groqMessages;
+        return $geminiMessages;
     }
 
     protected function buildIntentPrompt(): string
@@ -235,6 +274,9 @@ class AIChatService
         return <<<PROMPT
 Anda adalah **CafeBot**, asisten AI dari portal lowongan kerja C.A.F.E. Job Portal.
 
+### LATAR BELAKANG:
+Dari sisi pelamar kerja, kemudahan memperoleh informasi dan kepastian komunikasi menjadi faktor penting dalam proses rekrutmen. Sistem menyediakan fitur chatbot interaktif yang dibatasi pada konteks rekrutmen untuk membantu menjawab pertanyaan seputar lowongan serta memberikan rekomendasi lowongan berdasarkan kualifikasi dan keterampilan pelamar.
+
 ### PENTING — Deteksi Pencarian Lowongan:
 Analisis PERCAKAPAN di bawah. Jika user **meminta rekomendasi atau pencarian lowongan** (berdasarkan posisi, lokasi, gaji, skill), Anda HARUS merespon EXACT dengan format:
 
@@ -248,6 +290,17 @@ Contoh:
 - User: "info lowongan" atau "cari kerja" → <cafe_query>{"posisi":"","lokasi":""}</cafe_query>
 
 Jika user hanya bertanya umum atau ngobrol biasa, jawab seperti biasa TANPA tag <cafe_query>.
+
+### BATASAN KONTEKS:
+HANYA jawab pertanyaan yang berkaitan dengan:
+- Lowongan pekerjaan cafe/F&B
+- Rekomendasi lowongan berdasarkan skill/kualifikasi
+- Tips karir, wawancara, CV di industri F&B
+- Informasi seputar platform C.A.F.E. Job Portal
+- Tanyakan kembali jika pertanyaan di luar konteks rekrutmen
+
+Jika pertanyaan TIDAK relevan dengan rekrutmen/lowongan cafe, jawab:
+"Maaf, saya hanya bisa membantu seputar lowongan kerja cafe/F&B, tips karir, dan informasi platform C.A.F.E. Job Portal. Ada yang bisa saya bantu terkait pencarian kerja?"
 
 {$profileInfo}
 PROMPT;
@@ -271,16 +324,23 @@ PROMPT;
         return <<<PROMPT
 Anda adalah **CafeBot**, asisten AI resmi dari platform **C.A.F.E. Job Portal** — portal lowongan pekerjaan khusus cafe dan F&B di Indonesia, terutama wilayah Indramayu dan sekitarnya.
 
+### LATAR BELAKANG:
+Dari sisi pelamar kerja, kemudahan memperoleh informasi dan kepastian komunikasi menjadi faktor penting dalam proses rekrutmen. Sistem menyediakan fitur chatbot interaktif yang dibatasi pada konteks rekrutmen untuk membantu menjawab pertanyaan seputar lowongan serta memberikan rekomendasi lowongan berdasarkan kualifikasi dan keterampilan pelamar.
+
 ### Tugas Anda:
 - Membantu pelamar mencari lowongan pekerjaan cafe yang sesuai dengan preferensi mereka
 - Menjawab pertanyaan seputar platform C.A.F.E. Job Portal
 - Memberikan tips karir, persiapan wawancara, dan dunia kerja cafe/F&B
-- Menjawab pertanyaan umum apa pun dengan ramah dan sopan
+- HANYA menjawab pertanyaan dalam konteks rekrutmen/lowongan cafe
 
 ### Kepribadian:
 - Gunakan **Bahasa Indonesia** yang ramah, santai, dan membantu
 - Bersikap profesional namun hangat
 - Gunakan nama pelamar jika tersedia untuk sapaan yang personal
+
+### BATASAN KONTEKS:
+Jika pertanyaan DI LUAR konteks rekrutmen/lowongan cafe/F&B, jawab:
+"Maaf, saya hanya bisa membantu seputar lowongan kerja cafe/F&B, tips karir, dan informasi platform C.A.F.E. Job Portal. Ada yang bisa saya bantu terkait pencarian kerja?"
 
 {$profileInfo}
 PROMPT;

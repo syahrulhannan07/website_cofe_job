@@ -4,6 +4,7 @@ const BadgeStatus = ({ status }) => {
     const styles = {
         Aktif:    { bg: '#DBFEE5', text: '#519564' },
         Nonaktif: { bg: '#FEDBDB', text: '#C76A6A' },
+        Diblokir: { bg: '#FEE2E2', text: '#B91C1C' },
     };
     const s = styles[status] || { bg: '#EAE4DC', text: '#4B2E2B' };
     return (

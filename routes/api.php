@@ -172,15 +172,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/lowongan/{id}', [SuperAdminKafeController::class, 'showLowongan']); // Detail satu lowongan
         Route::put('/lowongan/{id}/status', [SuperAdminKafeController::class, 'updateLowonganStatus']); // Update status lowongan
 
-        // AI Detection Log
-        Route::prefix('ai-deteksi')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'index']);
-            Route::get('/statistik', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'statistik']);
-            Route::get('/pengaturan', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'pengaturan']);
-            Route::put('/pengaturan', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'updatePengaturan']);
-            Route::get('/{id}', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'show']);
-            Route::post('/{id}/override', [\App\Http\Controllers\Api\V1\SuperAdmin\DeteksiAIController::class, 'override']);
-        });
     });
 
     Route::middleware(['auth:api', 'role:Super_Admin'])->prefix('superadmin')->group(function () {

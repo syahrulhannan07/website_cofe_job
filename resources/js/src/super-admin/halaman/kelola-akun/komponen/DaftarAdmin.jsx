@@ -34,11 +34,11 @@ const DaftarAdmin = ({ data, onSuspend, onAktifkan, onLihatDetail, sedangMuatDet
                 }}
             >
                 {['Nama Pengelola', 'Kafe Terkait', 'Email', 'Status', 'Aksi'].map((h) => (
-                    <span key={h}
+                    <div key={h}
                           className="kolom-header font-semibold text-[13px] text-[#4B2E2B]"
                           style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {h}
-                    </span>
+                    </div>
                 ))}
             </div>
 

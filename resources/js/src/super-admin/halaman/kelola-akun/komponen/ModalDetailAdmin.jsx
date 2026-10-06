@@ -184,26 +184,28 @@ const ModalDetailAdmin = ({ admin, onTutup, onUpdateStatus }) => {
                                 />
                             </button>
 
-                            {/* Dropdown Items list */}
+{/* Dropdown Items list */}
                             {dropdownBuka && (
                                 <div className="list-dropdown absolute right-0 mt-2 w-[140px] bg-white border border-[#EAE4DC] rounded-[8px] shadow-lg overflow-hidden z-40">
-                                    {['Aktif', 'Nonaktif', 'Diblokir'].map((opt) => (
-                                        <button
-                                            key={opt}
-                                            onClick={() => {
-                                                setStatusTerpilih(opt);
-                                                setDropdownBuka(false);
-                                            }}
-                                            className={`item-dropdown w-full text-left px-4 py-2.5 text-[14px] font-semibold transition-colors focus:outline-none ${
-                                                statusTerpilih === opt
-                                                    ? 'bg-[#F7B750] text-[#4B2E2B]'
-                                                    : 'text-[#4B2E2B] hover:bg-[#F4ECE9]'
-                                            }`}
-                                            style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
-                                        >
-                                            {opt}
-                                        </button>
-                                    ))}
+                                    <div>
+                                        {['Aktif', 'Nonaktif', 'Diblokir'].map((opt) => (
+                                            <button
+                                                key={opt}
+                                                onClick={() => {
+                                                    setStatusTerpilih(opt);
+                                                    setDropdownBuka(false);
+                                                }}
+                                                className={`item-dropdown w-full text-left px-4 py-2.5 text-[14px] font-semibold transition-colors focus:outline-none ${
+                                                    statusTerpilih === opt
+                                                        ? 'bg-[#F7B750] text-[#4B2E2B]'
+                                                        : 'text-[#4B2E2B] hover:bg-[#F4ECE9]'
+                                                }`}
+                                                style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                                            >
+                                                {opt}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>

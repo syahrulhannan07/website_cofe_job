@@ -28,12 +28,6 @@ const SidebarPusat = ({ menuAktif, setMenuAktif, menanganiLogout, sidebarTerbuka
             ikon: ikonAkunAdmin,
             tautan: '/super-admin/kelola-akun',
         },
-        {
-            id: 'ai-deteksi',
-            label: 'Deteksi AI',
-            ikon: null,
-            tautan: '/super-admin/ai-deteksi',
-        },
     ];
 
     const tutupSidebarMobile = () => {
@@ -62,11 +56,11 @@ const SidebarPusat = ({ menuAktif, setMenuAktif, menanganiLogout, sidebarTerbuka
             >
                 {/* Branding */}
                 <div className="area-branding flex items-center gap-[12px] px-[28px] pt-[40px] pb-[40px]">
-                    <div className="wadah-logo w-[46px] h-[52px] bg-[#F4ECE9] rounded-[8px] flex items-center justify-center shadow-md overflow-hidden">
+                    <div className="wadah-logo w-[46px] h-[52px] rounded-[8px] flex items-center justify-center shadow-md overflow-hidden">
                         <img
                             src={logoPng}
                             alt="C.A.F.E Job Logo"
-                            className="gambar-logo w-full h-full object-cover"
+                            className="gambar-logo w-full h-full object-contain"
                         />
                     </div>
                     <span className="teks-nama-aplikasi font-jakarta font-extrabold italic text-[24px] text-[#C69C6D]">

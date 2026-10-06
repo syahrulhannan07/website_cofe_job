@@ -25,7 +25,6 @@ const TataLetakSuperAdmin = () => {
         const path = location.pathname;
         if (path.includes('verifikasi')) setMenuAktif('verifikasi');
         else if (path.includes('kelola-akun')) setMenuAktif('kelola-akun');
-        else if (path.includes('ai-deteksi')) setMenuAktif('ai-deteksi');
         else if (path.includes('laporan-sistem')) setMenuAktif('laporan-sistem');
         else setMenuAktif('dashboard');
         setSidebarTerbuka(false);

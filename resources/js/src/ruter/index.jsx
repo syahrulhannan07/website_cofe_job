@@ -30,7 +30,7 @@ import LoginSuperAdmin    from '../super-admin/halaman/masuk';
 import VerifikasiSuperAdmin from '../super-admin/halaman/verifikasi';
 import KelolaAkunSuperAdmin from '../super-admin/halaman/kelola-akun';
 import HalamanDetailLowonganSuperAdmin from '../super-admin/halaman/kelola-akun/HalamanDetailLowonganSuperAdmin';
-import HalamanAiDeteksi from '../super-admin/halaman/ai-deteksi';
+
 
 const ruter = createBrowserRouter([
     // --- Rute Publik (Pelamar) ---
@@ -93,7 +93,6 @@ const ruter = createBrowserRouter([
             { path: 'dashboard',   element: <DashboardSuperAdmin /> },
             { path: 'verifikasi',  element: <VerifikasiSuperAdmin /> },
             { path: 'kelola-akun', element: <KelolaAkunSuperAdmin /> },
-            { path: 'ai-deteksi', element: <HalamanAiDeteksi /> },
         ],
     },
 ]);

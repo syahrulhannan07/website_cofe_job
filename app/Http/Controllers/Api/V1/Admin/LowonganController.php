@@ -8,7 +8,6 @@ use App\Http\Resources\V1\Admin\LowonganResource;
 use App\Models\Lowongan;
 use App\Repositories\V1\Admin\LowonganRepository;
 use App\Services\V1\Admin\LowonganService;
-use App\Services\V1\Admin\AIScoringService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -19,13 +18,11 @@ class LowonganController extends Controller
 
     protected $service;
     protected $repository;
-    protected $aiService;
 
-    public function __construct(LowonganService $service, LowonganRepository $repository, AIScoringService $aiService)
+    public function __construct(LowonganService $service, LowonganRepository $repository)
     {
         $this->service = $service;
         $this->repository = $repository;
-        $this->aiService = $aiService;
     }
 
     /**
@@ -168,15 +165,8 @@ class LowonganController extends Controller
             }
             $updated = $this->service->updateLowongan($lowongan, $data);
 
-            if ($updated->status === 'Active') {
-                try {
-                    $this->aiService->evaluasiLowongan($updated);
-                } catch (\Exception $e) {
-                    // Abaikan error AI, tetap lanjut
-                }
-                if ($oldStatus !== 'Active') {
-                    event(new \App\Events\LowonganPublished($updated));
-                }
+            if ($updated->status === 'Active' && $oldStatus !== 'Active') {
+                event(new \App\Events\LowonganPublished($updated));
             }
 
             return $this->successResponse(new LowonganResource($updated), 'Lowongan berhasil diperbarui');
