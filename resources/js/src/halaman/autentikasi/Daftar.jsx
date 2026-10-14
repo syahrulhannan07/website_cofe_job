@@ -435,7 +435,7 @@ const Daftar = () => {
                                 {peran === 'Admin_Perusahaan' && (
                                     <>
                                         <div className="grup-input my-4">
-                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="dokumenLegalitas">NIB / Dokumen Izin Usaha</label>
+                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="dokumenLegalitas">Dokumen NIB</label>
                                             <div className="area-upload relative w-full h-[120px] bg-[#F5E8DF] rounded-[10px] border border-[#4B2E2B] flex flex-col items-center justify-center cursor-pointer hover:bg-[#ebdccc] transition-colors overflow-hidden">
                                                 <input
                                                     id="dokumenLegalitas"
@@ -448,7 +448,7 @@ const Daftar = () => {
                                                 <div className="konten-upload flex flex-col items-center z-0">
                                                     <img src={CloudUploadFill} alt="" className="ikon-upload w-[40px] h-[40px]" />
                                                     <span className="teks-upload text-[13px] text-[#4B2E2B] mt-2 font-medium px-4 text-center">
-                                                        {dokumen ? dokumen.name : 'Unggah NIB atau dokumen izin usaha (PDF/JPG/PNG, maks. 5 MB)'}
+                                                        {dokumen ? dokumen.name : 'Unggah dokumen NIB (PDF/JPG/PNG, maks. 5 MB)'}
                                                     </span>
                                                 </div>
                                             </div>
