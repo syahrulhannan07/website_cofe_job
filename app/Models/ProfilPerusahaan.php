@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Nib;
 
 class ProfilPerusahaan extends Model
 {
@@ -41,5 +42,10 @@ class ProfilPerusahaan extends Model
             ->whereHas('pengguna', function ($q) {
                 $q->where('status_akun', 'Aktif');
             });
+    }
+
+    public function nib()
+    {
+        return $this->hasOne(Nib::class, 'id_perusahaan', 'id_perusahaan');
     }
 }
