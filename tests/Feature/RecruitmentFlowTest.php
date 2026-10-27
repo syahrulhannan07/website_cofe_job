@@ -17,6 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Notification;
 use Mockery;
@@ -256,6 +257,18 @@ class RecruitmentFlowTest extends TestCase
                 ]
             ]);
         $simpanJawaban->assertStatus(200);
+
+        // Simulasikan verifikasi wajah yang sudah lolos (wajib sebelum kirim lamaran)
+        Cache::put(
+            "lamaran_face_verified_{$idLamaran}_{$this->profilPelamar->id_profil}",
+            [
+                'verified' => true,
+                'confidence' => 95.5,
+                'threshold' => 85,
+                'verified_at' => now()->toIso8601String(),
+            ],
+            now()->addMinutes(30)
+        );
 
         // Submit final lamaran
         $kirimLamaran = $this->withHeader('Authorization', 'Bearer ' . $pelamarToken)
