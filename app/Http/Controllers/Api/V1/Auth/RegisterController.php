@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Nib;
 use App\Models\Pengguna;
 use App\Models\ProfilPelamar;
 use App\Models\ProfilPerusahaan;
@@ -10,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+use App\Enums\StatusScreening;
 
 class RegisterController extends Controller
 {
@@ -207,17 +210,20 @@ class RegisterController extends Controller
             ], 422);
         }
 
+        // 3. Simpan file dokumen_legalitas ke storage/legalitas/
+        $file = $request->file('dokumen_legalitas');
+        $fileName = time() . '_' . $file->getClientOriginalName();
+        $path = $file->storeAs('legalitas', $fileName, 'public');
+
+        if (!$path) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menyimpan dokumen legalitas'
+            ], 500);
+        }
+
         try {
             DB::beginTransaction();
-
-            // 3. Simpan file dokumen_legalitas ke storage/legalitas/
-            $file = $request->file('dokumen_legalitas');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('legalitas', $fileName, 'public');
-
-            if (!$path) {
-                throw new \Exception('Gagal menyimpan dokumen legalitas');
-            }
 
             // 4. Buat record PENGGUNA
             $pengguna = Pengguna::create([
@@ -237,27 +243,48 @@ class RegisterController extends Controller
                 'status_verifikasi' => 'Pending',
             ]);
 
-            // Dispatch CompanyRegistered event
-            event(new \App\Events\CompanyRegistered($perusahaan));
+            // 6. Buat record NIB
+            Nib::create([
+                'id_perusahaan' => $perusahaan->id_perusahaan,
+                'dokumen_nib' => $path,
+                'status_screening' => StatusScreening::Belum_Diperiksa,
+            ]);
 
             DB::commit();
 
-            // Kirim notifikasi registrasi berhasil ke perusahaan
-            $pengguna->notify(new \App\Notifications\CompanyRegistrationReceivedNotification($perusahaan));
-
-            // 6. Return response sukses
-            return response()->json([
-                'success' => true,
-                'message' => 'Pendaftaran berhasil. Akun Anda sedang ditinjau oleh Super Admin. Harap tunggu persetujuan.'
-            ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
+            // Hapus file yang baru diunggah jika transaksi gagal
+            if (isset($path) && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
             return response()->json([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan saat pendaftaran',
                 'error' => $e->getMessage()
             ], 500);
         }
+
+        // Dispatch CompanyRegistered event after successful commit
+        try {
+            event(new \App\Events\CompanyRegistered($perusahaan));
+        } catch (\Exception $e) {
+            // Log event failure but don't fail registration
+            \Illuminate\Support\Facades\Log::error('CompanyRegistered event failed: ' . $e->getMessage());
+        }
+
+        // Kirim notifikasi registrasi berhasil ke perusahaan
+        try {
+            $pengguna->notify(new \App\Notifications\CompanyRegistrationReceivedNotification($perusahaan));
+        } catch (\Exception $e) {
+            // Log notification failure but don't fail registration
+            \Illuminate\Support\Facades\Log::error('CompanyRegistrationReceivedNotification failed: ' . $e->getMessage());
+        }
+
+        // 7. Return response sukses
+        return response()->json([
+            'success' => true,
+            'message' => 'Pendaftaran berhasil. Akun Anda sedang ditinjau oleh Super Admin. Harap tunggu persetujuan.'
+        ], 201);
     }
 }

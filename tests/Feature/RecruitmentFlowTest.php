@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\StatusScreening;
+use App\Models\Nib;
 use App\Models\Pengguna;
 use App\Models\ProfilPerusahaan;
 use App\Models\ProfilPelamar;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Notification;
+use Mockery;
 
 class RecruitmentFlowTest extends TestCase
 {
@@ -67,6 +70,13 @@ class RecruitmentFlowTest extends TestCase
             'alamat_perusahaan' => 'Jl. Polindra No. 24 Indramayu',
             'dokumen_izin' => 'legalitas/nib.pdf',
             'status_verifikasi' => 'Pending',
+        ]);
+
+        // Create NIB record for test company
+        Nib::create([
+            'id_perusahaan' => $this->profilPerusahaan->id_perusahaan,
+            'dokumen_nib' => 'legalitas/nib.pdf',
+            'status_screening' => StatusScreening::Belum_Diperiksa,
         ]);
 
         // 4. Setup Pelamar
@@ -512,5 +522,210 @@ class RecruitmentFlowTest extends TestCase
             'status' => 'Draft',
         ]);
         $this->assertEquals('Draft', $storeResponse->json('data.status'));
+    }
+
+    /**
+     * Skenario Positif: Registrasi Perusahaan Aktif Membuat Record NIB
+     */
+    public function test_company_registration_creates_nib_record()
+    {
+        Storage::fake('public');
+
+        $file = UploadedFile::fake()->create('nib_document.pdf', 100, 'application/pdf');
+
+        $response = $this->postJson('/api/v1/auth/register/perusahaan', [
+            'nama_kafe' => 'Test Cafe NIB',
+            'nama_pengelola' => 'Owner Test',
+            'email' => 'nibtest@test.com',
+            'kata_sandi' => 'password123',
+            'konfirmasi_kata_sandi' => 'password123',
+            'alamat' => '-6.123, 106.456',
+            'deskripsi' => 'Test cafe for NIB registration',
+            'dokumen_legalitas' => $file,
+            'foto_outlet' => UploadedFile::fake()->image('outlet.jpg'),
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('success', true);
+        $response->assertJsonPath('message', 'Pendaftaran berhasil. Akun Anda sedang ditinjau oleh Super Admin. Harap tunggu persetujuan.');
+
+        // Verify Pengguna created
+        $this->assertDatabaseHas('pengguna', [
+            'email' => 'nibtest@test.com',
+            'peran' => 'Admin_Perusahaan',
+        ]);
+
+        $pengguna = Pengguna::where('email', 'nibtest@test.com')->first();
+        $this->assertNotNull($pengguna);
+
+        // Verify ProfilPerusahaan created
+        $this->assertDatabaseHas('profil_perusahaan', [
+            'id_pengguna' => $pengguna->id_pengguna,
+            'nama_perusahaan' => 'Test Cafe NIB',
+            'status_verifikasi' => 'Pending',
+        ]);
+
+        $profilPerusahaan = ProfilPerusahaan::where('id_pengguna', $pengguna->id_pengguna)->first();
+        $this->assertNotNull($profilPerusahaan);
+        $this->assertNotNull($profilPerusahaan->dokumen_izin);
+
+        // Verify NIB record created
+        $this->assertDatabaseHas('nib', [
+            'id_perusahaan' => $profilPerusahaan->id_perusahaan,
+            'dokumen_nib' => $profilPerusahaan->dokumen_izin,
+            'status_screening' => StatusScreening::Belum_Diperiksa->value,
+        ]);
+
+        $nib = Nib::where('id_perusahaan', $profilPerusahaan->id_perusahaan)->first();
+        $this->assertNotNull($nib);
+        $this->assertEquals($profilPerusahaan->id_perusahaan, $nib->id_perusahaan);
+        $this->assertEquals($profilPerusahaan->dokumen_izin, $nib->dokumen_nib);
+        $this->assertEquals(StatusScreening::Belum_Diperiksa, $nib->status_screening);
+        $this->assertNull($nib->nomor_nib);
+        $this->assertNull($nib->data_qr);
+        $this->assertNull($nib->hasil_screening);
+        $this->assertNull($nib->diperiksa_pada);
+        $this->assertNotNull($nib->dibuat_pada);
+        $this->assertNotNull($nib->diperbarui_pada);
+
+        // Verify file stored only once on public disk
+        $this->assertTrue(Storage::disk('public')->exists($profilPerusahaan->dokumen_izin));
+        $files = Storage::disk('public')->allFiles();
+        $this->assertCount(1, array_filter($files, fn($f) => str_contains($f, $profilPerusahaan->dokumen_izin)));
+    }
+
+    /**
+     * Skenario Negatif: File dibersihkan saat validasi gagal
+     */
+    public function test_registration_validation_failure_cleans_uploaded_file()
+    {
+        Storage::fake('public');
+
+        $file = UploadedFile::fake()->create('nib_document.pdf', 100, 'application/pdf');
+
+        // Missing required field 'nama_kafe' to trigger validation failure
+        $response = $this->postJson('/api/v1/auth/register/perusahaan', [
+            'nama_pengelola' => 'Owner Test',
+            'email' => 'validationfail@test.com',
+            'kata_sandi' => 'password123',
+            'konfirmasi_kata_sandi' => 'password123',
+            'alamat' => '-6.123, 106.456',
+            'dokumen_legalitas' => $file,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('status', 'error');
+        $response->assertJsonValidationErrors(['nama_kafe']);
+
+        // Verify file was cleaned up
+        $files = Storage::disk('public')->allFiles();
+        $nibFiles = array_filter($files, fn($f) => str_contains($f, 'legalitas/'));
+        $this->assertEmpty($nibFiles, 'File should be cleaned up on validation failure');
+    }
+
+    /**
+     * Skenario Negatif: Rollback dan Cleanup Saat Pembuatan NIB Gagal di Transaksi
+     */
+    public function test_registration_nib_creation_failure_rollbacks_and_cleans_file()
+    {
+        Storage::fake('public');
+
+        // Create pre-existing file in fake storage
+        $existingFilePath = 'legalitas/existing.pdf';
+        Storage::disk('public')->put($existingFilePath, 'existing file content');
+
+        // Create a pre-existing company to verify it doesn't get deleted
+        $existingPengguna = Pengguna::create([
+            'nama_pengguna' => 'Existing Owner',
+            'email' => 'existing@test.com',
+            'kata_sandi' => Hash::make('password'),
+            'peran' => 'Admin_Perusahaan',
+        ]);
+
+        $existingProfil = ProfilPerusahaan::create([
+            'id_pengguna' => $existingPengguna->id_pengguna,
+            'nama_perusahaan' => 'Existing Cafe',
+            'alamat_perusahaan' => 'Jl. Existing',
+            'dokumen_izin' => $existingFilePath,
+            'status_verifikasi' => 'Pending',
+        ]);
+
+        Nib::create([
+            'id_perusahaan' => $existingProfil->id_perusahaan,
+            'dokumen_nib' => $existingFilePath,
+            'status_screening' => StatusScreening::Belum_Diperiksa,
+        ]);
+
+        // Use a model observer to simulate failure
+        $observer = new class {
+            public function creating($model)
+            {
+                if ($model instanceof \App\Models\Nib) {
+                    throw new \Exception('Simulated NIB creation failure');
+                }
+            }
+        };
+
+        \App\Models\Nib::observe($observer);
+
+        $file = UploadedFile::fake()->create('nib_document.pdf', 100, 'application/pdf');
+
+        $response = $this->postJson('/api/v1/auth/register/perusahaan', [
+            'nama_kafe' => 'Test Cafe NIB Fail',
+            'nama_pengelola' => 'Owner Fail',
+            'email' => 'nibfail@test.com',
+            'kata_sandi' => 'password123',
+            'konfirmasi_kata_sandi' => 'password123',
+            'alamat' => '-6.123, 106.456',
+            'deskripsi' => 'Test cafe for NIB creation failure',
+            'dokumen_legalitas' => $file,
+        ]);
+
+        // Remove observer after test (not strictly needed due to RefreshDatabase, but good practice)
+        // Note: Laravel doesn't have a forgetObserver method, observer persists for test duration
+        // RefreshDatabase will reset state for next test
+
+        // Should return 500 error
+        $response->assertStatus(500);
+        $response->assertJsonPath('status', 'error');
+        $response->assertJsonPath('message', 'Terjadi kesalahan saat pendaftaran');
+
+        // Verify rollback: no new Pengguna for this request
+        $this->assertDatabaseMissing('pengguna', [
+            'email' => 'nibfail@test.com',
+        ]);
+
+        // Verify rollback: no new ProfilPerusahaan for this request
+        $this->assertDatabaseMissing('profil_perusahaan', [
+            'nama_perusahaan' => 'Test Cafe NIB Fail',
+        ]);
+
+        // Verify rollback: no new NIB for the new company (would have 'nib_document' in path)
+        $this->assertDatabaseMissing('nib', [
+            'dokumen_nib' => 'legalitas/nib_document',
+        ]);
+
+        // Verify existing data still exists
+        $this->assertDatabaseHas('pengguna', [
+            'email' => 'existing@test.com',
+        ]);
+        $this->assertDatabaseHas('profil_perusahaan', [
+            'id_perusahaan' => $existingProfil->id_perusahaan,
+        ]);
+        $this->assertDatabaseHas('nib', [
+            'id_perusahaan' => $existingProfil->id_perusahaan,
+            'dokumen_nib' => $existingFilePath,
+        ]);
+
+        // Verify file cleanup: new file should be deleted
+        $files = Storage::disk('public')->allFiles();
+        $newFiles = array_filter($files, fn($f) => str_contains($f, 'nib_document'));
+        $this->assertEmpty($newFiles, 'New uploaded file should be cleaned up on NIB creation failure');
+
+        // Verify existing file still exists
+        $this->assertTrue(
+            Storage::disk('public')->exists($existingFilePath),
+            'Pre-existing file should not be deleted'
+        );
     }
 }
