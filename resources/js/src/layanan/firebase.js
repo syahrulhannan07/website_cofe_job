@@ -39,8 +39,11 @@ if (missingVars.length > 0) {
         '[Firebase] Missing required environment variables:',
         missingVars.join(', '),
         '\nPlease check your .env file and ensure all VITE_FIREBASE_* variables are set.',
-        '\nSee .env.example for reference.'
+        '\nSee .env.example for reference.',
+        '\nCurrent env vars available:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_FIREBASE'))
     );
+    // Throw error to prevent silent failures
+    throw new Error(`Firebase configuration incomplete. Missing: ${missingVars.join(', ')}`);
 }
 
 const firebaseConfig = {
@@ -51,6 +54,13 @@ const firebaseConfig = {
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+console.log('[Firebase] Initializing with config:', {
+    apiKey: firebaseConfig.apiKey ? '***' + firebaseConfig.apiKey.slice(-4) : 'MISSING',
+    authDomain: firebaseConfig.authDomain,
+    projectId: firebaseConfig.projectId,
+    storageBucket: firebaseConfig.storageBucket,
+});
 
 // Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
@@ -71,8 +81,15 @@ googleProvider.setCustomParameters({
  * @returns {Promise<import('firebase/auth').UserCredential>}
  */
 export const masukDenganGoogle = async () => {
-    const hasil = await signInWithPopup(auth, googleProvider);
-    return hasil;
+    try {
+        console.log('[Firebase] Starting Google sign-in...');
+        const hasil = await signInWithPopup(auth, googleProvider);
+        console.log('[Firebase] Google sign-in successful:', hasil.user.email);
+        return hasil;
+    } catch (error) {
+        console.error('[Firebase] Google sign-in error:', error.code, error.message);
+        throw error;
+    }
 };
 
 /**

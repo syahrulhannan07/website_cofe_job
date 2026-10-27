@@ -98,6 +98,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/mulai', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'mulai']);
         Route::post('/{id}/dokumen', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'uploadDokumen']);
         Route::post('/{id}/jawaban', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'simpanJawaban']);
+        Route::post('/{id}/verifikasi-wajah', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'verifikasiWajah']);
         Route::post('/{id}/kirim', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'kirim']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'batalkan']);
     });

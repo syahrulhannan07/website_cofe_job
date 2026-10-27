@@ -45,6 +45,18 @@ const layananLamaran = {
     },
 
     /**
+     * Verifikasi wajah menggunakan Face Recognition
+     */
+    verifikasiWajah: async (id_lamaran, imageBase64) => {
+        try {
+            const res = await api.post(`/lamaran/${id_lamaran}/verifikasi-wajah`, { image_base64: imageBase64 });
+            return res.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    /**
      * Memfinalisasi (mengirim) lamaran
      */
     kirimLamaran: async (id_lamaran) => {

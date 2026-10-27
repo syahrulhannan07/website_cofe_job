@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProgressBar from './komponen/ProgressBar';
@@ -6,10 +6,12 @@ import Step1Upload from './komponen/Step1Upload';
 import Step2Pertanyaan from './komponen/Step2Pertanyaan';
 import Step3Profile from './komponen/Step3Profile';
 import Step4Review from './komponen/Step4Review';
+import Step5FaceVerification from './komponen/Step5FaceVerification';
 import iconKembali from '../../aset/melamar/iconkembali.svg';
 import iconLanjut from '../../aset/melamar/iconlanjut.svg';
 import iconSent from '../../aset/melamar/Sent.png';
 import layananLamaran from '../../layanan/layananLamaran';
+import layananProfil from '../../layanan/layananProfil';
 
 /**
  * SIPEKA — Sistem Pelamaran Kerja
@@ -24,7 +26,7 @@ const STATE_AWAL = {
     },
 };
 
-const TOTAL_STEP = 4;
+const TOTAL_STEP = 5;
 
 const varianAnimasi = {
     masuk: (arah) => ({ opacity: 0, x: arah > 0 ? 60 : -60 }),
@@ -51,6 +53,8 @@ const Melamar = () => {
     const [idLamaran, setIdLamaran] = useState(null);
     const [dokumenWajib, setDokumenWajib] = useState([]);
     const [pertanyaanSeleksi, setPertanyaanSeleksi] = useState([]);
+    const [profilePhoto, setProfilePhoto] = useState(null);
+    const [faceVerified, setFaceVerified] = useState(false);
 
     useEffect(() => {
         if (!infoLowongan?.id) {
@@ -81,6 +85,16 @@ const Melamar = () => {
                         }));
                         setFormData(prev => ({ ...prev, pertanyaan: initPertanyaan }));
                     }
+                }
+
+                // 3. Ambil profil pelamar untuk foto profil (referensi face recognition)
+                try {
+                    const resProfil = await layananProfil.ambilProfil();
+                    if (resProfil.status === 'success' && resProfil.data?.foto_profil) {
+                        setProfilePhoto(resProfil.data.foto_profil);
+                    }
+                } catch (profilErr) {
+                    console.warn('Gagal memuat foto profil:', profilErr);
                 }
             } catch (err) {
                 console.error('Gagal inisialisasi lamaran:', err);
@@ -148,16 +162,30 @@ const Melamar = () => {
             navigate(-1);
             return;
         }
+        // Reset face verification if going back from step 5
+        if (stepSaatIni === 5) {
+            setFaceVerified(false);
+        }
         setStepSaatIni((prev) => Math.max(prev - 1, 1));
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ─── Pengiriman Lamaran ──────────────────────────────────────────────────
-    const kirimLamaran = async () => {
+    const lanjutKeVerifikasi = () => {
+        setArahAnimasi(1);
+        setStepSaatIni(5);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleFaceVerified = async () => {
+        if (!faceVerified) {
+            setGalat('Verifikasi wajah belum berhasil. Pastikan wajah Anda telah terverifikasi sebelum mengirim lamaran.');
+            return;
+        }
         setSedangMengirim(true);
         setGalat('');
+
         try {
-            // 1. Simpan Jawaban Pertanyaan
+            // 1. Simpan Jawaban Pertanyaan jika ada
             if (formData.pertanyaan && formData.pertanyaan.length > 0) {
                 await layananLamaran.simpanJawaban(idLamaran, formData.pertanyaan);
             }
@@ -165,11 +193,13 @@ const Melamar = () => {
             // 2. Finalisasi / Kirim Lamaran
             await layananLamaran.kirimLamaran(idLamaran);
 
+            // 3. Tampilkan Halaman Sukses
             setLamaranTerkirim(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
-            console.error('Gagal mengirim lamaran:', err);
-            setGalat(err.response?.data?.message || 'Gagal mengirim lamaran. Silakan coba lagi.');
+            console.error('Gagal mengirim lamaran setelah verifikasi:', err);
+            setGalat(err.response?.data?.message || 'Gagal mengirim lamaran. Silakan coba kembali.');
+            setFaceVerified(false);
         } finally {
             setSedangMengirim(false);
         }
@@ -199,7 +229,7 @@ const Melamar = () => {
             case 4: 
                 return <Step4Review 
                     formData={formData} 
-                    onKirim={kirimLamaran} 
+                    onKirim={lanjutKeVerifikasi} 
                     sedangMengirim={sedangMengirim} 
                     dokumenWajib={dokumenWajib}
                     pertanyaanSeleksi={pertanyaanSeleksi}
@@ -208,6 +238,15 @@ const Melamar = () => {
                         setStepSaatIni(3);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
+                />;
+            case 5: 
+                return <Step5FaceVerification 
+                    onKirimLamaran={handleFaceVerified}
+                    onVerifiedResult={(isVerified) => setFaceVerified(isVerified)}
+                    onBack={kembali}
+                    profilePhoto={profilePhoto}
+                    idLamaran={idLamaran}
+                    sedangMengirim={sedangMengirim}
                 />;
             default: return null;
         }
@@ -360,7 +399,7 @@ const Melamar = () => {
                     </div>
                 )}
 
-                {/* Tombol Navigasi Akhir (Step 4) */}
+                {/* Tombol Navigasi Step 4 (Review) */}
                 {stepSaatIni === 4 && (
                     <div className="flex items-center justify-end gap-3 mt-8">
                         <button
@@ -372,12 +411,12 @@ const Melamar = () => {
                         </button>
 
                         <button
-                            onClick={kirimLamaran}
+                            onClick={lanjutKeVerifikasi}
                             disabled={sedangMengirim}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-[#4B2E2B] text-white rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#3d2523] transform transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-[#4B2E2B] text-white rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#3d2523] transform transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
-                            {sedangMengirim ? 'Mengirim...' : 'Kirim Lamaran'}
-                            <img src={iconSent} alt="sent" className="w-4 h-4 object-contain" />
+                            Lanjut ke Verifikasi Wajah
+                            <img src={iconLanjut} alt="next" className="w-4 h-4 object-contain" />
                         </button>
                     </div>
                 )}

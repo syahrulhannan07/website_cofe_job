@@ -10,7 +10,9 @@ use App\Models\JawabanPertanyaan;
 use App\Models\Lamaran;
 use App\Models\LamaranDokumen;
 use App\Models\Lowongan;
+use App\Services\V1\Pelamar\FaceRecognitionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -175,6 +177,17 @@ class LamaranController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Maaf, Anda belum dapat melamar. Mohon lengkapi data berikut'], 422);
         }
 
+        // VALIDASI VERIFIKASI WAJAH: Wajib telah lolos verifikasi biometrik wajah
+        $verificationKey = "lamaran_face_verified_{$id_lamaran}_{$profil->id_profil}";
+        $verification = Cache::get($verificationKey);
+
+        if (!$verification || empty($verification['verified'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Verifikasi wajah belum dilakukan atau tidak cocok dengan foto profil Anda. Harap selesaikan tahap verifikasi wajah terlebih dahulu.'
+            ], 422);
+        }
+
         // Finalisasi: Status tetap 'Diproses' sesuai permintaan, tapi kita bisa anggap ini submsission
         // Di ERD 'Diproses' adalah awal. Kita set saja untuk menandai ini sudah "dikirim".
         $profil->load(['pengguna', 'pendidikan', 'skills', 'pengalamanKerja']);
@@ -189,6 +202,12 @@ class LamaranController extends Controller
                 'alamat'        => $profil->alamat,
                 'tanggal_lahir' => $profil->tanggal_lahir,
                 'jenis_kelamin' => $profil->jenis_kelamin,
+            ],
+            'verifikasi_wajah' => [
+                'status' => 'Terverifikasi',
+                'tingkat_kemiripan' => $verification['confidence'] ?? null,
+                'ambang_batas' => $verification['threshold'] ?? null,
+                'diverifikasi_pada' => $verification['verified_at'] ?? now()->toIso8601String(),
             ],
             'pendidikan' => $profil->pendidikan->map(fn($p) => [
                 'id_pendidikan' => $p->id_pendidikan,
@@ -217,6 +236,9 @@ class LamaranController extends Controller
             'snapshot_profil' => $snapshot,
         ]);
 
+        // Hapus token verifikasi setelah lamaran tersimpan
+        Cache::forget($verificationKey);
+
         \App\Models\LogStatusLamaran::firstOrCreate([
             'id_lamaran' => $lamaran->id_lamaran,
             'status_baru' => 'Diproses',
@@ -229,6 +251,53 @@ class LamaranController extends Controller
             'status' => 'success',
             'message' => 'Lamaran berhasil dikirim.'
         ]);
+    }
+
+    public function verifikasiWajah(Request $request, $id_lamaran)
+    {
+        $request->validate([
+            'image_base64' => 'required|string',
+        ]);
+
+        $profil = auth('api')->user()->profilPelamar;
+        $lamaran = Lamaran::where('id_lamaran', $id_lamaran)
+            ->where('id_profil', $profil->id_profil)
+            ->firstOrFail();
+
+        if ($lamaran->status !== 'Diproses' || !empty($lamaran->snapshot_profil)) {
+            return response()->json(['status' => 'error', 'message' => 'Lamaran ini sudah dikirim.'], 403);
+        }
+
+        if (empty($profil->foto_profil)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Foto profil tidak ditemukan. Silakan upload foto profil terlebih dahulu.',
+                'face_detected' => false,
+            ], 422);
+        }
+
+        $faceService = app(FaceRecognitionService::class);
+        $result = $faceService->compareFaces($profil->foto_profil, $request->image_base64);
+
+        if ($result['success']) {
+            // Simpan status verifikasi wajah yang valid ke cache (berlaku 30 menit)
+            Cache::put("lamaran_face_verified_{$id_lamaran}_{$profil->id_profil}", [
+                'verified' => true,
+                'confidence' => $result['confidence'],
+                'threshold' => $result['threshold'],
+                'verified_at' => now()->toIso8601String(),
+            ], now()->addMinutes(30));
+        }
+
+        $statusCode = $result['success'] ? 200 : 422;
+
+        return response()->json([
+            'status' => $result['success'] ? 'success' : 'error',
+            'message' => $result['message'],
+            'confidence' => $result['confidence'],
+            'threshold' => $result['threshold'] ?? null,
+            'face_detected' => $result['face_detected'],
+        ], $statusCode);
     }
 
     public function batalkan($id_lamaran)

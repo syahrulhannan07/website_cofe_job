@@ -35,9 +35,16 @@ return [
         ],
     ],
 
-    'fonnte' => [
+'fonnte' => [
     'token' => env('WHATSAPP_API_TOKEN'),
     'url' => env('WHATSAPP_API_URL'),
+],
+
+    'faceplusplus' => [
+        'api_key' => env('FACEPLUSPLUS_API_KEY'),
+        'api_secret' => env('FACEPLUSPLUS_API_SECRET'),
+        'api_url' => env('FACEPLUSPLUS_API_URL', 'https://api-us.faceplusplus.com'),
+        'threshold' => env('FACEPLUSPLUS_THRESHOLD', 85.0),
     ],
 
 ];
