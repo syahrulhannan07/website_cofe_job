@@ -51,6 +51,16 @@ class Pengguna extends Authenticatable implements JWTSubject
         return $this->kata_sandi;
     }
 
+    public function verifikasiWajah()
+    {
+        return $this->hasMany(VerifikasiWajah::class, 'id_pengguna', 'id_pengguna');
+    }
+
+    public function presensiWawancara()
+    {
+        return $this->hasMany(PresensiWawancara::class, 'id_pengguna', 'id_pengguna');
+    }
+
     public function profilPerusahaan()
     {
         return $this->hasOne(ProfilPerusahaan::class, 'id_pengguna', 'id_pengguna');

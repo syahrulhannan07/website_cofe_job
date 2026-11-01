@@ -15,11 +15,18 @@ class ProfilPerusahaan extends Model
         'logo_perusahaan',
         'nama_perusahaan',
         'alamat_perusahaan',
+        'latitude',
+        'longitude',
         'dokumen_izin',
         'tanggal_berdiri',
         'deskripsi',
         'status_verifikasi',
         'alasan_penolakan',
+    ];
+
+    protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function pengguna()

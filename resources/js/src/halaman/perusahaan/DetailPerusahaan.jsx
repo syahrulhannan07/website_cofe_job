@@ -6,6 +6,8 @@ import placeholderProfile from '../../aset/profil/placeholder_profil.jpg';
 import JobCard from '../lowongan/komponen/JobCard';
 import HalamanErrorKopi from '../../komponen/umum/HalamanErrorKopi';
 import LoadingKopi from '../../komponen/umum/LoadingKopi';
+import LokasiPerusahaan from '../../komponen/umum/LokasiPerusahaan';
+import { getCompanyAddress } from '../../layanan/koordinatLokasi';
 
 const DetailPerusahaan = () => {
     const { id } = useParams();
@@ -112,9 +114,7 @@ const DetailPerusahaan = () => {
                         <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-1 md:gap-6 items-start">
                             <span className="font-poppins font-semibold text-base text-[#4B2E2B]">Alamat</span>
                             <span className="font-poppins font-regular text-base text-[#4B2E2B]">
-                                {perusahaan.alamat_perusahaan}
-                                {perusahaan.kecamatan && !perusahaan.alamat_perusahaan.includes(perusahaan.kecamatan) && `, ${perusahaan.kecamatan}`}
-                                {", Indramayu"}
+                                {getCompanyAddress(perusahaan) || 'Alamat kafe belum tersedia.'}
                             </span>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-1 md:gap-6 items-start">
@@ -129,6 +129,8 @@ const DetailPerusahaan = () => {
                         </div>
                     </div>
                 </motion.div>
+
+                <LokasiPerusahaan perusahaan={perusahaan} />
 
                 <div className="bg-[#C69C6D] rounded-2xl px-6 py-8 md:px-8 md:py-10">
                     <div className="flex flex-col gap-6">

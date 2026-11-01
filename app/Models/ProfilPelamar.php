@@ -20,6 +20,11 @@ class ProfilPelamar extends Model
         'jenis_kelamin',
     ];
 
+    public function dataWajah()
+    {
+        return $this->hasOne(DataWajah::class, 'id_profil', 'id_profil');
+    }
+
     public function pengguna()
     {
         return $this->belongsTo(Pengguna::class, 'id_pengguna', 'id_pengguna');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Pelamar;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lamaran;
+use App\Services\V1\Pelamar\VerifikasiWajahService;
 use Illuminate\Http\Request;
 
 class StatusLamaranController extends Controller
@@ -65,8 +66,9 @@ class StatusLamaranController extends Controller
     public function show($id_lamaran)
     {
         $profil = auth('api')->user()->profilPelamar;
-        
-        $lamaran = Lamaran::with(['lowongan.perusahaan', 'logStatus', 'wawancara', 'profil.pengguna'])
+        abort_unless($profil, 404);
+
+        $lamaran = Lamaran::with(['lowongan.perusahaan', 'logStatus', 'wawancara.presensi', 'profil.pengguna'])
             ->where('id_lamaran', $id_lamaran)
             ->where('id_profil', $profil->id_profil)
             ->firstOrFail();
@@ -96,6 +98,7 @@ class StatusLamaranController extends Controller
                     'lokasi' => $lamaran->wawancara->lokasi,
                     'catatan' => $lamaran->wawancara->catatan,
                     'status_jadwal' => $lamaran->wawancara->status,
+                    ...$lamaran->wawancara->attendanceData($lamaran),
                 ] : null
             ]
         ]);
@@ -104,8 +107,9 @@ class StatusLamaranController extends Controller
     public function detailWawancara($id_lamaran)
     {
         $profil = auth('api')->user()->profilPelamar;
+        abort_unless($profil, 404);
 
-        $lamaran = Lamaran::with(['wawancara'])
+        $lamaran = Lamaran::with(['wawancara.presensi', 'profil'])
             ->where('id_lamaran', $id_lamaran)
             ->where('id_profil', $profil->id_profil)
             ->firstOrFail();
@@ -118,11 +122,12 @@ class StatusLamaranController extends Controller
         }
 
         $wawancara = $lamaran->wawancara;
-        $isExpired = \Carbon\Carbon::parse($wawancara->tanggal_wawancara)->isPast();
+        $isExpired = $wawancara->tanggal_wawancara->lt(now(config('app.timezone'))->startOfDay());
 
         return response()->json([
             'status' => 'success',
             'data' => [
+                ...$wawancara->attendanceData($lamaran),
                 'tanggal_wawancara' => $wawancara->tanggal_wawancara,
                 'lokasi' => $wawancara->lokasi,
                 'catatan' => $wawancara->catatan,
@@ -133,21 +138,41 @@ class StatusLamaranController extends Controller
         ]);
     }
 
-    public function konfirmasiWawancara($id_lamaran)
+    public function konfirmasiWawancara(Request $request, $id_lamaran)
     {
+        $request->validate([
+            'image_base64' => 'required|string|max:8000000',
+            'id_wawancara' => 'required|integer|min:1',
+        ]);
         $profil = auth('api')->user()->profilPelamar;
+        abort_unless($profil, 404);
 
         $lamaran = Lamaran::with(['lowongan.perusahaan.pengguna', 'profil'])
             ->where('id_lamaran', $id_lamaran)
             ->where('id_profil', $profil->id_profil)
             ->firstOrFail();
 
-        // Trigger event untuk notifikasi ke admin
-        event(new \App\Events\WawancaraConfirmedByPelamar($lamaran));
+        $outcome = app(VerifikasiWajahService::class)->verify(
+            $lamaran, $request->image_base64, (int) $request->id_wawancara
+        );
+        if (!empty($outcome['presensi'])) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Identitas terverifikasi. Anda hadir dan siap diwawancarai.',
+                'data' => [
+                                    'presensi' => $outcome['presensi']->responseData(),
+                                    'status_jadwal' => $outcome['presensi']->wawancara->status,
+                                ],
+            ]);
+        }
 
+        $result = $outcome['result'];
         return response()->json([
-            'status' => 'success',
-            'message' => 'Konfirmasi berhasil dikirim ke perusahaan.'
-        ]);
+            'status' => 'error',
+            'message' => $result['message'],
+            'confidence' => $result['confidence'] ?? null,
+            'threshold' => $result['threshold'] ?? null,
+            'face_detected' => $result['face_detected'] ?? false,
+        ], !empty($outcome['conflict']) ? 409 : 422);
     }
 }

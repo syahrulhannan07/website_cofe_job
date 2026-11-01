@@ -124,7 +124,7 @@ const HalamanWawancara = () => {
         const errors = {};
         if (!formData.tanggal) errors.tanggal = 'Harap isi bidang ini.';
         if (!formData.jam) errors.jam = 'Harap isi bidang ini.';
-        if (!formData.lokasi) errors.lokasi = 'Harap isi bidang ini.';
+        if (!formData.lokasi.trim()) errors.lokasi = 'Lokasi atau tautan wawancara wajib diisi.';
         if (modalMode === 'add' && !formData.id_lamaran) {
             errors.id_lamaran = 'Harap isi bidang ini.';
         }
@@ -136,15 +136,13 @@ const HalamanWawancara = () => {
 
         // [UPDATE LOGIC] - Payload yang dikirim ke backend
         const payload = {
-            tanggal: formData.tanggal,
-            waktu: formData.jam,
-            tempat_link: formData.lokasi,
             tanggal_wawancara: `${formData.tanggal} ${formData.jam}`,
-            lokasi: formData.lokasi,
+            lokasi: formData.lokasi.trim(),
             status: formData.status,
             catatan: formData.catatan
         };
 
+        setValidationErrors({});
         setIsSubmitting(true);
         try {
             if (modalMode === 'add') {
@@ -158,7 +156,18 @@ const HalamanWawancara = () => {
             setShowModal(false);
             fetchData();
         } catch (error) {
-            alert(error.response?.data?.message || 'Gagal menyimpan jadwal');
+            const response = error.response?.data;
+                        const fieldNames = { tanggal_wawancara: 'jam', tanggal: 'tanggal', waktu: 'jam', tempat_link: 'lokasi' };
+                        const fieldErrors = response?.errors && typeof response.errors === 'object'
+                            ? Object.fromEntries(Object.entries(response.errors).map(([field, messages]) => [
+                                fieldNames[field] || field,
+                                Array.isArray(messages) ? messages[0] : messages,
+                            ]))
+                            : {};
+                        setValidationErrors({
+                            ...fieldErrors,
+                            form: Object.values(fieldErrors)[0] || response?.message || 'Gagal menyimpan jadwal. Silakan coba lagi.',
+                        });
         } finally {
             setIsSubmitting(false);
         }

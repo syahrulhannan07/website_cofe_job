@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../../../layanan/api';
+import { parseLocationCoordinates } from '../../../../layanan/lokasiIndramayu';
 
 // Aset SVG
 import pencilSquareSvg from '../../../aset/profil-perusahaan/PencilSquare.svg';
@@ -110,6 +111,10 @@ const FormProfil = ({ variants, data, onUpdate }) => {
     };
 
     const handleSave = async () => {
+        if (parseLocationCoordinates(formData.alamat_perusahaan).isCoordinate) {
+            alert('Alamat harus berupa nama jalan/desa dan alamat lengkap, bukan koordinat. Gunakan Edit Lokasi untuk menentukan pin peta.');
+            return;
+        }
         try {
             setIsSaving(true);
             const submissionData = new FormData();

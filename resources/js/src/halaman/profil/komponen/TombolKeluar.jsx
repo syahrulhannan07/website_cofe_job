@@ -31,12 +31,12 @@ const TombolKeluar = () => {
         <div className="area-tombol-keluar flex justify-start mt-8 mb-20">
             <button 
                 onClick={handleLogout}
-                className="tombol-keluar flex items-center gap-4 bg-[#E3CEB6] border border-[#4B2E2B] rounded-[10px] px-6 py-2 hover:bg-[#d5bc9f] transition-colors group shadow-sm active:scale-95"
+                className="tombol-keluar inline-flex w-fit max-w-full min-h-11 items-center gap-2 sm:gap-2.5 bg-[#E3CEB6] border border-[#4B2E2B] rounded-[10px] px-4 sm:px-5 py-2 hover:bg-[#d5bc9f] transition-colors group shadow-sm active:scale-95"
             >
-                <div className="wadah-ikon w-10 h-10 flex items-center justify-center">
-                    <img src={logoutIcon} alt="" className="w-8 h-8 opacity-80 group-hover:opacity-100 transition-opacity" />
+                <div className="wadah-ikon w-6 h-6 shrink-0 flex items-center justify-center">
+                    <img src={logoutIcon} alt="" className="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <span className="font-poppins font-semibold text-[20px] text-[#4B2E2B]">
+                <span className="font-poppins font-semibold text-sm sm:text-base whitespace-nowrap text-[#4B2E2B]">
                     Log Out
                 </span>
             </button>

@@ -45,7 +45,7 @@ class FaceRecognitionService
         // Check if profile photo exists
         $profilePhotoFullPath = $this->resolvePhotoPath($profilePhotoPath);
         if (!$profilePhotoFullPath) {
-            Log::error('Profile photo not found', ['path' => $profilePhotoPath]);
+            Log::error('Profile photo not found for face verification');
             return [
                 'success' => false,
                 'confidence' => null,
@@ -95,19 +95,13 @@ class FaceRecognitionService
                 ]);
 
             if ($response->failed()) {
-                Log::error('Face++ API error', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-                
-                $errorData = $response->json();
-                $errorMessage = $errorData['error_message'] ?? 'Gagal menghubungi layanan Face Recognition';
+                Log::error('Face++ API request failed', ['status' => $response->status()]);
                 
                 return [
                     'success' => false,
                     'confidence' => null,
                     'threshold' => $this->threshold,
-                    'message' => 'Layanan verifikasi wajah mengalami gangguan: ' . $errorMessage,
+                    'message' => 'Layanan verifikasi wajah mengalami gangguan. Silakan coba lagi.',
                     'face_detected' => false,
                 ];
             }
@@ -193,15 +187,6 @@ class FaceRecognitionService
             $confidenceRounded = round($confidence, 1);
             $thresholdRounded = round($strictMinThreshold, 1);
 
-            // Log untuk audit trail pencocokan biometrik
-            Log::info('Face++ Biometric Comparison Result', [
-                'profile_photo' => $profilePhotoPath,
-                'confidence' => $confidenceRounded,
-                'applied_threshold' => $thresholdRounded,
-                'is_match' => $isMatch,
-                'facepp_thresholds' => $thresholds,
-                'face2_rectangle' => $face2Rect,
-            ]);
 
             return [
                 'success' => $isMatch,
@@ -214,16 +199,13 @@ class FaceRecognitionService
             ];
 
         } catch (\Exception $e) {
-            Log::error('FaceRecognitionService exception', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error('Face recognition request could not be completed');
             
             return [
                 'success' => false,
                 'confidence' => null,
                 'threshold' => $this->threshold,
-                'message' => 'Terjadi kesalahan saat memproses verifikasi wajah: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan saat memproses verifikasi wajah. Silakan coba lagi.',
                 'face_detected' => false,
             ];
         }

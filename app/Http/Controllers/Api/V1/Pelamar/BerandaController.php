@@ -19,10 +19,12 @@ class BerandaController extends Controller
     {
         // 1. Ambil 4 perusahaan yang memiliki akumulasi jumlah lowongan terbanyak dan jumlah pelamar terbanyak.
         $perusahaanPopuler = ProfilPerusahaan::aktifTerverifikasi()
-            ->selectRaw('profil_perusahaan.*, 
-                (SELECT COUNT(*) FROM lowongan WHERE lowongan.id_perusahaan = profil_perusahaan.id_perusahaan AND lowongan.status = "Active" AND lowongan.deleted_at IS NULL) as lowongan_aktif_count,
+            ->selectRaw('profil_perusahaan.*,
                 (SELECT COUNT(*) FROM lamaran JOIN lowongan ON lamaran.id_lowongan = lowongan.id_lowongan WHERE lowongan.id_perusahaan = profil_perusahaan.id_perusahaan) as pelamar_count')
-            ->orderByRaw('(lowongan_aktif_count + pelamar_count) DESC')
+            ->withCount(['lowongan' => function ($query) {
+                $query->aktifTerverifikasi();
+            }])
+            ->orderByRaw('(lowongan_count + pelamar_count) DESC')
             ->limit(4)
             ->get();
 

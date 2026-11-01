@@ -4,9 +4,10 @@ import FormProfil from './komponen/FormProfil';
 import FotoProfil from './komponen/FotoProfil';
 import { useAdmin } from '../../konteks/AdminContext';
 import LoadingKopi from '../../../komponen/umum/LoadingKopi';
+import LokasiProfilPerusahaan from './komponen/LokasiProfilPerusahaan';
 
 const HalamanProfil = () => {
-    const { profilData: profil, fetchProfil, loading } = useAdmin();
+    const { profilData: profil, fetchProfil, setProfilData, loading } = useAdmin();
 
     // [UPDATE LOGIC]
     useEffect(() => {
@@ -71,6 +72,8 @@ const HalamanProfil = () => {
                     onUpdate={() => fetchProfil(true)}
                 />
             </motion.div>
+
+            {profil && <LokasiProfilPerusahaan perusahaan={profil} onUpdate={setProfilData} />}
 
             <div className="h-[40px]" />
         </div>

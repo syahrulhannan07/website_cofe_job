@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\V1\Pelamar\ProfilController;
 use App\Http\Controllers\Api\V1\NotifikasiController;
 
 Route::prefix('v1')->group(function () {
+    Route::get('/lokasi/cari', [\App\Http\Controllers\Api\V1\LokasiController::class, 'cari'])
+        ->middleware('throttle:geocoding');
     Route::prefix('auth')->group(function () {
         Route::post('/daftar-pelamar', [RegisterController::class, 'daftarPelamar']);
         Route::post('/daftar-perusahaan', [RegisterController::class, 'daftarPerusahaan']);
@@ -98,7 +100,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/mulai', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'mulai']);
         Route::post('/{id}/dokumen', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'uploadDokumen']);
         Route::post('/{id}/jawaban', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'simpanJawaban']);
-        Route::post('/{id}/verifikasi-wajah', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'verifikasiWajah']);
+        Route::post('/{id}/verifikasi-wajah', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'verifikasiWajah'])->middleware('throttle:face-verification');
         Route::post('/{id}/kirim', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'kirim']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\LamaranController::class, 'batalkan']);
     });
@@ -113,7 +115,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'index']);
         Route::get('/{id}', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'show']);
         Route::get('/{id}/wawancara', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'detailWawancara']);
-        Route::post('/{id}/konfirmasi-wawancara', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'konfirmasiWawancara']);
+        Route::post('/{id}/konfirmasi-wawancara', [\App\Http\Controllers\Api\V1\Pelamar\StatusLamaranController::class, 'konfirmasiWawancara'])->middleware('throttle:face-verification');
     });
 
     Route::middleware(['auth:api', 'role:Admin_Perusahaan'])->prefix('admin')->group(function () {

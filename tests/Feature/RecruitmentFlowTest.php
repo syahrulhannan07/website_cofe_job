@@ -17,7 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Cache;
+use App\Services\V1\Pelamar\FaceRecognitionService;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Notification;
 use Mockery;
@@ -258,17 +258,18 @@ class RecruitmentFlowTest extends TestCase
             ]);
         $simpanJawaban->assertStatus(200);
 
-        // Simulasikan verifikasi wajah yang sudah lolos (wajib sebelum kirim lamaran)
-        Cache::put(
-            "lamaran_face_verified_{$idLamaran}_{$this->profilPelamar->id_profil}",
-            [
-                'verified' => true,
-                'confidence' => 95.5,
-                'threshold' => 85,
-                'verified_at' => now()->toIso8601String(),
-            ],
-            now()->addMinutes(30)
-        );
+        $this->profilPelamar->update(['foto_profil' => 'profil/test.jpg']);
+        auth('api')->user()->unsetRelation('profilPelamar');
+        $this->mock(FaceRecognitionService::class)->shouldReceive('compareFaces')->once()->andReturn([
+            'success' => true,
+            'confidence' => 95.5,
+            'threshold' => 85,
+            'face_detected' => true,
+            'message' => 'Wajah cocok.',
+        ]);
+        $this->withHeader('Authorization', 'Bearer ' . $pelamarToken)
+            ->postJson("/api/v1/lamaran/{$idLamaran}/verifikasi-wajah", ['image_base64' => 'test-camera-image'])
+            ->assertOk();
 
         // Submit final lamaran
         $kirimLamaran = $this->withHeader('Authorization', 'Bearer ' . $pelamarToken)
@@ -552,7 +553,9 @@ class RecruitmentFlowTest extends TestCase
             'email' => 'nibtest@test.com',
             'kata_sandi' => 'password123',
             'konfirmasi_kata_sandi' => 'password123',
-            'alamat' => '-6.123, 106.456',
+            'alamat' => 'Jl. Uji No. 12, Indramayu',
+            'latitude' => -6.123,
+            'longitude' => 106.456,
             'deskripsi' => 'Test cafe for NIB registration',
             'dokumen_legalitas' => $file,
             'foto_outlet' => UploadedFile::fake()->image('outlet.jpg'),
@@ -622,7 +625,9 @@ class RecruitmentFlowTest extends TestCase
             'email' => 'validationfail@test.com',
             'kata_sandi' => 'password123',
             'konfirmasi_kata_sandi' => 'password123',
-            'alamat' => '-6.123, 106.456',
+            'alamat' => 'Jl. Uji No. 12, Indramayu',
+            'latitude' => -6.123,
+            'longitude' => 106.456,
             'dokumen_legalitas' => $file,
         ]);
 
@@ -689,7 +694,9 @@ class RecruitmentFlowTest extends TestCase
             'email' => 'nibfail@test.com',
             'kata_sandi' => 'password123',
             'konfirmasi_kata_sandi' => 'password123',
-            'alamat' => '-6.123, 106.456',
+            'alamat' => 'Jl. Uji No. 12, Indramayu',
+            'latitude' => -6.123,
+            'longitude' => 106.456,
             'deskripsi' => 'Test cafe for NIB creation failure',
             'dokumen_legalitas' => $file,
         ]);

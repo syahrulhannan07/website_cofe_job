@@ -10,6 +10,7 @@ use App\Services\V1\Admin\WawancaraService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class WawancaraController extends Controller
 {
@@ -42,17 +43,9 @@ class WawancaraController extends Controller
         $profil = auth('api')->user()->profilPerusahaan;
         if (!$profil) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
 
-        // [UPDATE LOGIC] - Terapkan validasi required untuk tanggal, waktu, dan tempat_link
-        $validator = Validator::make($request->all(), [
-            'tanggal'           => 'required',
-            'waktu'             => 'required',
-            'tempat_link'       => 'required',
-            'tanggal_wawancara' => 'required|date_format:Y-m-d H:i|after:now',
-            'lokasi'            => 'required|string|max:500',
-            'catatan'           => 'nullable|string|max:500',
-        ]);
+        $validator = $this->scheduleValidator($request, true);
 
-        if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
+        if ($validator->fails()) return $this->errorResponse($validator->errors()->first(), 422, $validator->errors());
 
         // [UPDATE LOGIC] - Eager load profil.pengguna untuk keperluan pengiriman email
         $lamaran = Lamaran::with(['profil.pengguna', 'lowongan'])
@@ -62,13 +55,9 @@ class WawancaraController extends Controller
 
         if (!$lamaran) return $this->errorResponse('Lamaran tidak ditemukan', 404);
 
-        // [UPDATE LOGIC] - Jika status lamaran sebelumnya belum berstatus "Wawancara", otomatis update status lamarannya menjadi "Wawancara"
-        if ($lamaran->status !== 'Wawancara') {
-            $lamaran->update(['status' => 'Wawancara']);
-        }
 
         try {
-            $data = $request->all();
+            $data = $validator->validated();
             $data['id_lamaran'] = $id_lamaran;
             
             $wawancara = $this->service->scheduleWawancara(
@@ -94,6 +83,8 @@ class WawancaraController extends Controller
             ]);
 
             return $this->successResponse(new WawancaraResource($wawancara), 'Jadwal wawancara berhasil dibuat', 201);
+        } catch (ValidationException $e) {
+            return $this->errorResponse($e->validator->errors()->first(), 422, $e->errors());
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat menyimpan jadwal', 500, $e->getMessage());
         }
@@ -107,17 +98,12 @@ class WawancaraController extends Controller
         $wawancara = $this->repository->findByIdAndPerusahaan($id_wawancara, $profil->id_perusahaan, ['lamaran.profil']);
         if (!$wawancara) return $this->errorResponse('Jadwal tidak ditemukan', 404);
 
-        $validator = Validator::make($request->all(), [
-            'tanggal_wawancara' => 'nullable|date_format:Y-m-d H:i',
-            'lokasi'            => 'nullable|string|max:500',
-            'status'            => 'nullable|in:Terjadwal,Selesai,Dibatalkan',
-            'catatan'           => 'nullable|string|max:500',
-        ]);
+        $validator = $this->scheduleValidator($request, false);
 
-        if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
+        if ($validator->fails()) return $this->errorResponse($validator->errors()->first(), 422, $validator->errors());
 
         try {
-            $this->service->rescheduleWawancara($wawancara, $request->all(), $profil->nama_perusahaan);
+            $this->service->rescheduleWawancara($wawancara, $validator->validated(), $profil->nama_perusahaan);
 
             event(new \App\Events\WawancaraUpdated(
                 $wawancara->refresh(),
@@ -126,9 +112,57 @@ class WawancaraController extends Controller
             ));
 
             return $this->successResponse(new WawancaraResource($wawancara->refresh()), 'Jadwal berhasil diperbarui');
+        } catch (ValidationException $e) {
+            return $this->errorResponse($e->validator->errors()->first(), 422, $e->errors());
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat memperbarui jadwal', 500, $e->getMessage());
         }
+    }
+
+    private function scheduleValidator(Request $request, bool $creating): \Illuminate\Contracts\Validation\Validator
+    {
+        $data = $request->all();
+
+        // Canonical fields take precedence; aliases are only used when they are absent.
+        if (!array_key_exists('tanggal_wawancara', $data)
+            && (array_key_exists('tanggal', $data) || array_key_exists('waktu', $data))) {
+            $date = $data['tanggal'] ?? null;
+            $time = $data['waktu'] ?? null;
+            $data['tanggal_wawancara'] = is_string($date) && is_string($time)
+                ? $date . ' ' . $time
+                : [$date, $time];
+        }
+
+        if (!array_key_exists('lokasi', $data) && array_key_exists('tempat_link', $data)) {
+            $data['lokasi'] = $data['tempat_link'];
+        }
+
+        $datetime = $data['tanggal_wawancara'] ?? null;
+        if (is_string($datetime)
+            && preg_match('/\A\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2})?\z/', $datetime)) {
+            // Normalize HTML datetime-local without parsing away invalid dates or supplied seconds.
+            $data['tanggal_wawancara'] = str_replace('T', ' ', $datetime)
+                . (strlen($datetime) === 16 ? ':00' : '');
+        }
+
+        return Validator::make($data, [
+            'tanggal_wawancara' => $creating
+                ? 'bail|required|date_format:Y-m-d H:i:s|after:now'
+                : 'bail|nullable|date_format:Y-m-d H:i:s',
+            'lokasi' => $creating ? 'bail|required|string|max:500' : 'bail|nullable|string|max:500',
+            'status' => 'bail|nullable|in:Terjadwal,Selesai,Dibatalkan',
+            'catatan' => 'bail|nullable|string|max:500',
+        ], [
+            'tanggal_wawancara.required' => 'Tanggal dan waktu wawancara wajib diisi.',
+            'tanggal_wawancara.date_format' => 'Tanggal dan waktu wawancara tidak valid. Gunakan format YYYY-MM-DD HH:mm atau YYYY-MM-DD HH:mm:ss.',
+            'tanggal_wawancara.after' => 'Tanggal dan waktu wawancara harus setelah waktu sekarang. Pilih tanggal atau jam yang akan datang.',
+            'lokasi.required' => 'Lokasi atau tautan wawancara wajib diisi.',
+            'lokasi.string' => 'Lokasi atau tautan wawancara harus berupa teks.',
+            'lokasi.max' => 'Lokasi atau tautan wawancara maksimal 500 karakter.',
+            'status.in' => 'Status wawancara harus Terjadwal, Selesai, atau Dibatalkan.',
+            'catatan.string' => 'Catatan wawancara harus berupa teks.',
+            'catatan.max' => 'Catatan wawancara maksimal 500 karakter.',
+        ]);
     }
 
     public function destroy($id_wawancara)
@@ -142,6 +176,8 @@ class WawancaraController extends Controller
         try {
             $this->service->deleteWawancara($wawancara, $profil->nama_perusahaan);
             return $this->successResponse(null, 'Jadwal wawancara berhasil dihapus');
+        } catch (ValidationException $e) {
+            return $this->errorResponse($e->validator->errors()->first(), 422, $e->errors());
         } catch (\Exception $e) {
             return $this->errorResponse('Terjadi kesalahan saat menghapus jadwal', 500, $e->getMessage());
         }

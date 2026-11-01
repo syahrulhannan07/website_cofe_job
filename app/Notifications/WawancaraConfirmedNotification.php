@@ -29,15 +29,21 @@ class WawancaraConfirmedNotification extends Notification implements ShouldQueue
         return [CustomDbChannel::class, 'mail', FcmChannel::class,];
     }
 
+    public function viaConnections(): array
+    {
+        // In-app attendance must be visible immediately, even when remote channels use a worker.
+        return [CustomDbChannel::class => 'sync'];
+    }
+
     public function toMail($notifiable): MailMessage
     {
         $namaPelamar = $this->lamaran->profil->nama_lengkap ?? 'Pelamar';
         $posisi = $this->lamaran->lowongan->posisi ?? 'Posisi';
 
         return (new MailMessage)
-            ->subject("Jadwal Wawancara Dikonfirmasi: {$namaPelamar} ✅")
+            ->subject("Pelamar Hadir dan Siap Diwawancarai: {$namaPelamar} ✅")
             ->line("Halo " . $notifiable->nama_pengguna . ",")
-            ->line("Kandidat bernama {$namaPelamar} telah melihat dan mengonfirmasi jadwal wawancara untuk posisi {$posisi}.")
+            ->line("Identitas {$namaPelamar} telah terverifikasi melalui verifikasi wajah. Kandidat hadir dan siap diwawancarai untuk posisi {$posisi}.")
             ->line("Silakan periksa dashboard admin Anda untuk informasi lebih lanjut.")
             ->line("Terima kasih telah menggunakan Cafe Job!");
     }
@@ -48,8 +54,8 @@ class WawancaraConfirmedNotification extends Notification implements ShouldQueue
         $posisi = $this->lamaran->lowongan->posisi ?? 'Posisi';
 
         return [
-            'judul' => "Jadwal Wawancara Dikonfirmasi ✅",
-            'pesan' => "Kandidat {$namaPelamar} telah melihat dan mengonfirmasi jadwal wawancara untuk posisi {$posisi}.",
+            'judul' => "Pelamar Hadir dan Siap Diwawancarai ✅",
+            'pesan' => "Identitas {$namaPelamar} telah terverifikasi melalui verifikasi wajah. Kandidat hadir dan siap diwawancarai untuk posisi {$posisi}.",
             // Deep-link ke halaman pelamar di admin
             'url'   => "/admin/pelamar?id_pelamar={$this->lamaran->id_profil}&id_lamaran={$this->lamaran->id_lamaran}",
         ];
@@ -62,8 +68,8 @@ class WawancaraConfirmedNotification extends Notification implements ShouldQueue
 
         return new FcmMessage(
             notification: new FcmNotification(
-                title: "Jadwal Wawancara Dikonfirmasi ✅",
-                body: "{$namaPelamar} telah mengonfirmasi jadwal wawancara untuk posisi {$posisi}."
+                title: "Pelamar Hadir dan Siap Diwawancarai ✅",
+                body: "Identitas {$namaPelamar} terverifikasi. Kandidat hadir dan siap diwawancarai untuk posisi {$posisi}."
             ),
             data: [
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',

@@ -40,7 +40,8 @@ const WawancaraTable = ({ interviews, onEdit, onDelete, onSelesai }) => {
                         <th className="px-6 font-semibold text-[13px] text-[#4B2E2B] font-poppins">Tanggal</th>
                         <th className="px-6 font-semibold text-[13px] text-[#4B2E2B] font-poppins">Jam</th>
                         <th className="px-6 font-semibold text-[13px] text-[#4B2E2B] font-poppins text-center">Status</th>
-                        <th className="px-6 font-semibold text-[13px] text-[#4B2E2B] font-poppins text-center">Aksi</th>
+                        <th className="px-6 font-semibold text-[13px] text-[#4B2E2B] font-poppins">Kehadiran</th>
+                                                <th className="px-6 font-semibold text-[13px] text-[#4B2E2B] font-poppins text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,6 +68,17 @@ const WawancaraTable = ({ interviews, onEdit, onDelete, onSelesai }) => {
                                             {item.status}
                                         </span>
                                     </td>
+                                    <td className="px-6 py-3">
+                                        {item.presensi ? (
+                                            <div className="min-w-40 font-poppins text-xs text-green-800">
+                                                <span className="inline-flex rounded-full bg-green-100 px-3 py-1 font-semibold">Hadir · Terverifikasi</span>
+                                                <p className="mt-1.5 leading-relaxed">{item.status === 'Terjadwal' ? 'Siap diwawancarai' : 'Presensi tercatat'}</p>
+                                                <p className="mt-1 text-[11px] text-[#4B2E2B]/70">{new Date(item.presensi.waktu_presensi).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Jakarta' })} WIB</p>
+                                            </div>
+                                        ) : (
+                                            <span className="font-poppins text-xs text-[#4B2E2B]/60">Belum presensi</span>
+                                        )}
+                                    </td>
                                     <td className="px-6">
                                         <div className="flex items-center justify-center gap-3">
                                             {item.status === 'Terjadwal' && (
@@ -78,16 +90,16 @@ const WawancaraTable = ({ interviews, onEdit, onDelete, onSelesai }) => {
                                                     >
                                                         <img src={CheckCircleIcon} alt="check" className="w-[18px] h-[18px] opacity-40 group-hover:opacity-100" />
                                                     </button>
-                                                    <button 
+                                                    {!item.presensi && <button
                                                         onClick={() => onEdit(item)}
                                                         className="transition-all hover:scale-110"
                                                         title="Ubah Jadwal"
                                                     >
                                                         <img src={PencilIcon} alt="edit" className="w-[18px] h-[18px] opacity-40 group-hover:opacity-100" />
-                                                    </button>
+                                                    </button>}
                                                 </>
                                             )}
-                                            <button 
+                                            {!item.presensi && <button
                                                 onClick={() => onDelete(item.id_wawancara)}
                                                 className="transition-all hover:scale-110"
                                                 title="Batalkan Jadwal"
@@ -98,7 +110,7 @@ const WawancaraTable = ({ interviews, onEdit, onDelete, onSelesai }) => {
                                                     className="w-[18px] h-[18px] opacity-40 group-hover:opacity-100" 
                                                     style={{ filter: item.status === 'Terjadwal' ? '' : 'grayscale(1)' }}
                                                 />
-                                            </button>
+                                            </button>}
                                         </div>
                                     </td>
                                 </tr>
@@ -106,7 +118,7 @@ const WawancaraTable = ({ interviews, onEdit, onDelete, onSelesai }) => {
                         })
                     ) : (
                         <tr>
-                            <td colSpan="6" className="p-20 text-center">
+                            <td colSpan="7" className="p-20 text-center">
                                 <div className="flex flex-col items-center opacity-30">
                                     <img src={SchoolBriefcaseIcon} alt="empty" className="w-16 h-16 mb-4" />
                                     <p className="text-[14px] font-medium font-poppins">Belum ada jadwal wawancara.</p>

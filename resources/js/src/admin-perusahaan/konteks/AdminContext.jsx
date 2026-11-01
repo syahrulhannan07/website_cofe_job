@@ -61,6 +61,7 @@ export const AdminProvider = ({ children }) => {
             error,
             fetchDashboard,
             fetchProfil,
+            setProfilData,
             refreshAll,
             setIdentitas,
             topbarAction,

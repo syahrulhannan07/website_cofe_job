@@ -15,6 +15,7 @@ class WawancaraResource extends JsonResource
             'lokasi'            => $this->lokasi,
             'catatan'           => $this->catatan,
             'status'            => $this->status,
+            'presensi'          => $this->presensi?->responseData(),
             'kandidat'          => [
                 'id_lamaran'   => $this->lamaran?->id_lamaran,
                 'nama_lengkap' => $this->lamaran?->profil?->nama_lengkap,

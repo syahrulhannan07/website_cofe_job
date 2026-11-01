@@ -45,9 +45,14 @@ class Lamaran extends Model
         return $this->hasMany(LogStatusLamaran::class, 'id_lamaran', 'id_lamaran');
     }
 
+    public function verifikasiWajah()
+    {
+        return $this->hasMany(VerifikasiWajah::class, 'id_lamaran', 'id_lamaran');
+    }
+
     public function wawancara()
     {
-        return $this->hasOne(Wawancara::class, 'id_lamaran', 'id_lamaran');
+        return $this->hasOne(Wawancara::class, 'id_lamaran', 'id_lamaran')->latestOfMany('id_wawancara');
     }
 
     protected static function booted()

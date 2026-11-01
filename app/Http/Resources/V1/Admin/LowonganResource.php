@@ -31,6 +31,8 @@ class LowonganResource extends JsonResource
             'perusahaan'     => [
                 'nama'   => $this->perusahaan?->nama_perusahaan,
                 'alamat' => $this->perusahaan?->alamat_perusahaan,
+                'latitude' => $this->perusahaan?->latitude,
+                'longitude' => $this->perusahaan?->longitude,
                 'email'  => $this->perusahaan?->pengguna?->email,
                 'logo'   => $this->perusahaan?->logo_perusahaan,
             ],

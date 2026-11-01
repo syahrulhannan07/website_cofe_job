@@ -7,7 +7,10 @@ use App\Models\Nib;
 use App\Models\Pengguna;
 use App\Models\ProfilPelamar;
 use App\Models\ProfilPerusahaan;
+use App\Rules\NotCoordinatePair;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -99,7 +102,9 @@ class RegisterController extends Controller
             'email' => 'required|string|email|max:255',
             'kata_sandi' => 'required|string|min:8',
             'nama_perusahaan' => 'required|string|max:255',
-            'alamat_perusahaan' => 'required|string',
+            'alamat_perusahaan' => ['required', 'string', new NotCoordinatePair()],
+            'latitude' => 'nullable|required_with:longitude|numeric|between:-90,90',
+            'longitude' => 'nullable|required_with:latitude|numeric|between:-180,180',
             'dokumen_izin' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
@@ -142,6 +147,8 @@ class RegisterController extends Controller
                 'id_pengguna' => $pengguna->id_pengguna,
                 'nama_perusahaan' => $request->nama_perusahaan,
                 'alamat_perusahaan' => $request->alamat_perusahaan,
+                'latitude' => $request->input('latitude'),
+                'longitude' => $request->input('longitude'),
                 'dokumen_izin' => $path,
                 'status_verifikasi' => 'Pending',
             ]);
@@ -185,90 +192,117 @@ class RegisterController extends Controller
             'email' => 'required|string|email|max:255',
             'kata_sandi' => 'required|string|min:8',
             'konfirmasi_kata_sandi' => 'required|same:kata_sandi',
-            'alamat' => 'required|string',
+            'alamat' => ['required', 'string', new NotCoordinatePair()],
+            'latitude' => 'nullable|required_with:longitude|numeric|between:-90,90',
+            'longitude' => 'nullable|required_with:latitude|numeric|between:-180,180',
             'deskripsi' => 'nullable|string',
             'dokumen_legalitas' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+
         ], [
+            'required' => ':attribute wajib diisi.',
+            'string' => ':attribute harus berupa teks.',
+            'email' => ':attribute harus berupa alamat email yang valid.',
+            'min' => ':attribute minimal :min karakter.',
+            'max' => ':attribute maksimal :max karakter.',
+            'konfirmasi_kata_sandi.same' => 'Konfirmasi kata sandi harus sama dengan kata sandi.',
+            'latitude.required_with' => 'Latitude wajib diisi jika longitude diisi.',
+            'longitude.required_with' => 'Longitude wajib diisi jika latitude diisi.',
+            'numeric' => ':attribute harus berupa angka.',
+            'between' => ':attribute harus antara :min dan :max.',
+            'file' => ':attribute harus berupa berkas yang valid.',
+            'uploaded' => ':attribute gagal diunggah.',
             'dokumen_legalitas.required' => 'Dokumen wajib diunggah untuk keperluan verifikasi',
             'dokumen_legalitas.mimes' => 'Format dokumen tidak valid',
             'dokumen_legalitas.max' => 'Ukuran dokumen maksimal 5MB',
+
+        ], [
+            'nama_kafe' => 'Nama kafe',
+            'nama_pengelola' => 'Nama pengelola',
+            'email' => 'Email',
+            'kata_sandi' => 'Kata sandi',
+            'konfirmasi_kata_sandi' => 'Konfirmasi kata sandi',
+            'alamat' => 'Alamat',
+            'latitude' => 'Latitude',
+            'longitude' => 'Longitude',
+            'deskripsi' => 'Deskripsi',
+            'dokumen_legalitas' => 'Dokumen legalitas',
+
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validasi gagal',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()
             ], 422);
         }
 
         // 2. Cek email unik
         if (Pengguna::where('email', $request->email)->exists()) {
+            $message = 'Email ini sudah digunakan. Silakan gunakan email yang berbeda.';
             return response()->json([
                 'status' => 'error',
-                'message' => 'Email ini sudah digunakan. Silakan gunakan email yang berbeda.'
+                'message' => $message,
+                'errors' => ['email' => [$message]],
             ], 422);
         }
 
-        // 3. Simpan file dokumen_legalitas ke storage/legalitas/
-        $file = $request->file('dokumen_legalitas');
-        $fileName = time() . '_' . $file->getClientOriginalName();
-        $path = $file->storeAs('legalitas', $fileName, 'public');
-
-        if (!$path) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Gagal menyimpan dokumen legalitas'
-            ], 500);
-        }
-
+        $uploadedPaths = [];
         try {
-            DB::beginTransaction();
+            $path = $this->storeCompanyRegistrationFile($request->file('dokumen_legalitas'), 'legalitas', $uploadedPaths);
 
-            // 4. Buat record PENGGUNA
-            $pengguna = Pengguna::create([
-                'nama_pengguna' => $request->nama_pengelola,
-                'email' => $request->email,
-                'kata_sandi' => Hash::make($request->kata_sandi),
-                'peran' => 'Admin_Perusahaan',
-            ]);
+            [$pengguna, $perusahaan] = DB::transaction(function () use ($request, $path) {
+                // 4. Buat record PENGGUNA
+                $pengguna = Pengguna::create([
+                    'nama_pengguna' => $request->nama_pengelola,
+                    'email' => $request->email,
+                    'kata_sandi' => Hash::make($request->kata_sandi),
+                    'peran' => 'Admin_Perusahaan',
+                ]);
 
-            // 5. Buat record PROFIL_PERUSAHAAN
-            $perusahaan = ProfilPerusahaan::create([
-                'id_pengguna' => $pengguna->id_pengguna,
-                'nama_perusahaan' => $request->nama_kafe,
-                'alamat_perusahaan' => $request->alamat,
-                'deskripsi' => $request->deskripsi,
-                'dokumen_izin' => $path,
-                'status_verifikasi' => 'Pending',
-            ]);
+                // 5. Buat record PROFIL_PERUSAHAAN
+                $perusahaan = ProfilPerusahaan::create([
+                    'id_pengguna' => $pengguna->id_pengguna,
+                    'nama_perusahaan' => $request->nama_kafe,
 
-            // 6. Buat record NIB
-            Nib::create([
-                'id_perusahaan' => $perusahaan->id_perusahaan,
-                'dokumen_nib' => $path,
-                'status_screening' => StatusScreening::Belum_Diperiksa,
-            ]);
+                    'alamat_perusahaan' => $request->alamat,
+                    'latitude' => $request->input('latitude'),
+                    'longitude' => $request->input('longitude'),
+                    'deskripsi' => $request->deskripsi,
+                    'dokumen_izin' => $path,
+                    'status_verifikasi' => 'Pending',
+                ]);
 
-            DB::commit();
+                // 6. Buat record NIB
+                Nib::create([
+                    'id_perusahaan' => $perusahaan->id_perusahaan,
+                    'dokumen_nib' => $path,
+                    'status_screening' => StatusScreening::Belum_Diperiksa,
+                ]);
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            // Hapus file yang baru diunggah jika transaksi gagal
-            if (isset($path) && Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
+                return [$pengguna, $perusahaan];
+            });
+        } catch (\Throwable $e) {
+            Log::error('Company registration failed', ['exception' => $e]);
+            foreach ($uploadedPaths as $uploadedPath) {
+                try {
+                    if (!Storage::disk('public')->delete($uploadedPath)) {
+                        Log::error('Company registration upload cleanup failed', ['path' => $uploadedPath]);
+                    }
+                } catch (\Throwable $cleanupError) {
+                    Log::error('Company registration upload cleanup failed', ['path' => $uploadedPath, 'exception' => $cleanupError]);
+                }
             }
             return response()->json([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan saat pendaftaran',
-                'error' => $e->getMessage()
             ], 500);
         }
 
         // Dispatch CompanyRegistered event after successful commit
         try {
             event(new \App\Events\CompanyRegistered($perusahaan));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Log event failure but don't fail registration
             \Illuminate\Support\Facades\Log::error('CompanyRegistered event failed: ' . $e->getMessage());
         }
@@ -276,7 +310,7 @@ class RegisterController extends Controller
         // Kirim notifikasi registrasi berhasil ke perusahaan
         try {
             $pengguna->notify(new \App\Notifications\CompanyRegistrationReceivedNotification($perusahaan));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Log notification failure but don't fail registration
             \Illuminate\Support\Facades\Log::error('CompanyRegistrationReceivedNotification failed: ' . $e->getMessage());
         }
@@ -286,5 +320,17 @@ class RegisterController extends Controller
             'success' => true,
             'message' => 'Pendaftaran berhasil. Akun Anda sedang ditinjau oleh Super Admin. Harap tunggu persetujuan.'
         ], 201);
+    }
+
+    private function storeCompanyRegistrationFile(UploadedFile $file, string $directory, array &$uploadedPaths): string
+    {
+        // Track the generated name before writing so partial writes can also be removed.
+        $uploadedPaths[] = $directory . '/' . $file->hashName();
+        $path = $file->store($directory, 'public');
+        if (!$path) {
+            throw new \RuntimeException('Gagal menyimpan berkas pendaftaran perusahaan.');
+        }
+
+        return $path;
     }
 }

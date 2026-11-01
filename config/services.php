@@ -14,6 +14,17 @@ return [
     |
     */
 
+    'geocoding' => [
+        'url' => env('PHOTON_URL', 'https://photon.komoot.io/api/'),
+        // Photon bbox order: minLon,minLat,maxLon,maxLat (approximate search area only).
+        'bbox' => [107.85, -6.85, 108.65, -6.2],
+        'latitude' => -6.3274,
+        'longitude' => 108.3249,
+        'cache_seconds' => 3600,
+        'empty_cache_seconds' => 60,
+        'remote_per_minute' => 30,
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

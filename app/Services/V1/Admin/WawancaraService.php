@@ -2,6 +2,7 @@
 
 namespace App\Services\V1\Admin;
 
+use App\Models\Lamaran;
 use App\Models\Wawancara;
 use App\Repositories\V1\Admin\WawancaraRepository;
 use App\Services\NotifikasiService;
@@ -21,6 +22,12 @@ class WawancaraService
     public function scheduleWawancara(array $data, string $namaKafe, string $posisi, int $idPengguna): Wawancara
     {
         return DB::transaction(function () use ($data, $namaKafe, $posisi, $idPengguna) {
+            $lamaran = Lamaran::whereKey($data['id_lamaran'])->lockForUpdate()->firstOrFail();
+            $current = $lamaran->wawancara()->lockForUpdate()->first();
+            $current?->assertScheduleEditable();
+            if ($lamaran->status !== 'Wawancara') {
+                $lamaran->update(['status' => 'Wawancara']);
+            }
             $data['status'] = $data['status'] ?? 'Terjadwal';
             return $this->repository->create($data);
         });
@@ -45,7 +52,9 @@ class WawancaraService
     public function deleteWawancara(Wawancara $wawancara, string $namaKafe): bool
     {
         return DB::transaction(function () use ($wawancara, $namaKafe) {
-            $wawancara->delete();
+            $current = Wawancara::whereKey($wawancara->id_wawancara)->lockForUpdate()->firstOrFail();
+            $current->assertScheduleEditable();
+            $current->delete();
             return true;
         });
     }
@@ -54,7 +63,8 @@ class WawancaraService
     {
         $overdue = Wawancara::whereHas('lamaran.lowongan', fn($q) => $q->where('id_perusahaan', $idPerusahaan))
             ->where('status', 'Terjadwal')
-            ->where('tanggal_wawancara', '<', now())
+            ->whereDoesntHave('presensi')
+            ->where('tanggal_wawancara', '<', now(config('app.timezone'))->startOfDay())
             ->get();
 
         foreach ($overdue as $item) {

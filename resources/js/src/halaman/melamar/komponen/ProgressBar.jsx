@@ -10,31 +10,29 @@ const ProgressBar = ({ stepSaatIni }) => {
                 Step {stepSaatIni} of 5
             </p>
 
-            {/* Bar Indikator */}
-            <div className="flex gap-3 w-full justify-center overflow-x-auto pb-1 scrollbar-hide">
-                {[1, 2, 3, 4, 5].map((step) => (
-                    <div
-                        key={step}
-                        className={`min-w-[80px] h-[8px] rounded-full border transition-all duration-500 ${
-                            step <= stepSaatIni
-                                ? 'bg-[#C69C6D] border-[#4B2E2B]'
-                                : 'bg-white border-[#4B2E2B]'
-                        }`}
-                    />
-                ))}
-            </div>
-
-            {/* Label Nama Tahap */}
-            <div className="flex gap-3 w-full justify-center overflow-x-auto scrollbar-hide">
+            {/* Indikator dan label berbagi kolom agar tetap sejajar saat teks membungkus. */}
+            <div className="grid grid-cols-5 gap-1.5 sm:gap-3 w-full min-w-0">
                 {LABEL_STEP.map((label, idx) => (
-                    <p
-                        key={idx}
-                        className={`min-w-[80px] text-center font-poppins text-[11px] font-medium transition-colors duration-300 ${
-                            idx + 1 === stepSaatIni ? 'text-[#4B2E2B] font-semibold opacity-100' : 'text-[#4B2E2B] opacity-40'
-                        }`}
+                    <div
+                        key={label}
+                        aria-current={idx + 1 === stepSaatIni ? 'step' : undefined}
+                        className="min-w-0 flex flex-col gap-3 sm:gap-4"
                     >
-                        {label}
-                    </p>
+                        <div
+                            className={`w-full h-2 rounded-full border transition-all duration-500 ${
+                                idx + 1 <= stepSaatIni
+                                    ? 'bg-[#C69C6D] border-[#4B2E2B]'
+                                    : 'bg-white border-[#4B2E2B]'
+                            }`}
+                        />
+                        <p
+                            className={`text-center font-poppins text-[10px] sm:text-[11px] leading-snug break-words font-medium transition-colors duration-300 ${
+                                idx + 1 === stepSaatIni ? 'text-[#4B2E2B] font-semibold opacity-100' : 'text-[#4B2E2B] opacity-40'
+                            }`}
+                        >
+                            {label}
+                        </p>
+                    </div>
                 ))}
             </div>
         </div>

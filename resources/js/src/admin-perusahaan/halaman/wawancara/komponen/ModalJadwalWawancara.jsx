@@ -43,7 +43,7 @@ const ModalJadwalWawancara = ({
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="bg-[#FDF9F4] w-full max-w-[512px] rounded-[12px] shadow-2xl overflow-hidden border border-black/5 z-10"
+                        className="bg-[#FDF9F4] w-full max-w-[512px] rounded-[12px] shadow-2xl max-h-[90dvh] overflow-y-auto border border-black/5 z-10"
                     >
                         {/* Header - Cokelat Gelap (Node 229:1896) */}
                         <div className="p-6 bg-[#432C23] flex flex-col gap-1 relative">
@@ -80,6 +80,9 @@ const ModalJadwalWawancara = ({
 
                         {/* Body - Putih Gading (Node 229:1908) */}
                         <form onSubmit={handleSubmit} noValidate className="p-5 pt-4 bg-[#FDF9F4]">
+                            {errors.form && (
+                                <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 font-poppins">{errors.form}</p>
+                            )}
                             <div className="space-y-4">
                                 {/* Pelamar Selection (Node 229:1910) */}
                                 {mode === 'add' && (
@@ -111,7 +114,7 @@ const ModalJadwalWawancara = ({
                                             </div>
                                         </div>
                                         {errors.id_lamaran && (
-                                            <p className="text-[12px] text-red-500 font-poppins mt-1">Harap isi bidang ini.</p> // [UPDATE LOGIC]
+                                            <p className="text-[12px] text-red-500 font-poppins mt-1">{errors.id_lamaran}</p>
                                         )}
                                     </div>
                                 )}
@@ -158,7 +161,7 @@ const ModalJadwalWawancara = ({
                                             }}
                                         />
                                         {errors.lokasi && (
-                                            <p className="text-[12px] text-red-500 font-poppins mt-1">Harap isi bidang ini.</p> // [UPDATE LOGIC]
+                                            <p className="text-[12px] text-red-500 font-poppins mt-1">{errors.lokasi}</p>
                                         )}
                                     </div>
                                 </div>
@@ -173,7 +176,7 @@ const ModalJadwalWawancara = ({
                                         <input
                                             required
                                             type="date"
-                                            min={new Date().toISOString().split('T')[0]}
+                                            min={new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())}
                                             disabled={isSubmitting}
                                             className={`w-full h-[48px] bg-[#F7F3EE] border rounded-[8px] px-4 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all font-poppins cursor-pointer disabled:opacity-70 ${errors.tanggal ? 'border-red-500 ring-1 ring-red-500/30' : 'border-[#D3C3BE]'}`} // [UPDATE LOGIC]
                                             value={formData.tanggal}
@@ -183,13 +186,13 @@ const ModalJadwalWawancara = ({
                                             }}
                                         />
                                         {errors.tanggal && (
-                                            <p className="text-[12px] text-red-500 font-poppins mt-1">Harap isi bidang ini.</p> // [UPDATE LOGIC]
+                                            <p className="text-[12px] text-red-500 font-poppins mt-1">{errors.tanggal}</p>
                                         )}
                                     </div>
                                     <div className="flex flex-col gap-[6px]">
                                         <div className="flex items-center gap-2">
                                             <img src={JamIcon} alt="jam" className="w-[12.5px] h-[12.5px] opacity-80" />
-                                            <label className="text-[15px] font-regular text-[#1C1C19] font-poppins leading-[22px]">Jam</label>
+                                            <label className="text-[15px] font-regular text-[#1C1C19] font-poppins leading-[22px]">Jam (WIB)</label>
                                         </div>
                                         <input
                                             required
@@ -203,7 +206,7 @@ const ModalJadwalWawancara = ({
                                             }}
                                         />
                                         {errors.jam && (
-                                            <p className="text-[12px] text-red-500 font-poppins mt-1">Harap isi bidang ini.</p> // [UPDATE LOGIC]
+                                            <p className="text-[12px] text-red-500 font-poppins mt-1">{errors.jam}</p>
                                         )}
                                     </div>
                                 </div>
@@ -220,8 +223,12 @@ const ModalJadwalWawancara = ({
                                         placeholder="Tuliskan detail tambahan atau instruksi untuk pelamar di sini..."
                                         className="w-full min-h-[80px] bg-[#F7F3EE] border border-[#D3C3BE] rounded-[8px] px-4 pt-3 pb-3 text-[15px] text-[#1C1C19] focus:outline-none focus:border-[#432C23]/40 transition-all resize-none font-poppins placeholder:text-[#6B7280]/60 disabled:opacity-70"
                                         value={formData.catatan}
-                                        onChange={(e) => setFormData({...formData, catatan: e.target.value})}
+                                        onChange={(e) => {
+                                            setFormData({...formData, catatan: e.target.value});
+                                            if (errors.catatan) setErrors({...errors, catatan: null});
+                                        }}
                                     />
+                                    {errors.catatan && <p className="text-[12px] text-red-500 font-poppins mt-1">{errors.catatan}</p>}
                                 </div>
                             </div>
 

@@ -14,11 +14,13 @@ class PerusahaanResource extends JsonResource
             'logo_perusahaan' => $this->logo_perusahaan ? asset('storage/' . $this->logo_perusahaan) : null,
             'email' => $this->whenLoaded('pengguna', fn() => $this->pengguna->email),
             'alamat_perusahaan' => $this->alamat_perusahaan,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
             'kecamatan' => $this->kecamatan,
             'deskripsi' => $this->deskripsi,
             'tagline' => $this->tagline,
             'tanggal_berdiri' => $this->tanggal_berdiri,
-            'jumlah_lowongan' => $this->lowongan_count ?? $this->lowongan()->where('status', 'Active')->count(),
+            'jumlah_lowongan' => $this->lowongan_count ?? $this->lowongan()->aktifTerverifikasi()->count(),
             'lowongan' => LowonganResource::collection($this->whenLoaded('lowongan')),
         ];
     }

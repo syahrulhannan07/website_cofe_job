@@ -4,6 +4,8 @@ import iconCheck from '../../../aset/melamar/cirkelcek.svg';
 import iconKembali from '../../../aset/melamar/iconkembali.svg';
 import iconSent from '../../../aset/melamar/Sent.png';
 import layananLamaran from '../../../layanan/layananLamaran';
+import { FACE_OVAL, isFaceInsideOval } from '../../../layanan/deteksiPosisiWajah';
+import { createFaceDetector } from '../../../layanan/detektorWajah';
 
 const iconCamera = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%234B2E2B"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>`;
 const iconRefresh = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%234B2E2B"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>`;
@@ -16,6 +18,20 @@ const SENSOR_STATES = {
     MISMATCH: 'mismatch',
 };
 
+const getVerificationFailure = (data, status) => {
+    // Only expose actionable guidance, not provider errors or biometric scores.
+    const guidance = /^(Foto profil tidak ditemukan|Gagal membaca berkas foto profil|Wajah tidak terdeteksi|Terdeteksi lebih dari satu wajah|Posisi wajah Anda terlalu jauh|Profil atau jadwal wawancara telah berubah|Jadwal wawancara|Presensi hanya tersedia|Lengkapi foto profil|Lamaran ini sudah dikirim)/.test(data?.message || '')
+        ? data.message
+        : null;
+
+    return {
+        success: false,
+        face_detected: data?.face_detected,
+        message: status === 429 ? 'Terlalu banyak percobaan. Tunggu satu menit sebelum melakukan verifikasi ulang.' : guidance,
+        error: !guidance && data?.confidence == null,
+    };
+};
+
 const FaceOval = ({ className = '', state = SENSOR_STATES.ALIGNING }) => {
     let strokeColor = '#6B8E23';
     if (state === SENSOR_STATES.MATCHED) strokeColor = '#22C55E';
@@ -23,11 +39,11 @@ const FaceOval = ({ className = '', state = SENSOR_STATES.ALIGNING }) => {
     else if (state === SENSOR_STATES.SCANNING) strokeColor = '#EAB308';
 
     return (
-        <svg viewBox="0 0 280 360" className={`w-full h-full ${className}`} preserveAspectRatio="none">
+        <svg viewBox={`0 0 ${FACE_OVAL.width} ${FACE_OVAL.height}`} className={`w-full h-full ${className}`} preserveAspectRatio="none">
             <defs>
                 <mask id="faceMask">
                     <rect x="0" y="0" width="280" height="360" fill="white" />
-                    <ellipse cx="140" cy="165" rx="95" ry="125" fill="black" />
+                    <ellipse cx={FACE_OVAL.centerX} cy={FACE_OVAL.centerY} rx={FACE_OVAL.radiusX} ry={FACE_OVAL.radiusY} fill="black" />
                 </mask>
                 <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="5" result="blur" />
@@ -36,10 +52,10 @@ const FaceOval = ({ className = '', state = SENSOR_STATES.ALIGNING }) => {
             </defs>
             <rect x="0" y="0" width="280" height="360" fill="rgba(0,0,0,0.45)" mask="url(#faceMask)" />
             <ellipse
-                cx="140"
-                cy="165"
-                rx="95"
-                ry="125"
+                cx={FACE_OVAL.centerX}
+                cy={FACE_OVAL.centerY}
+                rx={FACE_OVAL.radiusX}
+                ry={FACE_OVAL.radiusY}
                 fill="none"
                 stroke={strokeColor}
                 strokeWidth={state === SENSOR_STATES.MATCHED ? "4" : "3"}
@@ -57,18 +73,28 @@ const Step5FaceVerification = ({
     onBack,
     profilePhoto,
     idLamaran,
-    sedangMengirim = false
+    sedangMengirim = false,
+    verifyFace,
+    mode = 'lamaran',
 }) => {
+    const isAttendance = mode === 'presensi';
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const streamRef = useRef(null);
+    const detectorRef = useRef(null);
+    const detectionInFlightRef = useRef(false);
+    const scanInFlightRef = useRef(false);
+    const sessionRef = useRef(0);
 
     const [stream, setStream] = useState(null);
     const [cameraReady, setCameraReady] = useState(false);
     const [cameraError, setCameraError] = useState('');
     const [sensorState, setSensorState] = useState(SENSOR_STATES.ALIGNING);
     const [scanResult, setScanResult] = useState(null);
-    const [retryCountdown, setRetryCountdown] = useState(3);
+    const [detectionError, setDetectionError] = useState('');
+    const [detectionLoading, setDetectionLoading] = useState(false);
+        const [detectorReady, setDetectorReady] = useState(false);
+    const [detectorAttempt, setDetectorAttempt] = useState(0);
     const [scanCount, setScanCount] = useState(0);
     const [showProfilePreview, setShowProfilePreview] = useState(false);
 
@@ -76,7 +102,11 @@ const Step5FaceVerification = ({
     const startCamera = useCallback(async () => {
         setCameraError('');
         setCameraReady(false);
+        setDetectorReady(false);
         setSensorState(SENSOR_STATES.ALIGNING);
+        setScanResult(null);
+        setDetectionError('');
+        const session = ++sessionRef.current;
 
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(track => track.stop());
@@ -107,10 +137,15 @@ const Step5FaceVerification = ({
                 });
             }
 
+            if (session !== sessionRef.current) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                return;
+            }
             streamRef.current = mediaStream;
             setStream(mediaStream);
             setCameraError('');
         } catch (err) {
+            if (session !== sessionRef.current) return;
             console.error('Camera access error:', err);
             if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                 setCameraError('Izin akses kamera ditolak. Harap izinkan akses kamera di ikon gembok browser Anda lalu klik "Coba Akses Kamera Lagi".');
@@ -129,6 +164,7 @@ const Step5FaceVerification = ({
         startCamera();
 
         return () => {
+            sessionRef.current += 1;
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach(track => track.stop());
                 streamRef.current = null;
@@ -157,181 +193,195 @@ const Step5FaceVerification = ({
         };
     }, [stream]);
 
-    // Tangkap frame gambar saat ini
-    const captureFrame = useCallback(() => {
+    useEffect(() => {
+        if (!cameraReady) return;
+
+        let cancelled = false;
+        let detector;
+        setDetectorReady(false);
+        setDetectionLoading(true);
+        setDetectionError('');
+        const timeout = setTimeout(() => {
+            cancelled = true;
+            setDetectionLoading(false);
+            setDetectionError('Pemuatan deteksi wajah terlalu lama. Periksa koneksi internet Anda, lalu klik Coba Deteksi Lagi.');
+        }, 30000);
+
+        createFaceDetector().then(instance => {
+            if (cancelled) {
+                instance.close();
+                return;
+            }
+            clearTimeout(timeout);
+            detector = instance;
+            detectorRef.current = instance;
+            setDetectorReady(true);
+            setDetectionLoading(false);
+        }).catch(error => {
+            if (cancelled) return;
+            clearTimeout(timeout);
+            console.error('Face detector initialization error:', error);
+            setDetectionLoading(false);
+            setDetectionError('Deteksi wajah belum berhasil dimuat. Periksa koneksi internet dan pastikan pemuatan library serta model tidak diblokir, lalu klik Coba Deteksi Lagi.');
+        });
+
+        return () => {
+            cancelled = true;
+            clearTimeout(timeout);
+            if (detectorRef.current === detector) detectorRef.current = null;
+            detector?.close();
+        };
+    }, [cameraReady, detectorAttempt]);
+
+    const detectFaceInVideo = useCallback(async () => {
         const video = videoRef.current;
         const canvas = canvasRef.current;
+        const detector = detectorRef.current;
+        if (detectionInFlightRef.current || !detector || !video || !canvas || video.readyState < 2 || !video.videoWidth || !video.videoHeight) return null;
 
-        if (!video || !canvas || video.readyState < 2 || !video.videoWidth) {
-            return null;
-        }
-
-        const width = video.videoWidth || 640;
-        const height = video.videoHeight || 480;
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, width, height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-        return dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
-    }, []);
-
-    // Deteksi wajah via Shape Detection API jika didukung browser
-    const detectFaceInVideo = useCallback(async () => {
-        if (!('FaceDetector' in window) || !videoRef.current || videoRef.current.readyState < 2) {
-            return false;
-        }
+        detectionInFlightRef.current = true;
         try {
-            const faceDetector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
-            const faces = await faceDetector.detect(videoRef.current);
-            return faces && faces.length > 0;
-        } catch (e) {
-            return false;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('CANVAS_UNAVAILABLE');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const faces = detector.detect(canvas);
+            if (!isFaceInsideOval(faces, canvas, { width: video.clientWidth, height: video.clientHeight })) return null;
+
+            // Verify the exact still frame whose face position was checked, not a later video frame.
+            return canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+        } finally {
+            detectionInFlightRef.current = false;
         }
     }, []);
 
     // Eksekusi pemindaian dan verifikasi wajah
-    const executeAutoScan = useCallback(async () => {
-        if (sensorState === SENSOR_STATES.MATCHED || sedangMengirim) return;
+    const executeAutoScan = useCallback(async (base64Image) => {
+        if (!base64Image || scanInFlightRef.current || sensorState !== SENSOR_STATES.ALIGNING || sedangMengirim) return;
 
-        const base64Image = captureFrame();
-        if (!base64Image) {
-            setSensorState(SENSOR_STATES.ALIGNING);
-            return;
-        }
-
+        scanInFlightRef.current = true;
+        const session = sessionRef.current;
         setSensorState(SENSOR_STATES.SCANNING);
 
         try {
-            const response = await layananLamaran.verifikasiWajah(idLamaran, base64Image);
+            const response = verifyFace
+                            ? await verifyFace(base64Image)
+                            : await layananLamaran.verifikasiWajah(idLamaran, base64Image);
+            if (session !== sessionRef.current) return;
             const isMatch = response.status === 'success';
 
-            setScanResult({
-                success: isMatch,
-                message: response.message || 'Verifikasi wajah berhasil.',
-                confidence: response.confidence,
-                threshold: response.threshold,
-                face_detected: response.face_detected
-            });
+            setScanResult(isMatch
+                ? { success: true }
+                : getVerificationFailure(response));
             setScanCount(prev => prev + 1);
 
             if (isMatch) {
                 setSensorState(SENSOR_STATES.MATCHED);
                 if (onVerifiedResult) {
-                    onVerifiedResult(true);
+                    onVerifiedResult(true, response);
                 }
             } else {
                 setSensorState(SENSOR_STATES.MISMATCH);
-                setRetryCountdown(3);
                 if (onVerifiedResult) {
                     onVerifiedResult(false);
                 }
             }
         } catch (err) {
-            console.error('Face verification error:', err);
+            if (session !== sessionRef.current) return;
             const data = err.response?.data;
-            const message = data?.message || 'Terjadi kesalahan saat memverifikasi wajah.';
-            const faceDetected = data?.face_detected ?? false;
-            const confidence = data?.confidence ?? null;
-            const threshold = data?.threshold ?? null;
-
-            setScanResult({
-                success: false,
-                message,
-                confidence,
-                threshold,
-                face_detected: faceDetected
-            });
+            setScanResult(getVerificationFailure(data, err.response?.status));
             setScanCount(prev => prev + 1);
             setSensorState(SENSOR_STATES.MISMATCH);
-            setRetryCountdown(3);
             if (onVerifiedResult) {
                 onVerifiedResult(false);
             }
+        } finally {
+            scanInFlightRef.current = false;
         }
-    }, [captureFrame, sensorState, sedangMengirim, idLamaran, onVerifiedResult]);
+    }, [sensorState, sedangMengirim, idLamaran, onVerifiedResult, verifyFace]);
 
-    // Siklus Pemindaian Otomatis (Auto-Scan)
     useEffect(() => {
-        if (!cameraReady || sensorState === SENSOR_STATES.MATCHED || sedangMengirim) {
-            return;
-        }
+        if (!cameraReady || !detectorReady || !detectorRef.current || detectionLoading || sensorState !== SENSOR_STATES.ALIGNING || sedangMengirim || detectionError) return;
 
-        let isMounted = true;
-        let timer = null;
-
-        if (sensorState === SENSOR_STATES.ALIGNING) {
-            // Jika browser mendukung FaceDetector, pantau posisi wajah
-            if ('FaceDetector' in window) {
-                const interval = setInterval(async () => {
-                    const hasFace = await detectFaceInVideo();
-                    if (hasFace && isMounted) {
-                        clearInterval(interval);
-                        executeAutoScan();
-                    }
-                }, 400);
-
-                // Batas maksimal fallback 3 detik
-                timer = setTimeout(() => {
-                    clearInterval(interval);
-                    if (isMounted) executeAutoScan();
-                }, 3000);
-
-                return () => {
-                    clearInterval(interval);
-                    if (timer) clearTimeout(timer);
-                };
-            } else {
-                // Auto-scan setelah pelamar mengarahkan wajah ke oval (1.8 detik stabilisasi)
-                timer = setTimeout(() => {
-                    if (isMounted) {
-                        executeAutoScan();
-                    }
-                }, 1800);
-
-                return () => {
-                    if (timer) clearTimeout(timer);
-                };
+        let cancelled = false;
+        let timer;
+        const checkFace = async () => {
+            if (cancelled) return;
+            try {
+                const image = await detectFaceInVideo();
+                if (cancelled) return;
+                if (image) {
+                    executeAutoScan(image);
+                    return;
+                }
+                // Poll only for positioning; this never triggers verification on a timer alone.
+                timer = setTimeout(checkFace, 300);
+            } catch (error) {
+                if (cancelled) return;
+                console.error('Face detection error:', error);
+                setDetectionError('Deteksi wajah terhenti. Klik Coba Deteksi Lagi untuk mengaktifkannya kembali.');
             }
-        } else if (sensorState === SENSOR_STATES.MISMATCH) {
-            if (retryCountdown > 0) {
-                timer = setTimeout(() => {
-                    if (isMounted) {
-                        setRetryCountdown(prev => prev - 1);
-                    }
-                }, 1000);
+        };
+        checkFace();
 
-                return () => {
-                    if (timer) clearTimeout(timer);
-                };
-            } else {
-                // Countdown selesai, ulangi pemindaian otomatis
-                executeAutoScan();
-            }
-        }
-    }, [cameraReady, sensorState, retryCountdown, sedangMengirim, detectFaceInVideo, executeAutoScan]);
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [cameraReady, detectorReady, sensorState, sedangMengirim, detectionError, detectionLoading, detectFaceInVideo, executeAutoScan]);
 
     const handleManualRetry = () => {
-        setRetryCountdown(0);
-        executeAutoScan();
+        if (scanInFlightRef.current || sedangMengirim || detectionLoading) return;
+        if (detectionError) {
+            setDetectionLoading(true);
+            setDetectorAttempt(prev => prev + 1);
+        }
+        setScanResult(null);
+        setDetectionError('');
+        setSensorState(SENSOR_STATES.ALIGNING);
+        onVerifiedResult?.(false);
     };
 
     const handleToggleProfilePreview = () => {
         setShowProfilePreview(prev => !prev);
     };
 
+    const resultTitle = scanResult?.success
+        ? 'Verifikasi berhasil'
+        : scanResult?.error
+            ? 'Verifikasi belum dapat diproses'
+            : scanResult?.face_detected === false
+                ? 'Wajah belum terlihat jelas'
+                : 'Wajah belum dapat diverifikasi';
+    const resultDescription = scanResult?.success
+        ? (isAttendance
+                    ? 'Presensi wajah berhasil. Kehadiran Anda telah tercatat dan perusahaan telah diberi tahu bahwa Anda siap diwawancarai.'
+                    : 'Wajah Anda sesuai dengan foto profil. Silakan kirim lamaran untuk menyelesaikan proses.')
+        : scanResult?.message
+            ? scanResult.message
+            : scanResult?.error
+            ? 'Terjadi kendala saat memproses verifikasi. Coba lagi beberapa saat. Jika kendala berlanjut, hubungi administrator.'
+            : scanResult?.face_detected === false
+                ? 'Posisikan seluruh wajah di dalam bingkai dan pastikan pencahayaan cukup.'
+                : 'Pastikan wajah terlihat jelas, tidak tertutup, dan foto profil menampilkan wajah Anda yang terbaru.';
+
     return (
         <div className="pembungkus-verifikasi-wajah w-full flex flex-col gap-6">
             {/* Header */}
             <div className="w-full bg-[#6B8E23] rounded-2xl px-6 py-6 shadow-sm">
                 <h2 className="font-poppins font-semibold text-2xl text-white leading-tight">
-                    Verifikasi Identitas
+                    {isAttendance ? 'Presensi Wawancara' : 'Verifikasi Identitas'}
                 </h2>
                 <p className="font-poppins font-medium text-[15px] text-white/90 mt-2 leading-relaxed max-w-3xl">
-                    Harap lakukan verifikasi identitas melalui pemindaian wajah Anda untuk memastikan validitas data lamaran.
-                    Pastikan wajah Anda terlihat jelas di area kamera sebelum memulai proses verifikasi.
+                    {isAttendance
+                        ? 'Lakukan presensi hanya ketika Anda sudah hadir dan siap mengikuti wawancara. Wajah akan dicocokkan dengan foto profil Anda dan kehadiran dicatat setelah verifikasi berhasil.'
+                        : 'Kami akan mencocokkan wajah Anda dengan foto profil untuk memverifikasi identitas sebelum lamaran dikirim.'}
+                    {' '}Hadapkan wajah ke kamera dan posisikan di dalam bingkai. Pemindaian akan dimulai otomatis.
+                </p>
+                <p className="font-poppins text-xs text-white/90 mt-3 leading-relaxed">
+                    Foto profil dan hasil kamera dikirim ke Face++ untuk pencocokan. Aplikasi menyimpan hasil verifikasi, bukan gambar hasil scan.
                 </p>
             </div>
 
@@ -384,7 +434,7 @@ const Step5FaceVerification = ({
                                 className="w-48 h-48 rounded-xl object-cover shadow-md border-2 border-[#4B2E2B]/10"
                             />
                             <p className="font-poppins text-[13px] text-[#827470] text-center mt-3 leading-relaxed">
-                                Foto profil akun ini digunakan sebagai tolak ukur pencocokan biometrik wajah Anda.
+                                Wajah Anda akan dicocokkan dengan foto profil ini. Pastikan foto menampilkan wajah Anda dengan jelas.
                             </p>
                         </div>
                     </div>
@@ -433,7 +483,7 @@ const Step5FaceVerification = ({
                     {/* Status Badge di dalam area Sensor */}
                     {cameraReady && (
                         <div className="absolute top-4 inset-x-0 flex justify-center pointer-events-none px-4">
-                            <div className={`px-3.5 py-1.5 rounded-full backdrop-blur-md text-[12px] font-poppins font-semibold shadow-md flex items-center gap-2 ${sensorState === SENSOR_STATES.MATCHED
+                            <div className={`max-w-full px-3 py-1.5 rounded-2xl backdrop-blur-md text-center text-[11px] sm:text-[12px] font-poppins font-semibold shadow-md flex items-center justify-center gap-2 ${sensorState === SENSOR_STATES.MATCHED
                                 ? 'bg-green-600/90 text-white border border-green-400'
                                 : sensorState === SENSOR_STATES.SCANNING
                                     ? 'bg-amber-600/90 text-white border border-amber-400'
@@ -443,8 +493,8 @@ const Step5FaceVerification = ({
                                 }`}>
                                 {sensorState === SENSOR_STATES.MATCHED ? (
                                     <>
-                                        <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                                        <span>Wajah Terverifikasi Cocok</span>
+                                        <span className="w-2 h-2 rounded-full bg-white" />
+                                        <span>Terverifikasi</span>
                                     </>
                                 ) : sensorState === SENSOR_STATES.SCANNING ? (
                                     <>
@@ -452,36 +502,22 @@ const Step5FaceVerification = ({
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                         </svg>
-                                        <span>Memproses Sensor Wajah...</span>
+                                        <span>Memverifikasi wajah...</span>
                                     </>
                                 ) : sensorState === SENSOR_STATES.MISMATCH ? (
                                     <>
-                                        <span>⚠️ Belum Cocok — Pindai Ulang ({retryCountdown}s)</span>
+                                        <span>Verifikasi gagal — silakan coba lagi</span>
                                     </>
                                 ) : (
                                     <>
                                         <span className="w-2 h-2 rounded-full bg-[#6B8E23] animate-pulse" />
-                                        <span>Arahkan Wajah ke Dalam Lingkaran</span>
+                                        <span>{detectionLoading ? 'Menyiapkan deteksi wajah...' : detectionError ? 'Deteksi wajah perlu dimuat ulang' : 'Posisikan satu wajah di dalam bingkai'}</span>
                                     </>
                                 )}
                             </div>
                         </div>
                     )}
 
-                    {/* Checkmark Badge saat MATCHED */}
-                    {sensorState === SENSOR_STATES.MATCHED && (
-                        <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: 'spring', damping: 15 }}
-                            className="absolute bottom-5 inset-x-0 flex justify-center pointer-events-none"
-                        >
-                            <div className="flex items-center gap-2 bg-[#6B8E23] text-white px-4 py-1.5 rounded-full shadow-lg border-2 border-white font-poppins font-bold text-[13px]">
-                                <img src={iconCheck} alt="verified" className="w-4 h-4" />
-                                <span>Identitas Sesuai</span>
-                            </div>
-                        </motion.div>
-                    )}
 
                     {/* Sudut Pemandu */}
                     {cameraReady && (
@@ -532,57 +568,61 @@ const Step5FaceVerification = ({
                     )}
                 </div>
 
+                {detectionLoading && (
+                    <p className="w-full max-w-sm font-poppins text-center text-[13px] text-[#4B2E2B]/80" role="status">
+                        Menyiapkan deteksi wajah. Mohon tunggu sampai model selesai dimuat.
+                    </p>
+                )}
+
+                {detectionError && (
+                    <div className="w-full max-w-sm rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900" role="alert">
+                        <p className="font-poppins text-[13px] leading-relaxed">{detectionError}</p>
+                        <button
+                            type="button"
+                            onClick={handleManualRetry}
+                            className="mt-3 min-h-11 rounded-xl border border-amber-300 bg-white px-4 py-2 font-poppins text-[13px] font-semibold cursor-pointer"
+                        >
+                            Coba Deteksi Lagi
+                        </button>
+                    </div>
+                )}
+
                 {/* Notifikasi Hasil Pemindaian */}
                 <AnimatePresence>
-                    {scanResult && (
+                    {scanResult && sensorState !== SENSOR_STATES.SCANNING && (
                         <motion.div
                             key={scanCount}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className={`w-full max-w-sm rounded-xl p-4 border-2 text-center shadow-sm ${scanResult.success
-                                ? 'bg-green-50 border-green-300 text-green-900'
-                                : scanResult.face_detected === false
-                                    ? 'bg-amber-50 border-amber-300 text-amber-900'
-                                    : 'bg-red-50 border-red-300 text-red-900'
+                            className={`w-full max-w-sm rounded-2xl p-5 border text-left ${scanResult.success
+                                ? 'bg-green-50 border-green-200 text-green-900'
+                                : 'bg-amber-50 border-amber-200 text-amber-900'
                                 }`}
-                            role="alert"
+                            role="status"
                             aria-live="polite"
                         >
-                            <div className="flex items-center justify-center gap-2 mb-1.5">
+                            <div className="flex items-center gap-3 mb-2">
                                 {scanResult.success ? (
                                     <div className="w-7 h-7 bg-green-200 rounded-full flex items-center justify-center">
-                                        <img src={iconCheck} alt="success" className="w-4 h-4 text-green-700" />
+                                        <img src={iconCheck} alt="" className="w-4 h-4 text-green-700" />
                                     </div>
                                 ) : (
-                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center ${scanResult.face_detected === false ? 'bg-amber-200 text-amber-800' : 'bg-red-200 text-red-800'}`}>
-                                        ⚠️
+                                    <div className="w-7 h-7 shrink-0 rounded-full flex items-center justify-center bg-amber-100 text-amber-800" aria-hidden="true">
+                                        !
                                     </div>
                                 )}
                                 <span className="font-poppins font-bold text-[15px]">
-                                    {scanResult.success ? 'Wajah Cocok dengan Foto Profil!' : 'Verifikasi Wajah Belum Cocok'}
+                                    {resultTitle}
                                 </span>
                             </div>
 
                             <p className="font-poppins text-[13px] leading-relaxed">
-                                {scanResult.message}
+                                {resultDescription}
                             </p>
 
-                            {/* Tingkat Kemiripan vs Ambang Batas */}
-                            {scanResult.confidence !== null && scanResult.confidence !== undefined && (
-                                <div className="mt-2.5 py-1.5 px-3 bg-white/80 rounded-lg inline-flex items-center justify-center gap-3 border border-black/5">
-                                    <span className="font-poppins text-[12px] text-[#4B2E2B]/90 font-medium">
-                                        Tingkat Kemiripan: <strong className={scanResult.success ? 'text-green-700' : 'text-red-700'}>{Number(scanResult.confidence).toFixed(1)}%</strong>
-                                    </span>
-                                    {scanResult.threshold && (
-                                        <span className="font-poppins text-[12px] text-[#4B2E2B]/60">
-                                            (Syarat minimal: {Number(scanResult.threshold).toFixed(1)}%)
-                                        </span>
-                                    )}
-                                </div>
-                            )}
 
-                            {/* Jika Belum Cocok: Tombol Pindai Ulang */}
+                            {/* Kegagalan hanya dapat dicoba lagi atas tindakan pelamar. */}
                             {!scanResult.success && (
                                 <div className="mt-3 flex flex-col items-center gap-2">
                                     <button
@@ -590,11 +630,11 @@ const Step5FaceVerification = ({
                                         onClick={handleManualRetry}
                                         className="flex items-center gap-2 px-5 py-2 bg-white border border-[#4B2E2B]/20 text-[#4B2E2B] rounded-full font-poppins font-semibold text-[13px] hover:bg-[#4B2E2B] hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
                                     >
-                                        <img src={iconRefresh} alt="retry" className="w-3.5 h-3.5" />
-                                        <span>Pindai Ulang Sekarang</span>
+                                        <img src={iconRefresh} alt="" className="w-3.5 h-3.5" />
+                                        <span>Verifikasi Ulang</span>
                                     </button>
                                     <span className="font-poppins text-[11.5px] text-[#4B2E2B]/70">
-                                        Memindai ulang otomatis dalam <strong>{retryCountdown}</strong> detik...
+                                        Klik Verifikasi Ulang, lalu posisikan wajah di dalam bingkai.
                                     </span>
                                 </div>
                             )}
@@ -603,7 +643,7 @@ const Step5FaceVerification = ({
                 </AnimatePresence>
 
                 {/* Tombol Utama: JIKA COCOK BISA KLIK KIRIM LAMARAN */}
-                <div className="flex flex-col items-center gap-3 w-full max-w-sm">
+                {!isAttendance && <div className="flex flex-col items-center gap-3 w-full max-w-sm">
                     {sensorState === SENSOR_STATES.MATCHED ? (
                         <button
                             type="button"
@@ -630,11 +670,11 @@ const Step5FaceVerification = ({
                         <div className="w-full py-3 px-4 bg-[#F5F1EA] border border-[#4B2E2B]/10 rounded-xl text-center">
                             <p className="font-poppins font-medium text-[13px] text-[#4B2E2B]/80 flex items-center justify-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                                <span>Arahkan wajah ke sensor. Tombol <strong>Kirim Lamaran</strong> akan aktif otomatis saat wajah cocok.</span>
+                                <span>{sensorState === SENSOR_STATES.SCANNING ? 'Mohon tunggu, wajah Anda sedang diverifikasi.' : 'Selesaikan verifikasi wajah untuk melanjutkan pengiriman lamaran.'}</span>
                             </p>
                         </div>
                     )}
-                </div>
+                </div>}
 
                 {/* Petunjuk Penggunaan */}
                 <div className="w-full max-w-sm">
@@ -643,20 +683,20 @@ const Step5FaceVerification = ({
                             <span className="w-5 h-5 bg-[#6B8E23]/10 rounded-full flex items-center justify-center text-[#6B8E23] text-xs">
                                 💡
                             </span>
-                            Petunjuk Sensor Wajah
+                            Agar verifikasi berjalan lancar
                         </h4>
                         <ul className="space-y-1.5 font-poppins text-[12px] text-[#4B2E2B]/80">
                             <li className="flex items-start gap-1.5">
                                 <span className="text-[#6B8E23] font-bold">✓</span>
-                                <span>Posisikan wajah tepat di dalam sensor bulat/oval</span>
+                                <span>Pastikan hanya satu wajah terlihat dan berada sepenuhnya di dalam bingkai. Pemindaian dimulai otomatis saat posisi sesuai.</span>
                             </li>
                             <li className="flex items-start gap-1.5">
                                 <span className="text-[#6B8E23] font-bold">✓</span>
-                                <span>Sensor akan memindai secara otomatis tanpa perlu menekan tombol</span>
+                                <span>Gunakan pencahayaan yang cukup dan hindari cahaya terang dari belakang.</span>
                             </li>
                             <li className="flex items-start gap-1.5">
                                 <span className="text-[#6B8E23] font-bold">✓</span>
-                                <span>Setelah sensor cocok dengan foto profil, klik tombol <strong>Kirim Lamaran</strong></span>
+                                <span>Lepaskan penutup wajah dan tahan posisi saat pemindaian. Jika verifikasi gagal, klik <strong>Verifikasi Ulang</strong> untuk mencoba lagi.</span>
                             </li>
                         </ul>
                     </div>
@@ -671,7 +711,7 @@ const Step5FaceVerification = ({
                     disabled={sedangMengirim}
                     className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#4B2E2B]/10 bg-[#F5F1EA] text-[#4B2E2B] rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
-                    <img src={iconKembali} alt="back" className="w-4 h-4" />
+                    <img src={iconKembali} alt="" className="w-4 h-4" />
                     Kembali
                 </button>
             </div>

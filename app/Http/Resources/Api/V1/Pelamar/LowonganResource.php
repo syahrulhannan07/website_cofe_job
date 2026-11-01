@@ -27,11 +27,13 @@ class LowonganResource extends JsonResource
                 'nama_perusahaan' => $this->perusahaan->nama_perusahaan ?? null,
                 'deskripsi' => $this->perusahaan->deskripsi ?? null,
                 'alamat_perusahaan' => $this->perusahaan->alamat_perusahaan ?? null,
+                'latitude' => $this->perusahaan->latitude ?? null,
+                'longitude' => $this->perusahaan->longitude ?? null,
                 'kecamatan' => $this->perusahaan->kecamatan ?? null,
                 'logo_perusahaan' => $this->perusahaan->logo_perusahaan ? url('storage/' . $this->perusahaan->logo_perusahaan) : null,
                 'tanggal_berdiri' => $this->perusahaan->tanggal_berdiri ?? '-',
                 'status_verifikasi' => $this->perusahaan->status_verifikasi ?? null,
-                'jumlah_lowongan' => $this->perusahaan->lowongan()->where('status', 'Active')->count(),
+                'jumlah_lowongan' => $this->perusahaan->lowongan()->aktifTerverifikasi()->count(),
             ],
         ];
     }

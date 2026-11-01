@@ -76,7 +76,7 @@ const Melamar = () => {
                 const resDetail = await layananLamaran.getDetailLowongan(infoLowongan.id);
                 if (resDetail.status === 'success') {
                     setPertanyaanSeleksi(resDetail.data.pertanyaan_seleksi || []);
-                    
+
                     // Inisialisasi state pertanyaan
                     if (resDetail.data.pertanyaan_seleksi) {
                         const initPertanyaan = resDetail.data.pertanyaan_seleksi.map(p => ({
@@ -208,29 +208,29 @@ const Melamar = () => {
     // ─── Render Komponen Per Step ────────────────────────────────────────────
     const renderStep = () => {
         switch (stepSaatIni) {
-            case 1: 
-                return <Step1Upload 
-                    data={formData.upload} 
-                    onChange={updateUpload} 
+            case 1:
+                return <Step1Upload
+                    data={formData.upload}
+                    onChange={updateUpload}
                     dokumenWajib={dokumenWajib}
                     idLamaran={idLamaran}
                 />;
-            case 2: 
-                return <Step2Pertanyaan 
-                    data={formData.pertanyaan} 
-                    onChange={updatePertanyaan} 
+            case 2:
+                return <Step2Pertanyaan
+                    data={formData.pertanyaan}
+                    onChange={updatePertanyaan}
                     pertanyaanSeleksi={pertanyaanSeleksi}
                 />;
-            case 3: 
-                return <Step3Profile 
-                    data={formData.profil} 
-                    onChange={updateProfil} 
+            case 3:
+                return <Step3Profile
+                    data={formData.profil}
+                    onChange={updateProfil}
                 />;
-            case 4: 
-                return <Step4Review 
-                    formData={formData} 
-                    onKirim={lanjutKeVerifikasi} 
-                    sedangMengirim={sedangMengirim} 
+            case 4:
+                return <Step4Review
+                    formData={formData}
+                    onKirim={lanjutKeVerifikasi}
+                    sedangMengirim={sedangMengirim}
                     dokumenWajib={dokumenWajib}
                     pertanyaanSeleksi={pertanyaanSeleksi}
                     onEditProfil={() => {
@@ -239,8 +239,8 @@ const Melamar = () => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                 />;
-            case 5: 
-                return <Step5FaceVerification 
+            case 5:
+                return <Step5FaceVerification
                     onKirimLamaran={handleFaceVerified}
                     onVerifiedResult={(isVerified) => setFaceVerified(isVerified)}
                     onBack={kembali}
@@ -293,19 +293,19 @@ const Melamar = () => {
                     <h1 className="font-poppins font-bold text-xl leading-tight text-[#2B1810] mb-2">
                         Lamaran Berhasil Dikirim
                     </h1>
-                    
+
                     <p className="font-poppins font-medium text-[14px] text-[#827470] mb-5 leading-relaxed max-w-xs">
                         Berkas lamaran Anda telah berhasil dikirimkan ke perusahaan. Tim rekrutmen akan meninjau kualifikasi Anda dan menghubungi Anda melalui email atau telepon jika terpilih untuk tahap seleksi selanjutnya.
                     </p>
-                    
+
                     <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
-                        <button 
+                        <button
                             onClick={() => navigate('/status-lamaran')}
                             className="px-5 py-2.5 bg-[#4B2E2B] text-white rounded-full font-poppins font-bold text-[13px] hover:bg-[#3d2523] transition-all duration-300 shadow-md shadow-[#4B2E2B]/10 hover:shadow-lg active:scale-[0.98] cursor-pointer"
                         >
                             Lihat Status Lamaran
                         </button>
-                        <button 
+                        <button
                             onClick={() => navigate('/')}
                             className="px-5 py-2.5 border-2 border-[#4B2E2B] text-[#4B2E2B] rounded-full font-poppins font-bold text-[13px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-[0.98] cursor-pointer"
                         >
@@ -401,10 +401,10 @@ const Melamar = () => {
 
                 {/* Tombol Navigasi Step 4 (Review) */}
                 {stepSaatIni === 4 && (
-                    <div className="flex items-center justify-end gap-3 mt-8">
+                    <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-end gap-3 mt-8">
                         <button
                             onClick={kembali}
-                            className="flex items-center gap-2 px-4 py-2.5 border-2 border-[#4B2E2B]/10 bg-[#F5F1EA] text-[#4B2E2B] rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-95"
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[#4B2E2B]/10 bg-[#F5F1EA] text-[#4B2E2B] rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#4B2E2B] hover:text-white transition-all duration-300 active:scale-95"
                         >
                             <img src={iconKembali} alt="back" className="w-4 h-4" />
                             Kembali
@@ -413,9 +413,9 @@ const Melamar = () => {
                         <button
                             onClick={lanjutKeVerifikasi}
                             disabled={sedangMengirim}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-[#4B2E2B] text-white rounded-lg font-poppins font-semibold text-[14px] hover:bg-[#3d2523] transform transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            className="flex min-w-0 items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-[#4B2E2B] text-white rounded-lg font-poppins font-semibold text-[13px] sm:text-[14px] hover:bg-[#3d2523] transform transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
-                            Lanjut ke Verifikasi Wajah
+                            Lanjut
                             <img src={iconLanjut} alt="next" className="w-4 h-4 object-contain" />
                         </button>
                     </div>

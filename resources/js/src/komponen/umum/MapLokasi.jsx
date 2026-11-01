@@ -1,47 +1,76 @@
 import React, { useEffect } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { icon } from 'leaflet';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerIconRetina from 'leaflet/dist/images/marker-icon-2x.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { PUSAT_INDRAMAYU } from '../../layanan/lokasiIndramayu';
 
-const PusatPeta = ({ latitude, longitude }) => {
+const ikonPin = icon({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIconRetina,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const PilihTitik = ({ onLocationChange }) => {
+  useMapEvents({
+    click: (event) => onLocationChange?.(event.latlng.lat, event.latlng.lng),
+  });
+  return null;
+};
+
+const PusatPeta = ({ latitude, longitude, zoom }) => {
   const map = useMap();
 
   useEffect(() => {
-    map.flyTo([latitude, longitude], map.getZoom(), { duration: 0.5 });
-  }, [latitude, longitude, map]);
+    map.flyTo([latitude, longitude], zoom, { duration: 0.5 });
+  }, [latitude, longitude, zoom, map]);
 
   return null;
 };
 
 const MapLokasi = ({
-  latitude = -6.2,
-  longitude = 106.81667,
+  latitude = PUSAT_INDRAMAYU.lat,
+  longitude = PUSAT_INDRAMAYU.lng,
   onLocationChange,
-  showPopup = true
+  showPopup = true,
+  showMarker = true,
+  zoom = 13,
+  popupText = 'Posisi Lokasi',
+  height = 360
 }) => {
   return (
     <MapContainer
       center={[latitude, longitude]}
-      zoom={13}
-      style={{ height: '360px', width: '100%' }}
+      zoom={zoom}
+      style={{ height, width: '100%' }}
     >
-      <PusatPeta latitude={latitude} longitude={longitude} />
+      <PusatPeta latitude={latitude} longitude={longitude} zoom={zoom} />
+      <PilihTitik onLocationChange={onLocationChange} />
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="&copy; <a href='https://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap</a> contributors"
       />
-      <Marker
-        draggable
-        position={[latitude, longitude]}
-        onDragEnd={(e) => {
-          const marker = e.target;
-          const pos = marker.getLatLng();
-          if (onLocationChange) {
-            onLocationChange(pos.lat, pos.lng);
-          }
-        }}
-      >
-        {showPopup && <Popup>Posisi Lokasi</Popup>}
-      </Marker>
+      {showMarker && (
+        <Marker
+          icon={ikonPin}
+          draggable={Boolean(onLocationChange)}
+          position={[latitude, longitude]}
+          eventHandlers={{
+            dragend: (event) => {
+              const pos = event.target.getLatLng();
+              onLocationChange?.(pos.lat, pos.lng);
+            },
+          }}
+        >
+          {showPopup && <Popup>{popupText}</Popup>}
+        </Marker>
+      )}
     </MapContainer>
   );
 };

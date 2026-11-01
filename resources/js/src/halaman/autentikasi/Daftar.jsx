@@ -1,27 +1,37 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../../komponen/umum/Navbar';
 import layananAutentikasi from '../../layanan/layananAutentikasi';
 import { masukDenganGoogle } from '../../layanan/firebase';
 import CloudUploadFill from '../../aset/daftar/CloudUploadFill.svg';
 import MapLokasi from '../../komponen/umum/MapLokasi';
+import api from '../../layanan/api';
+import { PUSAT_INDRAMAYU, isWithinIndramayuSearchArea, parseLocationCoordinates } from '../../layanan/lokasiIndramayu';
 
 const Daftar = () => {
     const location = useLocation();
     const [peran, setPeran] = useState(location.state?.activeTab || 'Pelamar');
-    
+
     // State Form Pelamar
     const [namaLengkap, setNamaLengkap] = useState('');
-    
+
     // State Form Perusahaan
     const [namaCafe, setNamaCafe] = useState('');
+    const [alamatCafe, setAlamatCafe] = useState('');
     const [namaPengelola, setNamaPengelola] = useState('');
     const [markerPos, setMarkerPos] = useState(null);  // Posisi marker: {lat, lng}
     const [tagLokasi, setTagLokasi] = useState('');
     const [statusLokasi, setStatusLokasi] = useState('');
+    const [hasilLokasi, setHasilLokasi] = useState([]);
+    const [mencariLokasi, setMencariLokasi] = useState(false);
+    const [lokasiGagal, setLokasiGagal] = useState(false);
+    const [percobaanLokasi, setPercobaanLokasi] = useState(0);
+    const queryTerpilihRef = useRef(null);
+    const requestLokasiRef = useRef(0);
+    const pencarianLokasiRef = useRef(null);
     const [dokumen, setDokumen] = useState(null);
     const [fotoOutlet, setFotoOutlet] = useState(null);  // NEW: Foto Outlet
-    
+
     // State Umum
     const [surel, setSurel] = useState('');
     const [kataSandi, setKataSandi] = useState('');
@@ -32,66 +42,122 @@ const Daftar = () => {
     const [sedangMemuatGoogle, setSedangMemuatGoogle] = useState(false);
     const [pesanGalat, setPesanGalat] = useState('');
     const [pesanSukses, setPesanSukses] = useState('');
-    
+
     const navigate = useNavigate();
+
+    const pilihHasilLokasi = (hasil, otomatis = false) => {
+        const point = { lat: Number(hasil.latitude), lng: Number(hasil.longitude) };
+        if (!isWithinIndramayuSearchArea(point)) return;
+        requestLokasiRef.current += 1;
+        pencarianLokasiRef.current?.abort();
+        const label = hasil.alamat === hasil.nama ? hasil.nama : `${hasil.nama}, ${hasil.alamat}`;
+        queryTerpilihRef.current = label.trim();
+        setTagLokasi(label);
+        setMarkerPos(point);
+        setHasilLokasi([]);
+        setMencariLokasi(false);
+        setLokasiGagal(false);
+        setStatusLokasi(`${otomatis ? 'Hasil pencarian' : 'Lokasi dipilih'}: ${hasil.nama}. Periksa pin dan geser jika perlu.`);
+    };
+
+    const ubahTagLokasi = (value) => {
+        requestLokasiRef.current += 1;
+        pencarianLokasiRef.current?.abort();
+        queryTerpilihRef.current = null;
+        setTagLokasi(value);
+        setMarkerPos(null);
+        setHasilLokasi([]);
+        setStatusLokasi('');
+        setLokasiGagal(false);
+        setMencariLokasi(false);
+    };
+
+    const pilihTitikPeta = (lat, lng) => {
+        requestLokasiRef.current += 1;
+        pencarianLokasiRef.current?.abort();
+        setMencariLokasi(false);
+        setHasilLokasi([]);
+        setLokasiGagal(false);
+        if (!isWithinIndramayuSearchArea({ lat, lng })) {
+            setMarkerPos(null);
+            setStatusLokasi('Pilih titik dalam area pencarian Indramayu.');
+            return;
+        }
+        const label = tagLokasi.trim() || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        queryTerpilihRef.current = label;
+        setTagLokasi(label);
+        setMarkerPos({ lat, lng });
+        setStatusLokasi('Pin ditentukan secara manual. Pastikan alamat dan titik lokasi sesuai.');
+    };
 
     useEffect(() => {
         if (peran !== 'Admin_Perusahaan') return;
-
         const query = tagLokasi.trim();
+        if (queryTerpilihRef.current === query) return;
+        const requestId = ++requestLokasiRef.current;
+        setHasilLokasi([]);
+        setMarkerPos(null);
+        setLokasiGagal(false);
+        setMencariLokasi(false);
+
         if (!query) {
-            setStatusLokasi('');
+            setStatusLokasi('Tentukan titik koordinat geografis kafe, atau klik peta untuk memilih titik koordinat.');
             return;
         }
 
-        const koordinat = query.match(/^(-?\d+(?:\.\d+)?)\s*[,;]\s*(-?\d+(?:\.\d+)?)$/);
-        if (koordinat) {
-            const lat = Number(koordinat[1]);
-            const lng = Number(koordinat[2]);
-            if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
-                setMarkerPos({ lat, lng });
-                setStatusLokasi('Pin dipindahkan ke koordinat tersebut.');
+        const { isCoordinate, point } = parseLocationCoordinates(query);
+        if (isCoordinate) {
+            if (point) {
+                setMarkerPos(point);
+                setStatusLokasi('Pin dipindahkan ke koordinat tersebut. Periksa apakah sudah sesuai.');
             } else {
-                setStatusLokasi('Koordinat tidak valid.');
+                setStatusLokasi('Koordinat harus berada dalam area pencarian Indramayu.');
             }
+            return;
+        }
+        if (query.length < 3 || query.length > 200) {
+            setStatusLokasi('Masukkan nama atau alamat sepanjang 3–200 karakter.');
             return;
         }
 
         const controller = new AbortController();
+        pencarianLokasiRef.current = controller;
+        setMencariLokasi(true);
+        setStatusLokasi('Mencari lokasi di Indramayu...');
         const timeoutId = window.setTimeout(async () => {
-            setStatusLokasi('Mencari lokasi...');
+            if (requestId !== requestLokasiRef.current) return;
             try {
-                const params = new URLSearchParams({
-                    format: 'jsonv2',
-                    limit: '1',
-                    countrycodes: 'id',
-                    q: query,
-                });
-                const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
-                    headers: { Accept: 'application/json' },
+                const response = await api.get('/lokasi/cari', {
+                    params: { q: query },
                     signal: controller.signal,
                 });
-                if (!response.ok) throw new Error('Location search failed');
-
-                const [result] = await response.json();
-                if (result) {
-                    setMarkerPos({ lat: Number(result.lat), lng: Number(result.lon) });
-                    setStatusLokasi(`Lokasi ditemukan: ${result.display_name}`);
+                if (controller.signal.aborted || requestId !== requestLokasiRef.current) return;
+                const hasil = response.data.data;
+                if (!Array.isArray(hasil)) throw new Error('Invalid location response');
+                if (hasil.length === 1) {
+                    pilihHasilLokasi(hasil[0], true);
+                } else if (hasil.length > 1) {
+                    setHasilLokasi(hasil);
+                    setStatusLokasi('Ada beberapa lokasi yang sesuai. Pilih kafe atau alamat yang benar.');
                 } else {
-                    setStatusLokasi('Lokasi tidak ditemukan. Coba masukkan alamat lebih lengkap.');
+                    setStatusLokasi('Belum ditemukan di data peta Indramayu. Tambahkan nama jalan/desa atau klik peta untuk menentukan pin secara manual.');
                 }
             } catch (error) {
-                if (error.name !== 'AbortError') {
-                    setStatusLokasi('Lokasi tidak dapat dicari. Geser pin untuk menentukan titiknya.');
-                }
+                if (controller.signal.aborted || requestId !== requestLokasiRef.current) return;
+                setLokasiGagal(true);
+                setStatusLokasi(error.response?.status === 429
+                    ? 'Pencarian terlalu sering. Tunggu sebentar, lalu coba lagi atau pilih titik di peta.'
+                    : 'Layanan pencarian lokasi sedang tidak tersedia. Coba lagi atau klik peta untuk menentukan titik.');
+            } finally {
+                if (requestId === requestLokasiRef.current) setMencariLokasi(false);
             }
-        }, 1000);
+        }, 1100);
 
         return () => {
             window.clearTimeout(timeoutId);
             controller.abort();
         };
-    }, [peran, tagLokasi]);
+    }, [peran, tagLokasi, percobaanLokasi]);
 
     const menanganiDaftar = async (e) => {
         e.preventDefault();
@@ -106,9 +172,21 @@ const Daftar = () => {
             return;
         }
 
+        if (peran === 'Admin_Perusahaan' && (!alamatCafe.trim() || parseLocationCoordinates(alamatCafe).isCoordinate)) {
+            setPesanGalat('Isi Alamat Kafe dengan alamat lengkap yang dapat dibaca (jalan, desa/kelurahan, dan kecamatan), bukan hanya koordinat peta.');
+            setSedangMemuat(false);
+            return;
+        }
+
         // VALIDASI BARU: Pastikan dokumen diunggah untuk perusahaan
         if (peran === 'Admin_Perusahaan' && !dokumen) {
             setPesanGalat('Dokumen Izin Usaha/NIB wajib diunggah untuk keperluan verifikasi.');
+            setSedangMemuat(false);
+            return;
+        }
+
+        if (peran === 'Admin_Perusahaan' && (mencariLokasi || !markerPos || !isWithinIndramayuSearchArea(markerPos))) {
+            setPesanGalat('Tentukan titik lokasi kafe terlebih dahulu: pilih hasil pencarian atau klik peta di area Indramayu.');
             setSedangMemuat(false);
             return;
         }
@@ -132,7 +210,9 @@ const Daftar = () => {
             payload.append('email', surel);
             payload.append('kata_sandi', kataSandi);
             payload.append('konfirmasi_kata_sandi', konfirmasiKataSandi);
-            payload.append('alamat', tagLokasi);
+            payload.append('alamat', alamatCafe.trim());
+            payload.append('latitude', markerPos.lat);
+            payload.append('longitude', markerPos.lng);
             if (dokumen) {
                 payload.append('dokumen_legalitas', dokumen);
             }
@@ -141,7 +221,7 @@ const Daftar = () => {
                 payload.append('foto_outlet', fotoOutlet);
             }
         }
-        
+
         try {
             await layananAutentikasi.daftar(payload, endpoint);
 
@@ -150,7 +230,7 @@ const Daftar = () => {
             setTimeout(() => {
                 navigate('/masuk');
             }, 2000);
-            
+
         } catch (error) {
             console.error('Registration error:', error);
             if (error.response?.status === 422 && error.response?.data?.errors) {
@@ -207,10 +287,10 @@ const Daftar = () => {
     return (
         <div className="wadah-halaman-daftar min-h-screen bg-[#F3EDE6] font-poppins flex flex-col overflow-x-hidden overflow-y-auto">
             <Navbar />
-            
+
             {/* Main Content Area */}
             <div className="area-konten-utama flex-1 flex flex-col md:flex-row w-full max-w-[1440px] mx-auto py-8">
-                
+
                 {/* Sisi Kiri: Sidebar Cokelat (Menempel di kiri) */}
                 <div className="sisi-kiri-sidebar hidden md:flex w-[40%] max-w-[413px] min-h-[500px] bg-[#4B2E2B] rounded-r-3xl flex-col justify-start pt-[130px] px-8 shadow-lg">
                     <div className="teks-ajakan w-full">
@@ -226,7 +306,7 @@ const Daftar = () => {
                 {/* Sisi Kanan: Area Tabs & Form */}
                 <div className="sisi-kanan-form w-full md:w-[60%] flex flex-col items-center justify-center p-6 lg:p-8">
                     <div className="wadah-konten flex flex-col items-center w-full max-w-md mx-auto gap-6">
-                        
+
                         {/* Tab Seleksi Peran */}
                         <div className="tab-seleksi-peran w-full h-[60px] bg-[#C69C6D] rounded-full flex p-[4px] items-center shadow-sm">
                             <button
@@ -359,7 +439,7 @@ const Daftar = () => {
                                         />
                                     </div>
                                 </div>
-                                
+
                                 <div className="grup-input">
                                     <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="password">Password</label>
                                     <div className="relative">
@@ -458,11 +538,11 @@ const Daftar = () => {
                                         <div className="grup-input my-4">
                                             <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2">Foto Outlet</label>
                                             <div className="area-upload relative w-full h-[120px] bg-[#F5E8DF] rounded-[10px] border border-[#4B2E2B] flex flex-col items-center justify-center cursor-pointer hover:bg-[#ebdccc] transition-colors overflow-hidden">
-                                                <input 
-                                                    type="file" 
-                                                    onChange={(e) => setFotoOutlet(e.target.files[0])} 
-                                                    className="input-file absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                                    accept="image/*" 
+                                                <input
+                                                    type="file"
+                                                    onChange={(e) => setFotoOutlet(e.target.files[0])}
+                                                    className="input-file absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                    accept="image/*"
                                                 />
                                                 <div className="konten-upload flex flex-col items-center z-0">
                                                     <img src={CloudUploadFill} alt="Upload Icon" className="ikon-upload w-[40px] h-[40px]" />
@@ -473,9 +553,23 @@ const Daftar = () => {
                                             </div>
                                         </div>
 
+                                        <div className="grup-input">
+                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="alamatCafe">Alamat Kafe</label>
+                                            <textarea
+                                                id="alamatCafe"
+                                                value={alamatCafe}
+                                                onChange={(e) => setAlamatCafe(e.target.value)}
+                                                placeholder="Nama jalan, nomor, desa/kelurahan, kecamatan, Indramayu"
+                                                aria-describedby="keteranganAlamatCafe"
+                                                rows={3}
+                                                className="input-field w-full px-5 py-3 rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#C69C6D] transition-all text-[#4B2E2B]"
+                                                required
+                                            />
+                                        </div>
+
                                         {/* Lokasi kafe */}
                                         <div className="grup-input">
-                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="tagLokasi">Tag Lokasi Geografis</label>
+                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="tagLokasi">Koordinat Peta</label>
                                             <div className="relative">
                                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4B2E2B]/50">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -487,29 +581,61 @@ const Daftar = () => {
                                                     id="tagLokasi"
                                                     type="text"
                                                     value={tagLokasi}
-                                                    onChange={(e) => setTagLokasi(e.target.value)}
-                                                    placeholder="Alamat atau koordinat (contoh: -6.326, 108.321)"
+                                                    onChange={(e) => ubahTagLokasi(e.target.value)}
+                                                    placeholder="Tentukan tag lokasi menggunakan titik koordinat"
+                                                    aria-describedby="keteranganTagLokasi statusLokasi"
+                                                    maxLength={200}
                                                     className="input-field w-full pl-12 pr-5 py-3 h-[46px] rounded-[10px] border border-[#4B2E2B] focus:outline-none focus:ring-2 focus:ring-[#C69C6D]/50 focus:border-[#4B2E2B] transition-all text-[#4B2E2B]"
-                                                    required
                                                 />
                                             </div>
-                                            <p aria-live="polite" className="mt-2 min-h-5 text-sm text-[#6E625A]">
+                                            <p id="statusLokasi" role="status" aria-live="polite" className="mt-2 min-h-5 text-sm text-[#6E625A]">
                                                 {statusLokasi}
                                             </p>
+                                            {hasilLokasi.length > 0 && (
+                                                <ul aria-label="Hasil pencarian lokasi di Indramayu" className="mt-2 overflow-hidden rounded-xl border border-[#4B2E2B]/20 divide-y divide-[#4B2E2B]/10">
+                                                    {hasilLokasi.map((hasil) => (
+                                                        <li key={hasil.id}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => pilihHasilLokasi(hasil)}
+                                                                className="w-full px-4 py-3 text-left hover:bg-[#F3EDE6] focus-visible:bg-[#F3EDE6] cursor-pointer"
+                                                            >
+                                                                <span className="block text-sm font-semibold text-[#4B2E2B]">{hasil.nama}</span>
+                                                                <span className="block mt-1 text-xs leading-relaxed text-[#6E625A]">{hasil.alamat}</span>
+                                                            </button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                            {lokasiGagal && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPercobaanLokasi(prev => prev + 1)}
+                                                    className="mt-2 min-h-11 px-3 py-2 rounded-lg border border-[#4B2E2B]/20 text-sm font-semibold text-[#4B2E2B] cursor-pointer"
+                                                >
+                                                    Coba Cari Lagi
+                                                </button>
+                                            )}
+                                            <p className="mt-2 text-xs text-[#6E625A]">Data pencarian: © OpenStreetMap contributors (Photon)</p>
                                         </div>
 
                                         <div className="grup-input">
                                             <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2">Titik lokasi di peta</label>
                                             <div className="overflow-hidden rounded-xl border border-[#4B2E2B]">
                                                 <MapLokasi
-                                                    latitude={markerPos?.lat ?? -6.2}
-                                                    longitude={markerPos?.lng ?? 106.81667}
-                                                    onLocationChange={(lat, lng) => {
-                                                        setMarkerPos({ lat, lng });
-                                                        setTagLokasi(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-                                                    }}
+                                                    latitude={markerPos?.lat ?? PUSAT_INDRAMAYU.lat}
+                                                    longitude={markerPos?.lng ?? PUSAT_INDRAMAYU.lng}
+                                                    zoom={markerPos ? 17 : 12}
+                                                    showMarker={Boolean(markerPos)}
+                                                    popupText={tagLokasi || 'Lokasi kafe'}
+                                                    onLocationChange={pilihTitikPeta}
                                                 />
                                             </div>
+                                            {markerPos && (
+                                                <p className="mt-2 text-xs text-[#6E625A]">
+                                                    Koordinat pin: {markerPos.lat.toFixed(6)}, {markerPos.lng.toFixed(6)}
+                                                </p>
+                                            )}
                                         </div>
                                     </>
                                 )}

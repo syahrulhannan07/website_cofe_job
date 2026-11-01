@@ -4,12 +4,13 @@ namespace App\Repositories\V1\Admin;
 
 use App\Models\Wawancara;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class WawancaraRepository
 {
     public function getByPerusahaan(int $idPerusahaan, array $filters = []): LengthAwarePaginator
     {
-        $query = Wawancara::with(['lamaran.profil', 'lamaran.lowongan'])
+        $query = Wawancara::with(['lamaran.profil', 'lamaran.lowongan', 'presensi'])
             ->whereHas('lamaran.lowongan', fn($q) => $q->where('id_perusahaan', $idPerusahaan));
 
         if (!empty($filters['tanggal'])) {
@@ -39,6 +40,17 @@ class WawancaraRepository
 
     public function update(Wawancara $wawancara, array $data): bool
     {
-        return $wawancara->update($data);
+        return DB::transaction(function () use ($wawancara, $data) {
+            // Serialize with attendance creation, and check fresh state rather than a cached relation.
+            $current = Wawancara::whereKey($wawancara->id_wawancara)->lockForUpdate()->firstOrFail();
+            $current->fill($data);
+            $changes = $current->getDirty();
+            $completionOnly = array_keys($changes) === ['status'] && $current->status === 'Selesai';
+            if ($changes && !$completionOnly) {
+                $current->assertScheduleEditable();
+            }
+
+            return $current->save();
+        });
     }
 }

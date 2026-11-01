@@ -10,9 +10,10 @@ use App\Models\JawabanPertanyaan;
 use App\Models\Lamaran;
 use App\Models\LamaranDokumen;
 use App\Models\Lowongan;
-use App\Services\V1\Pelamar\FaceRecognitionService;
+use App\Models\ProfilPelamar;
+use App\Services\V1\Pelamar\VerifikasiWajahService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -139,13 +140,19 @@ class LamaranController extends Controller
 
     public function kirim($id_lamaran)
     {
-        $profil = auth('api')->user()->profilPelamar;
+        return DB::transaction(fn () => $this->kirimTerkunci($id_lamaran));
+    }
+
+    private function kirimTerkunci($id_lamaran)
+    {
+        $profil = ProfilPelamar::where('id_pengguna', auth('api')->id())->lockForUpdate()->firstOrFail();
         $lamaran = Lamaran::with(['lowongan.dokumenDibutuhkan', 'lowongan.pertanyaanSeleksi'])
+            ->lockForUpdate()
             ->where('id_lamaran', $id_lamaran)
             ->where('id_profil', $profil->id_profil)
             ->firstOrFail();
 
-        if ($lamaran->status !== 'Diproses') {
+        if ($lamaran->status !== 'Diproses' || !empty($lamaran->snapshot_profil)) {
             return response()->json(['status' => 'error', 'message' => 'Lamaran ini sudah dikirim.'], 403);
         }
 
@@ -178,10 +185,14 @@ class LamaranController extends Controller
         }
 
         // VALIDASI VERIFIKASI WAJAH: Wajib telah lolos verifikasi biometrik wajah
-        $verificationKey = "lamaran_face_verified_{$id_lamaran}_{$profil->id_profil}";
-        $verification = Cache::get($verificationKey);
+        $verification = $lamaran->verifikasiWajah()
+            ->where('id_pengguna', auth('api')->id())
+            ->where('jenis_verifikasi', 'Lamaran')
+            ->orderByDesc('id_verifikasi')->first();
 
-        if (!$verification || empty($verification['verified'])) {
+        if (!$verification || $verification->status_verifikasi !== 'Berhasil'
+            || $verification->referensi_wajah !== $profil->foto_profil
+            || $verification->created_at->lt(now()->subMinutes(30))) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Verifikasi wajah belum dilakukan atau tidak cocok dengan foto profil Anda. Harap selesaikan tahap verifikasi wajah terlebih dahulu.'
@@ -205,9 +216,10 @@ class LamaranController extends Controller
             ],
             'verifikasi_wajah' => [
                 'status' => 'Terverifikasi',
-                'tingkat_kemiripan' => $verification['confidence'] ?? null,
-                'ambang_batas' => $verification['threshold'] ?? null,
-                'diverifikasi_pada' => $verification['verified_at'] ?? now()->toIso8601String(),
+                'tingkat_kemiripan' => $verification->skor_kemiripan,
+                'ambang_batas' => $verification->ambang_batas,
+                'diverifikasi_pada' => $verification->updated_at->toIso8601String(),
+                'id_verifikasi' => $verification->id_verifikasi,
             ],
             'pendidikan' => $profil->pendidikan->map(fn($p) => [
                 'id_pendidikan' => $p->id_pendidikan,
@@ -236,8 +248,6 @@ class LamaranController extends Controller
             'snapshot_profil' => $snapshot,
         ]);
 
-        // Hapus token verifikasi setelah lamaran tersimpan
-        Cache::forget($verificationKey);
 
         \App\Models\LogStatusLamaran::firstOrCreate([
             'id_lamaran' => $lamaran->id_lamaran,
@@ -245,7 +255,9 @@ class LamaranController extends Controller
             'keterangan' => 'Lamaran berhasil dikirim.',
         ]);
 
-        event(new \App\Events\LamaranSubmitted($lamaran->load(['lowongan.perusahaan.pengguna', 'profil.pengguna'])));
+        DB::afterCommit(fn () => event(new \App\Events\LamaranSubmitted(
+            $lamaran->load(['lowongan.perusahaan.pengguna', 'profil.pengguna'])
+        )));
 
         return response()->json([
             'status' => 'success',
@@ -256,10 +268,11 @@ class LamaranController extends Controller
     public function verifikasiWajah(Request $request, $id_lamaran)
     {
         $request->validate([
-            'image_base64' => 'required|string',
+            'image_base64' => 'required|string|max:8000000',
         ]);
 
         $profil = auth('api')->user()->profilPelamar;
+        abort_unless($profil, 404);
         $lamaran = Lamaran::where('id_lamaran', $id_lamaran)
             ->where('id_profil', $profil->id_profil)
             ->firstOrFail();
@@ -276,27 +289,16 @@ class LamaranController extends Controller
             ], 422);
         }
 
-        $faceService = app(FaceRecognitionService::class);
-        $result = $faceService->compareFaces($profil->foto_profil, $request->image_base64);
-
-        if ($result['success']) {
-            // Simpan status verifikasi wajah yang valid ke cache (berlaku 30 menit)
-            Cache::put("lamaran_face_verified_{$id_lamaran}_{$profil->id_profil}", [
-                'verified' => true,
-                'confidence' => $result['confidence'],
-                'threshold' => $result['threshold'],
-                'verified_at' => now()->toIso8601String(),
-            ], now()->addMinutes(30));
-        }
-
-        $statusCode = $result['success'] ? 200 : 422;
+        $outcome = app(VerifikasiWajahService::class)->verify($lamaran, $request->image_base64);
+        $result = $outcome['result'];
+        $statusCode = !empty($outcome['conflict']) ? 409 : ($result['success'] ? 200 : 422);
 
         return response()->json([
             'status' => $result['success'] ? 'success' : 'error',
             'message' => $result['message'],
-            'confidence' => $result['confidence'],
+            'confidence' => $result['confidence'] ?? null,
             'threshold' => $result['threshold'] ?? null,
-            'face_detected' => $result['face_detected'],
+            'face_detected' => $result['face_detected'] ?? false,
         ], $statusCode);
     }
 

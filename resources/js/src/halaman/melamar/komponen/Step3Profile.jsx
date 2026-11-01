@@ -198,10 +198,10 @@ const Step3Profile = ({ data, onChange }) => {
             </div>
 
             {/* Layout 2 Kolom */}
-            <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className="flex flex-col-reverse lg:flex-row gap-6 items-start">
                 
                 {/* Kolom Kiri — Form Dinamis Profil */}
-                <div className="pembungkus-kolom-kiri flex-1 bg-[#F5F1EA] rounded-2xl p-4 border border-[#4B2E2B]/10 flex flex-col gap-6 w-full">
+                <div className="pembungkus-kolom-kiri min-w-0 flex-1 bg-[#F5F1EA] rounded-2xl p-4 border border-[#4B2E2B]/10 flex flex-col gap-6 w-full">
                     
                     {/* Tentang Saya (Textarea biasa, tapi di-save onBlur) */}
                     <FieldTextarea 
@@ -231,7 +231,7 @@ const Step3Profile = ({ data, onChange }) => {
                 </div>
 
                 {/* Kolom Kanan — Kartu Info Personal */}
-                <div className="pembungkus-kolom-kanan w-full lg:w-80 bg-[#C69C6D] rounded-2xl p-5 flex flex-col gap-6">
+                <div className="pembungkus-kolom-kanan min-w-0 w-full lg:w-80 lg:shrink-0 bg-[#C69C6D] rounded-2xl p-5 flex flex-col gap-6">
                     {/* Avatar Section */}
                     <div className="flex justify-center mb-1">
                         <div className="relative">

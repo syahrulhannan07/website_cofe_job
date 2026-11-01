@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Rules\NotCoordinatePair;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -22,13 +23,14 @@ class ProfilPerusahaanController extends Controller
             ], 404);
         }
 
-        // Include user data
-        $profil->nama_pengguna = $admin->nama_pengguna;
-        $profil->email = $admin->email;
+        // Keep response-only user fields off the persisted company model.
+        $data = $profil->toArray();
+        $data['nama_pengguna'] = $admin->nama_pengguna;
+        $data['email'] = $admin->email;
 
         return response()->json([
             'status' => 'success',
-            'data' => $profil
+            'data' => $data
         ]);
     }
 
@@ -44,12 +46,16 @@ class ProfilPerusahaanController extends Controller
             ], 404);
         }
 
+        $hasCoordinates = $request->hasAny(['latitude', 'longitude']);
+
         // Validasi
         $validator = Validator::make($request->all(), [
             'nama_perusahaan' => 'nullable|string|max:255',
             'nama_pengguna' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:pengguna,email,' . $admin->id_pengguna . ',id_pengguna',
-            'alamat_perusahaan' => 'nullable|string',
+            'alamat_perusahaan' => ['nullable', 'string', new NotCoordinatePair()],
+            'latitude' => [$hasCoordinates ? 'required' : 'sometimes', 'numeric', 'between:-90,90'],
+            'longitude' => [$hasCoordinates ? 'required' : 'sometimes', 'numeric', 'between:-180,180'],
             'kecamatan' => 'nullable|string|max:255',
             'deskripsi' => 'nullable|string',
             'tanggal_berdiri' => 'nullable|date',
@@ -95,6 +101,10 @@ class ProfilPerusahaanController extends Controller
         if ($request->has('alamat_perusahaan')) {
             $profil->alamat_perusahaan = $request->alamat_perusahaan;
         }
+        if ($hasCoordinates) {
+            $profil->latitude = $request->latitude;
+            $profil->longitude = $request->longitude;
+        }
         if ($request->has('kecamatan')) {
             $profil->kecamatan = $request->kecamatan;
         }
@@ -131,14 +141,15 @@ class ProfilPerusahaanController extends Controller
 
         $profil->save();
 
-        // Reload data to include updated user info
-        $profil->nama_pengguna = $admin->nama_pengguna;
-        $profil->email = $admin->email;
+        // Keep response-only user fields off the persisted company model.
+        $data = $profil->toArray();
+        $data['nama_pengguna'] = $admin->nama_pengguna;
+        $data['email'] = $admin->email;
 
         return response()->json([
             'status' => 'success',
             'message' => 'Profil berhasil diperbarui',
-            'data' => $profil
+            'data' => $data
         ]);
     }
 

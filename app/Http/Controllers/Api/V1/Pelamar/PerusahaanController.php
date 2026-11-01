@@ -13,7 +13,7 @@ class PerusahaanController extends Controller
     {
         $query = ProfilPerusahaan::aktifTerverifikasi()
             ->withCount(['lowongan' => function ($query) {
-                $query->where('status', 'Active');
+                $query->aktifTerverifikasi();
             }]);
 
         if ($request->has('search')) {
@@ -31,12 +31,10 @@ class PerusahaanController extends Controller
     {
         $perusahaan = ProfilPerusahaan::aktifTerverifikasi()
             ->with(['pengguna', 'lowongan' => function ($query) {
-                $query->where('status', 'Active')
-                      ->where('batas_akhir', '>=', now()->toDateString());
+                $query->aktifTerverifikasi();
             }])
             ->withCount(['lowongan' => function ($query) {
-                $query->where('status', 'Active')
-                      ->where('batas_akhir', '>=', now()->toDateString());
+                $query->aktifTerverifikasi();
             }])
             ->where('id_perusahaan', $id)
             ->firstOrFail();
