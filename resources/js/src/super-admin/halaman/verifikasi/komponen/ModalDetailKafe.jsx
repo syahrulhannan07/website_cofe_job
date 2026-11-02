@@ -74,10 +74,41 @@ const ModalDetailKafe = ({ kafeAktif, onTutup, onBerhasilVerifikasi }) => {
         }
     };
 
-    // [UPDATE LOGIC] - Sinkronkan dokumen_izin atau dokumen_legalitas
-    const fileDokumen = kafeAktif.dokumen_izin || kafeAktif.dokumen_legalitas;
+    const dataNib = kafeAktif.nib || null;
+    const statusScreening = dataNib?.status_screening || null;
+    const sudahDiperiksa = Boolean(statusScreening) && statusScreening !== 'Belum_Diperiksa';
+
+    const nomorNib = dataNib?.nomor_nib || 'Belum tersedia';
+    const labelStatusScreening = dataNib
+        ? (statusScreening || 'Belum_Diperiksa')
+        : 'Belum ada data NIB';
+
+    const formatWaktu = (nilai) => {
+        if (!nilai) return null;
+        const tanggal = new Date(nilai);
+        if (Number.isNaN(tanggal.getTime())) return null;
+        return tanggal.toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
+
+    const labelDiperiksaPada = sudahDiperiksa
+        ? (formatWaktu(dataNib?.diperiksa_pada) || '—')
+        : 'Belum diperiksa';
+
+    // [UPDATE LOGIC] - Sinkronkan dokumen NIB, lalu fallback dokumen lama
+    const dokumenNib = kafeAktif.nib?.dokumen_nib || null;
+    const dokumenLama = kafeAktif.dokumen_izin || kafeAktif.dokumen_legalitas || null;
+    const fileDokumen = dokumenNib || dokumenLama;
     const urlDokumen = fileDokumen
         ? `/storage/${fileDokumen}`
+        : null;
+    const labelSumberDokumen = urlDokumen
+        ? (dokumenNib ? 'Dokumen NIB' : 'Dokumen lama — belum terhubung ke data NIB')
         : null;
 
     const ekstensiDokumen = urlDokumen ? urlDokumen.split('.').pop().toLowerCase() : '';
@@ -180,6 +211,15 @@ const ModalDetailKafe = ({ kafeAktif, onTutup, onBerhasilVerifikasi }) => {
                                     </div>
                                 )}
                             </div>
+
+                            {labelSumberDokumen && (
+                                <p
+                                    className="mt-2 text-[10px] font-semibold text-[#827470] text-center"
+                                    style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+                                >
+                                    {labelSumberDokumen}
+                                </p>
+                            )}
                         </div>
 
                         {/* Error Alert Box inside Left Column bottom to avoid layout shift */}
@@ -242,6 +282,35 @@ const ModalDetailKafe = ({ kafeAktif, onTutup, onBerhasilVerifikasi }) => {
                                 <span className="text-[13px] text-[#4B2E2B] leading-relaxed block" style={{ fontFamily: 'Poppins, sans-serif' }}>
                                     {kafeAktif.deskripsi || '—'}
                                 </span>
+                            </div>
+
+                            <div className="mt-3 pt-2 border-t border-[#EAE4DC] grid grid-cols-3 gap-3">
+                                <div>
+                                    <span className="text-[10px] font-semibold text-[#827470] uppercase tracking-wider block mb-1" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                                        Nomor NIB
+                                    </span>
+                                    <span className="text-[12px] font-semibold text-[#4B2E2B] break-all block" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                        {nomorNib}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <span className="text-[10px] font-semibold text-[#827470] uppercase tracking-wider block mb-1" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                                        Status Screening
+                                    </span>
+                                    <span className="text-[12px] font-semibold text-[#4B2E2B] block" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                        {labelStatusScreening}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <span className="text-[10px] font-semibold text-[#827470] uppercase tracking-wider block mb-1" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                                        Diperiksa Pada
+                                    </span>
+                                    <span className="text-[12px] font-semibold text-[#4B2E2B] block" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                        {labelDiperiksaPada}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
