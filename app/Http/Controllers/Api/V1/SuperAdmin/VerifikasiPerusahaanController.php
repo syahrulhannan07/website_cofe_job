@@ -36,7 +36,7 @@ class VerifikasiPerusahaanController extends Controller
     public function index()
     {
         // Ambil semua kafe Pending, urut dari yang terlama (FIFO/ASC) agar antrian verifikasi terasa adil
-        $pendingPerusahaan = ProfilPerusahaan::with('pengguna')
+        $pendingPerusahaan = ProfilPerusahaan::with(['pengguna', 'nib'])
             ->where('status_verifikasi', 'Pending')
             ->orderBy('created_at', 'asc')
             ->get();
@@ -55,6 +55,12 @@ class VerifikasiPerusahaanController extends Controller
                 'dokumen_izin'     => $p->dokumen_izin,
                 'created_at'       => $p->created_at?->toIso8601String(),
                 'status_verifikasi'=> $p->status_verifikasi,
+                'nib'              => $p->nib ? [
+                    'nomor_nib'        => $p->nib->nomor_nib,
+                    'dokumen_nib'      => $p->nib->dokumen_nib,
+                    'status_screening' => $p->nib->status_screening?->value,
+                    'diperiksa_pada'   => $p->nib->diperiksa_pada?->toIso8601String(),
+                ] : null,
             ];
         });
 
