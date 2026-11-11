@@ -6,9 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Pengguna;
 use App\Models\Lowongan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class SuperAdminKafeController extends Controller
 {
+    private const SUPPORTED_MIME_TYPES = [
+        'application/pdf' => 'pdf',
+        'image/jpeg' => 'jpg',
+        'image/jpg' => 'jpg',
+        'image/png' => 'png',
+    ];
+
     /**
      * Ambil daftar seluruh akun Admin Kafe, dukung pencarian nama kafe/pengguna.
      */
@@ -44,7 +53,7 @@ class SuperAdminKafeController extends Controller
 
     /**
      * Ambil detail satu akun kafe beserta profil dan daftar lowongannya.
-     * Digunakan oleh ModalDetailAdmin untuk menampilkan info kafe + lowongan.
+     * Digunakan oleh halaman detail verifikasi untuk menampilkan info kafe + dokumen NIB.
      */
     public function show($id)
     {
@@ -52,7 +61,7 @@ class SuperAdminKafeController extends Controller
             ->with(['profilPerusahaan.lowongan' => function ($q) {
                 // Sertakan jumlah pelamar per lowongan
                 $q->withCount('lamaran')->orderBy('created_at', 'desc');
-            }])
+            }, 'profilPerusahaan.nib'])
             ->find($id);
 
         if (!$admin) {
@@ -71,6 +80,20 @@ class SuperAdminKafeController extends Controller
             'pelamar'    => $l->lamaran_count ?? 0,
         ]) ?? [];
 
+        // Mapping data NIB jika ada
+        $nibData = null;
+        if ($profil?->nib) {
+            $nibData = [
+                'id_nib'             => $profil->nib->id_nib,
+                'nomor_nib'          => $profil->nib->nomor_nib,
+                'dokumen_nib'        => $profil->nib->dokumen_nib,
+                'status_screening'   => $profil->nib->status_screening?->value,
+                'diperiksa_pada'     => $profil->nib->diperiksa_pada?->toIso8601String(),
+                'dibuat_pada'        => $profil->nib->dibuat_pada?->toIso8601String(),
+                'diperbarui_pada'    => $profil->nib->diperbarui_pada?->toIso8601String(),
+            ];
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => [
@@ -80,11 +103,77 @@ class SuperAdminKafeController extends Controller
                 'nama_pengguna'   => $admin->nama_pengguna,
                 'email'           => $admin->email,
                 'status'          => $admin->status_akun,
+                'status_verifikasi' => $profil?->status_verifikasi ?? '-',
                 'deskripsi'       => $profil?->deskripsi ?? '',
                 'alamat'          => $profil?->alamat_perusahaan ?? '',
+                'kecamatan'       => $profil?->kecamatan ?? '',
+                'dokumen_izin'    => $profil?->dokumen_izin ?? null,
+                'dokumen_legalitas' => $profil?->dokumen_legalitas ?? null,
+                'created_at'      => $profil?->created_at?->toIso8601String(),
+                'nib'             => $nibData,
                 'lowongan'        => $lowonganList,
             ],
         ], 200);
+    }
+
+    /**
+     * Tampilkan dokumen legacy (dokumen_izin) untuk Super Admin.
+     *
+     * Digunakan untuk preview dokumen lama yang disimpan di public storage
+     * namun diakses melalui endpoint terautentikasi agar Authorization
+     * header dikirim dengan benar.
+     */
+    public function dokumen(string $id): Response
+    {
+        // 1. Pengguna harus terautentikasi (middleware auth:api)
+        // 2. Role harus Super_Admin (middleware role:Super_Admin)
+
+        $admin = Pengguna::where('peran', 'Admin_Perusahaan')
+            ->with('profilPerusahaan')
+            ->find($id);
+
+        if (!$admin || !$admin->profilPerusahaan) {
+            abort(404, 'Perusahaan tidak ditemukan.');
+        }
+
+        $profil = $admin->profilPerusahaan;
+        $path = $profil->dokumen_izin;
+
+        if (!$path) {
+            abort(404, 'Dokumen tidak tersedia.');
+        }
+
+        // Validasi path agar tidak dapat digunakan untuk path traversal
+        if (str_contains($path, '..') || str_starts_with($path, '/') || str_contains($path, '\\')) {
+            abort(400, 'Path dokumen tidak valid.');
+        }
+
+        // Periksa keberadaan file di public storage
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404, 'Berkas dokumen tidak ditemukan di storage.');
+        }
+
+        $mime = Storage::disk('public')->mimeType($path);
+
+        if (!array_key_exists($mime, self::SUPPORTED_MIME_TYPES)) {
+            abort(415, 'Format dokumen tidak didukung.');
+        }
+
+        // Kembalikan konten berkas dengan header yang tepat untuk preview
+        $contents = Storage::disk('public')->get($path);
+
+        $originalName = basename($path);
+        $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+
+        $extension = self::SUPPORTED_MIME_TYPES[$mime];
+        $safeName = preg_replace('/\.' . preg_quote($extension, '/') . '$/i', '', $safeName) . '.' . $extension;
+
+        return response($contents, 200, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => 'inline; filename="' . $safeName . '"',
+            'Cache-Control' => 'private, max-age=3600',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     /**

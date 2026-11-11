@@ -87,10 +87,17 @@ class RegisterController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
+            $errorMessage = 'Terjadi kesalahan saat registrasi';
+            $exceptionMessage = $e->getMessage();
+
+            if (str_contains($exceptionMessage, 'SQL') || str_contains($exceptionMessage, 'database') || str_contains($exceptionMessage, 'PDO')) {
+                $errorMessage = 'Gagal menyimpan data ke database. Pastikan MySQL berjalan dan sudah menjalankan `php artisan migrate`.';
+            }
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Terjadi kesalahan saat registrasi',
-                'error' => $e->getMessage()
+                'message' => $errorMessage,
             ], 500);
         }
     }
@@ -175,10 +182,19 @@ class RegisterController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
+            $errorMessage = 'Terjadi kesalahan saat pendaftaran';
+            $exceptionMessage = $e->getMessage();
+
+            if (str_contains($exceptionMessage, 'public') || str_contains($exceptionMessage, 'Storage::disk(')) {
+                $errorMessage = 'Gagal menyimpan berkas ke storage publik. Pastikan `php artisan storage:link` sudah dijalankan dan folder storage writable.';
+            } elseif (str_contains($exceptionMessage, 'SQL') || str_contains($exceptionMessage, 'database') || str_contains($exceptionMessage, 'PDO')) {
+                $errorMessage = 'Gagal menyimpan data ke database. Pastikan MySQL berjalan dan sudah menjalankan `php artisan migrate`.';
+            }
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Terjadi kesalahan saat pendaftaran',
-                'error' => $e->getMessage()
+                'message' => $errorMessage,
             ], 500);
         }
     }
@@ -197,6 +213,7 @@ class RegisterController extends Controller
             'longitude' => 'nullable|required_with:latitude|numeric|between:-180,180',
             'deskripsi' => 'nullable|string',
             'dokumen_legalitas' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'foto_outlet' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
 
         ], [
             'required' => ':attribute wajib diisi.',
@@ -214,6 +231,8 @@ class RegisterController extends Controller
             'dokumen_legalitas.required' => 'Dokumen wajib diunggah untuk keperluan verifikasi',
             'dokumen_legalitas.mimes' => 'Format dokumen tidak valid',
             'dokumen_legalitas.max' => 'Ukuran dokumen maksimal 5MB',
+            'foto_outlet.mimes' => 'Format foto outlet tidak valid (JPG/JPEG/PNG).',
+            'foto_outlet.max' => 'Ukuran foto outlet maksimal 5MB',
 
         ], [
             'nama_kafe' => 'Nama kafe',
@@ -226,6 +245,7 @@ class RegisterController extends Controller
             'longitude' => 'Longitude',
             'deskripsi' => 'Deskripsi',
             'dokumen_legalitas' => 'Dokumen legalitas',
+            'foto_outlet' => 'Foto outlet',
 
         ]);
 
@@ -247,11 +267,37 @@ class RegisterController extends Controller
             ], 422);
         }
 
-        $uploadedPaths = [];
+        $uploadedPathsPublic = [];
+        $uploadedPathsLocal = [];
+        $pathFotoOutlet = null;
         try {
-            $path = $this->storeCompanyRegistrationFile($request->file('dokumen_legalitas'), 'legalitas', $uploadedPaths);
+            // Simpan dokumen_izin di public storage untuk kompatibilitas konsumen lama
+            $pathPublic = $this->storeCompanyRegistrationFile(
+                $request->file('dokumen_legalitas'),
+                'legalitas',
+                'public',
+                $uploadedPathsPublic
+            );
 
-            [$pengguna, $perusahaan] = DB::transaction(function () use ($request, $path) {
+            // Simpan dokumen_nib di private storage untuk screening
+            $pathLocal = $this->storeCompanyRegistrationFile(
+                $request->file('dokumen_legalitas'),
+                'legalitas',
+                'local',
+                $uploadedPathsLocal
+            );
+
+            // Simpan foto outlet di public storage (opsional)
+            if ($request->hasFile('foto_outlet')) {
+                $pathFotoOutlet = $this->storeCompanyRegistrationFile(
+                    $request->file('foto_outlet'),
+                    'foto_outlet',
+                    'public',
+                    $uploadedPathsPublic
+                );
+            }
+
+            [$pengguna, $perusahaan] = DB::transaction(function () use ($request, $pathPublic, $pathLocal, $pathFotoOutlet) {
                 // 4. Buat record PENGGUNA
                 $pengguna = Pengguna::create([
                     'nama_pengguna' => $request->nama_pengelola,
@@ -260,7 +306,7 @@ class RegisterController extends Controller
                     'peran' => 'Admin_Perusahaan',
                 ]);
 
-                // 5. Buat record PROFIL_PERUSAHAAN
+                // 5. Buat record PROFIL_PERUSAHAAN — dokumen_izin di public storage
                 $perusahaan = ProfilPerusahaan::create([
                     'id_pengguna' => $pengguna->id_pengguna,
                     'nama_perusahaan' => $request->nama_kafe,
@@ -269,14 +315,15 @@ class RegisterController extends Controller
                     'latitude' => $request->input('latitude'),
                     'longitude' => $request->input('longitude'),
                     'deskripsi' => $request->deskripsi,
-                    'dokumen_izin' => $path,
+                    'dokumen_izin' => $pathPublic,
+                    'logo_perusahaan' => $pathFotoOutlet,
                     'status_verifikasi' => 'Pending',
                 ]);
 
-                // 6. Buat record NIB
+                // 6. Buat record NIB — dokumen_nib di private storage
                 Nib::create([
                     'id_perusahaan' => $perusahaan->id_perusahaan,
-                    'dokumen_nib' => $path,
+                    'dokumen_nib' => $pathLocal,
                     'status_screening' => StatusScreening::Belum_Diperiksa,
                 ]);
 
@@ -284,18 +331,40 @@ class RegisterController extends Controller
             });
         } catch (\Throwable $e) {
             Log::error('Company registration failed', ['exception' => $e]);
-            foreach ($uploadedPaths as $uploadedPath) {
+            // Cleanup both disks
+            foreach ($uploadedPathsPublic as $uploadedPath) {
                 try {
                     if (!Storage::disk('public')->delete($uploadedPath)) {
-                        Log::error('Company registration upload cleanup failed', ['path' => $uploadedPath]);
+                        Log::error('Company registration upload cleanup failed (public)', ['path' => $uploadedPath]);
                     }
                 } catch (\Throwable $cleanupError) {
-                    Log::error('Company registration upload cleanup failed', ['path' => $uploadedPath, 'exception' => $cleanupError]);
+                    Log::error('Company registration upload cleanup failed (public)', ['path' => $uploadedPath, 'exception' => $cleanupError]);
                 }
             }
+            foreach ($uploadedPathsLocal as $uploadedPath) {
+                try {
+                    if (!Storage::disk('local')->delete($uploadedPath)) {
+                        Log::error('Company registration upload cleanup failed (local)', ['path' => $uploadedPath]);
+                    }
+                } catch (\Throwable $cleanupError) {
+                    Log::error('Company registration upload cleanup failed (local)', ['path' => $uploadedPath, 'exception' => $cleanupError]);
+                }
+            }
+
+            $errorMessage = 'Terjadi kesalahan saat pendaftaran';
+            $exceptionMessage = $e->getMessage();
+
+            if (str_contains($exceptionMessage, 'public') || str_contains($exceptionMessage, 'Storage::disk(')) {
+                $errorMessage = 'Gagal menyimpan berkas ke storage publik. Pastikan `php artisan storage:link` sudah dijalankan dan folder storage writable.';
+            } elseif (str_contains($exceptionMessage, 'local')) {
+                $errorMessage = 'Gagal menyimpan berkas ke storage lokal. Periksa izin folder storage.';
+            } elseif (str_contains($exceptionMessage, 'SQL') || str_contains($exceptionMessage, 'database') || str_contains($exceptionMessage, 'PDO')) {
+                $errorMessage = 'Gagal menyimpan data ke database. Pastikan MySQL berjalan dan sudah menjalankan `php artisan migrate`.';
+            }
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Terjadi kesalahan saat pendaftaran',
+                'message' => $errorMessage,
             ], 500);
         }
 
@@ -322,11 +391,11 @@ class RegisterController extends Controller
         ], 201);
     }
 
-    private function storeCompanyRegistrationFile(UploadedFile $file, string $directory, array &$uploadedPaths): string
+    private function storeCompanyRegistrationFile(UploadedFile $file, string $directory, string $disk = 'local', array &$uploadedPaths): string
     {
         // Track the generated name before writing so partial writes can also be removed.
         $uploadedPaths[] = $directory . '/' . $file->hashName();
-        $path = $file->store($directory, 'public');
+        $path = $file->store($directory, $disk);
         if (!$path) {
             throw new \RuntimeException('Gagal menyimpan berkas pendaftaran perusahaan.');
         }

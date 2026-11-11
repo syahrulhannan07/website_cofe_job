@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ikonView from '../../../aset/verifikasi/view.svg';
 
 const BARIS_PER_HALAMAN = 10;
@@ -10,8 +11,9 @@ const formatTanggal = (isoStr) => {
     return `${d.getDate()} - ${d.getMonth() + 1} - ${d.getFullYear()}`;
 };
 
-const TabelVerifikasi = ({ dataKafe = [], sedangMemuat, onLihatDetail }) => {
+const TabelVerifikasi = ({ dataKafe = [], sedangMemuat }) => {
     const [halamanAktif, setHalamanAktif] = useState(1);
+    const navigate = useNavigate();
 
     // Reset ke halaman 1 setiap kali data (hasil filter) berubah
     useEffect(() => {
@@ -43,7 +45,7 @@ const TabelVerifikasi = ({ dataKafe = [], sedangMemuat, onLihatDetail }) => {
     }
 
     // --- Kosong ---
-    if (dataKafe.length === 0) {
+    if (!Array.isArray(dataKafe) || dataKafe.length === 0) {
         return (
             <div className="wadah-tabel-verifikasi bg-white rounded-[12px] shadow-sm border border-[#4B2E2B] p-[48px] flex flex-col items-center justify-center gap-4">
                 <div className="ikon-kosong text-[48px]">☕</div>
@@ -118,7 +120,8 @@ const TabelVerifikasi = ({ dataKafe = [], sedangMemuat, onLihatDetail }) => {
                         {/* Aksi — event handler onClick siap dihubungkan ke modal */}
                         <div className="sel-aksi flex justify-center">
                             <button
-                                onClick={() => onLihatDetail(kafe)}
+                                type="button"
+                                onClick={() => navigate(`/tinjau-verifikasi/${kafe.id_perusahaan || kafe.id}`)}
                                 className="tombol-lihat-detail w-[36px] h-[36px] flex items-center justify-center hover:bg-[#EAE4DC]/50 rounded-full transition-all focus:outline-none hover:scale-105"
                                 title="Lihat Detail"
                                 aria-label={`Lihat detail ${kafe.nama_perusahaan}`}

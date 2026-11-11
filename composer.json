@@ -8,13 +8,15 @@
     "require": {
         "php": "^8.2",
         "fakerphp/faker": "^1.23",
+        "khanamiryan/qrcode-detector-decoder": "^2.0",
         "laravel-notification-channels/fcm": "^5.1",
         "laravel/framework": "^12.0",
         "laravel/reverb": "^1.10",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "openai-php/client": "*",
-        "php-open-source-saver/jwt-auth": "2.8"
+        "php-open-source-saver/jwt-auth": "2.8",
+        "smalot/pdfparser": "^2.13"
     },
     "require-dev": {
         "laravel/pail": "^1.2.2",

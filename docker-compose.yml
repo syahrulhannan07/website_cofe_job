@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   app:
     image: ghcr.io/syahrulhannan07/website_cofe_job:latest
@@ -15,8 +15,6 @@ services:
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: rootpassword
     volumes:
       - db_data:/var/lib/mysql

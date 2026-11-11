@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\V1\SuperAdmin\VerifikasiPerusahaanController; // [UPDATE LOGIC]
 use App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminKafeController; // [UPDATE LOGIC]
+use App\Http\Controllers\Api\V1\SuperAdmin\NibDocumentController;
+use App\Http\Controllers\Api\V1\SuperAdmin\NibScreeningController;
 
 use App\Http\Controllers\Api\V1\Pelamar\ProfilController;
 use App\Http\Controllers\Api\V1\NotifikasiController;
@@ -170,7 +172,12 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id}/tolak', [VerifikasiPerusahaanController::class, 'reject']);
         });
         Route::get('/akun-kafe', [SuperAdminKafeController::class, 'index']);
-        Route::get('/akun-kafe/{id}', [SuperAdminKafeController::class, 'show']);         // Detail kafe + lowongan
+        Route::get('/akun-kafe/{id}', [SuperAdminKafeController::class, 'show']);
+        Route::get('/akun-kafe/{id}/dokumen', [SuperAdminKafeController::class, 'dokumen']);         // Dokumen legacy (auth required)
+        Route::get('/nib/{id_nib}/dokumen', [NibDocumentController::class, 'show']);      // Akses dokumen NIB (private storage)
+        Route::post('/nib/{id_nib}/screening', [NibScreeningController::class, 'start']); // Mulai screening NIB
+        Route::get('/nib/{id_nib}/screening', [NibScreeningController::class, 'show']);   // Ambil hasil screening
+        Route::post('/nib/{id_nib}/screening/ulang', [NibScreeningController::class, 'resend']); // Screening ulang NIB
         Route::put('/akun-kafe/{id}/suspend', [SuperAdminKafeController::class, 'suspend']);
         Route::get('/lowongan/{id}', [SuperAdminKafeController::class, 'showLowongan']); // Detail satu lowongan
         Route::put('/lowongan/{id}/status', [SuperAdminKafeController::class, 'updateLowonganStatus']); // Update status lowongan

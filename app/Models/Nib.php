@@ -20,12 +20,14 @@ class Nib extends Model
         'data_qr',
         'hasil_screening',
         'status_screening',
+        'status_proses_screening',
         'diperiksa_pada',
     ];
 
     protected $casts = [
         'data_qr' => 'array',
         'status_screening' => StatusScreening::class,
+        'status_proses_screening' => 'string',
         'diperiksa_pada' => 'datetime',
         'dibuat_pada' => 'datetime',
         'diperbarui_pada' => 'datetime',

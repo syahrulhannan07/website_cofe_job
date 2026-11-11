@@ -30,7 +30,7 @@ const Daftar = () => {
     const requestLokasiRef = useRef(0);
     const pencarianLokasiRef = useRef(null);
     const [dokumen, setDokumen] = useState(null);
-    const [fotoOutlet, setFotoOutlet] = useState(null);  // NEW: Foto Outlet
+    const [fotoOutlet, setFotoOutlet] = useState(null);
 
     // State Umum
     const [surel, setSurel] = useState('');
@@ -216,7 +216,6 @@ const Daftar = () => {
             if (dokumen) {
                 payload.append('dokumen_legalitas', dokumen);
             }
-            // NEW: Append foto outlet ke payload
             if (fotoOutlet) {
                 payload.append('foto_outlet', fotoOutlet);
             }
@@ -534,20 +533,20 @@ const Daftar = () => {
                                             </div>
                                         </div>
 
-                                        {/* Foto Outlet Field - di atas alamat */}
                                         <div className="grup-input my-4">
-                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2">Foto Outlet</label>
+                                            <label className="label-input block text-[15px] text-[#4B2E2B] font-semibold mb-2" htmlFor="fotoOutlet">Foto Outlet</label>
                                             <div className="area-upload relative w-full h-[120px] bg-[#F5E8DF] rounded-[10px] border border-[#4B2E2B] flex flex-col items-center justify-center cursor-pointer hover:bg-[#ebdccc] transition-colors overflow-hidden">
                                                 <input
+                                                    id="fotoOutlet"
                                                     type="file"
-                                                    onChange={(e) => setFotoOutlet(e.target.files[0])}
+                                                    onChange={(e) => setFotoOutlet(e.target.files?.[0] || null)}
                                                     className="input-file absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                                     accept="image/*"
                                                 />
                                                 <div className="konten-upload flex flex-col items-center z-0">
-                                                    <img src={CloudUploadFill} alt="Upload Icon" className="ikon-upload w-[40px] h-[40px]" />
+                                                    <img src={CloudUploadFill} alt="" className="ikon-upload w-[40px] h-[40px]" />
                                                     <span className="teks-upload text-[13px] text-[#4B2E2B] mt-2 font-medium px-4 text-center">
-                                                        {fotoOutlet ? fotoOutlet.name : 'Upload foto outlet kafe'}
+                                                        {fotoOutlet ? fotoOutlet.name : 'Unggah foto outlet kafe (JPG/PNG, maks. 5 MB)'}
                                                     </span>
                                                 </div>
                                             </div>

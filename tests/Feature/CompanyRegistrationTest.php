@@ -30,6 +30,7 @@ class CompanyRegistrationTest extends TestCase
         $this->assertSame('sqlite', DB::connection()->getDriverName());
         $this->assertSame(':memory:', DB::connection()->getDatabaseName());
         Storage::fake('public');
+        Storage::fake('local');
         Event::fake([CompanyRegistered::class]);
         Notification::fake();
         Http::preventStrayRequests();
@@ -55,8 +56,8 @@ class CompanyRegistrationTest extends TestCase
         $this->assertSame(108.3, $company->longitude);
         $this->assertSame($company->id_perusahaan, $nib->id_perusahaan);
         $this->assertSame($company->dokumen_izin, $nib->dokumen_nib);
-        Storage::disk('public')->assertExists($company->dokumen_izin);
-        $this->assertCount(1, Storage::disk('public')->allFiles());
+        Storage::disk('local')->assertExists($company->dokumen_izin);
+        $this->assertCount(1, Storage::disk('local')->allFiles());
         Event::assertDispatched(CompanyRegistered::class);
         Notification::assertSentTo($user, \App\Notifications\CompanyRegistrationReceivedNotification::class);
         Http::assertNothingSent();
@@ -70,8 +71,8 @@ class CompanyRegistrationTest extends TestCase
         $payload['dokumen_legalitas'] = UploadedFile::fake()->create('legalitas.'.$extension, 5120, $mime);
         $this->postJson(self::ROUTE, $payload)->assertCreated();
         $company = ProfilPerusahaan::sole();
-        Storage::disk('public')->assertExists($company->dokumen_izin);
-        $this->assertCount(1, Storage::disk('public')->allFiles());
+        Storage::disk('local')->assertExists($company->dokumen_izin);
+        $this->assertCount(1, Storage::disk('local')->allFiles());
     }
 
     public static function acceptedFiles(): array
@@ -155,7 +156,7 @@ class CompanyRegistrationTest extends TestCase
         $this->assertDatabaseCount('pengguna', 1);
         $this->assertDatabaseCount('profil_perusahaan', 0);
         $this->assertDatabaseCount('nib', 0);
-        $this->assertSame([], Storage::disk('public')->allFiles());
+        $this->assertSame([], Storage::disk('local')->allFiles());
         Event::assertNotDispatched(CompanyRegistered::class);
         Notification::assertNothingSent();
     }
@@ -167,14 +168,14 @@ class CompanyRegistrationTest extends TestCase
         $this->postJson(self::ROUTE, array_replace($this->payload(), ['email' => 'second@example.com']))->assertCreated();
         $paths = ProfilPerusahaan::pluck('dokumen_izin')->all();
         $this->assertNotSame($paths[0], $paths[1]);
-        Storage::disk('public')->assertExists($paths);
-        $this->assertCount(2, Storage::disk('public')->allFiles());
+        Storage::disk('local')->assertExists($paths);
+        $this->assertCount(2, Storage::disk('local')->allFiles());
     }
 
     #[DataProvider('storageFailures')]
     public function test_storage_failure_returns_safe_json_and_cleans_partial_uploads(bool $throws): void
     {
-        $disk = Storage::disk('public');
+        $disk = Storage::disk('local');
         $disk->put('legalitas/existing.pdf', 'keep me');
         $mock = Mockery::mock($disk);
         $mock->shouldReceive('putFileAs')->andReturnUsing(function (...$arguments) use ($disk, $throws) {
@@ -204,7 +205,7 @@ class CompanyRegistrationTest extends TestCase
     #[DataProvider('recordFailures')]
     public function test_database_failure_rolls_back_all_records_and_document(string $model): void
     {
-        Storage::disk('public')->put('legalitas/existing.pdf', 'keep me');
+        Storage::disk('local')->put('legalitas/existing.pdf', 'keep me');
         $listener = 'eloquent.creating: '.$model;
         Event::listen($listener, function () {
             throw new \RuntimeException('PRIVATE database failure');
@@ -243,7 +244,7 @@ class CompanyRegistrationTest extends TestCase
         $this->assertDatabaseCount('pengguna', 1);
         $this->assertDatabaseCount('profil_perusahaan', 1);
         $this->assertDatabaseCount('nib', 1);
-        $this->assertCount(1, Storage::disk('public')->allFiles());
+        $this->assertCount(1, Storage::disk('local')->allFiles());
         $this->assertSame($initialTransactionLevel, DB::transactionLevel());
         if ($failure === 'event') {
             $this->assertSame($initialTransactionLevel, $eventTransactionLevel);
@@ -262,7 +263,7 @@ class CompanyRegistrationTest extends TestCase
         $this->assertDatabaseCount('pengguna', 0);
         $this->assertDatabaseCount('profil_perusahaan', 0);
         $this->assertDatabaseCount('nib', 0);
-        $this->assertSame($remainingFiles, Storage::disk('public')->allFiles());
+        $this->assertSame($remainingFiles, Storage::disk('local')->allFiles());
         Event::assertNotDispatched(CompanyRegistered::class);
         Notification::assertNothingSent();
         Http::assertNothingSent();

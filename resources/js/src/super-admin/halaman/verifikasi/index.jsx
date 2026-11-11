@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../../layanan/api';
 import TabelVerifikasi from './komponen/TabelVerifikasi';
-import ModalDetailKafe from './komponen/ModalDetailKafe';
 
 import ikonSearch from '../../aset/verifikasi/Search.svg';
 import ikonDiterima from '../../aset/verifikasi/diterima.svg';
@@ -14,7 +13,6 @@ const HalamanVerifikasi = () => {
     const [daftarKafe, setDaftarKafe]       = useState([]);
     const [statistik, setStatistik]         = useState(null);
     const [sedangMemuat, setSedangMemuat]   = useState(true);
-    const [kafeAktif, setKafeAktif]         = useState(null);
     const [kataKunci, setKataKunci]         = useState('');
     const [notifikasi, setNotifikasi]       = useState(null);
     const [searchParams]                    = useSearchParams();
@@ -44,18 +42,6 @@ const HalamanVerifikasi = () => {
     useEffect(() => {
         ambilSemuaData();
     }, [ambilSemuaData]);
-
-    // ─── Deep-Link Handler ───────────────────────────────────────────────────
-    // Poin 2 — Registrasi Perusahaan: Super Admin mendapat notifikasi dengan URL
-    // /super-admin/verifikasi?open_kafe_id=X
-    // Setelah data dimuat, otomatis buka modal pratinjau pendaftar yang relevan.
-    useEffect(() => {
-        const idKafe = searchParams.get('open_kafe_id');
-        if (!sedangMemuat && idKafe && daftarKafe.length > 0) {
-            const kafe = daftarKafe.find((k) => String(k.id_perusahaan) === idKafe || String(k.id) === idKafe);
-            if (kafe) setKafeAktif(kafe);
-        }
-    }, [sedangMemuat, daftarKafe, searchParams]);
 
     // Kartu metrik — nilai dari statistik API, bukan hardcoded
     const kartuStatistik = [
@@ -97,9 +83,9 @@ const HalamanVerifikasi = () => {
     const dataTefilter = daftarKafe.filter((kafe) => {
         const query = kataKunci.toLowerCase();
         return (
-            kafe.nama_perusahaan?.toLowerCase().includes(query) ||
-            kafe.nama_pengguna?.toLowerCase().includes(query)   ||
-            kafe.kecamatan?.toLowerCase().includes(query)
+            (kafe.nama_perusahaan?.toLowerCase() || '').includes(query) ||
+            (kafe.nama_pengguna?.toLowerCase() || '').includes(query)   ||
+            (kafe.kecamatan?.toLowerCase() || '').includes(query)
         );
     });
 
@@ -173,14 +159,6 @@ const HalamanVerifikasi = () => {
             <TabelVerifikasi
                 dataKafe={dataTefilter}
                 sedangMemuat={sedangMemuat}
-                onLihatDetail={(kafe) => setKafeAktif(kafe)}
-            />
-
-            {/* Modal Detail & Verifikasi Kafe */}
-            <ModalDetailKafe
-                kafeAktif={kafeAktif}
-                onTutup={() => setKafeAktif(null)}
-                onBerhasilVerifikasi={tanganiSuksesVerifikasi}
             />
         </div>
     );

@@ -28,6 +28,7 @@ import WawancaraAdmin from '../admin-perusahaan/halaman/wawancara';
 import DashboardSuperAdmin from '../super-admin/halaman/dashboard';
 import LoginSuperAdmin    from '../super-admin/halaman/masuk';
 import VerifikasiSuperAdmin from '../super-admin/halaman/verifikasi';
+import DetailVerifikasiSuperAdmin from '../super-admin/halaman/verifikasi/DetailVerifikasi';
 import KelolaAkunSuperAdmin from '../super-admin/halaman/kelola-akun';
 import HalamanDetailLowonganSuperAdmin from '../super-admin/halaman/kelola-akun/HalamanDetailLowonganSuperAdmin';
 
@@ -81,8 +82,9 @@ const ruter = createBrowserRouter([
 
     // --- Rute Super Admin (UC-10, UC-11, UC-12) ---
     // Halaman Tanpa Layout Sidebar/Topbar
-    { path: '/auth/portal-pusat/login', element: <LoginSuperAdmin /> }, // [UPDATE LOGIC]
+    { path: '/auth/portal-pusat/login', element: <LoginSuperAdmin /> },
     { path: '/super-admin/kelola-akun/lowongan/:id', element: <HalamanDetailLowonganSuperAdmin /> },
+    { path: '/tinjau-verifikasi/:id', element: <DetailVerifikasiSuperAdmin /> }, // Rute independen murni tanpa prefix super-admin
 
     // Panel terproteksi — dengan layout sidebar Super Admin
     {
@@ -96,5 +98,6 @@ const ruter = createBrowserRouter([
         ],
     },
 ]);
+
 
 export default ruter;
