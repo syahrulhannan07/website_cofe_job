@@ -13,6 +13,7 @@ class ProfilPerusahaan extends Model
     protected $fillable = [
         'id_pengguna',
         'logo_perusahaan',
+        'foto_outlet',
         'nama_perusahaan',
         'alamat_perusahaan',
         'latitude',

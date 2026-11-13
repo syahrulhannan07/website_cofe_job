@@ -60,13 +60,14 @@ class SuperAdminController extends Controller
 
     public function detailVerifikasi($id)
     {
-        $p = $this->perusahaanRepo->findById($id, ['pengguna']);
+        $p = $this->perusahaanRepo->findById($id, ['pengguna', 'nib']);
         if (!$p) return $this->errorResponse('Profil perusahaan tidak ditemukan', 404);
 
         return $this->successResponse(array_merge($p->toArray(), [
             'dokumen_legalitas_url' => $p->dokumen_legalitas ? asset('storage/' . $p->dokumen_legalitas) : null,
             'dokumen_izin_url'      => $p->dokumen_izin ? asset('storage/' . $p->dokumen_izin) : null,
             'logo_url'              => $p->logo_perusahaan ? asset('storage/' . $p->logo_perusahaan) : null,
+            'foto_outlet_url'       => $p->foto_outlet ? asset('storage/' . $p->foto_outlet) : null,
         ]));
     }
 

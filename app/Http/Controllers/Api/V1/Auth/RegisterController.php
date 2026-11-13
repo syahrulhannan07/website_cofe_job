@@ -316,7 +316,8 @@ class RegisterController extends Controller
                     'longitude' => $request->input('longitude'),
                     'deskripsi' => $request->deskripsi,
                     'dokumen_izin' => $pathPublic,
-                    'logo_perusahaan' => $pathFotoOutlet,
+                    'logo_perusahaan' => null,
+                    'foto_outlet' => $pathFotoOutlet,
                     'status_verifikasi' => 'Pending',
                 ]);
 

@@ -121,7 +121,7 @@ const TabelVerifikasi = ({ dataKafe = [], sedangMemuat }) => {
                         <div className="sel-aksi flex justify-center">
                             <button
                                 type="button"
-                                onClick={() => navigate(`/tinjau-verifikasi/${kafe.id_perusahaan || kafe.id}`)}
+                                onClick={() => navigate(`/super-admin/verifikasi/${kafe.id_perusahaan || kafe.id}`)}
                                 className="tombol-lihat-detail w-[36px] h-[36px] flex items-center justify-center hover:bg-[#EAE4DC]/50 rounded-full transition-all focus:outline-none hover:scale-105"
                                 title="Lihat Detail"
                                 aria-label={`Lihat detail ${kafe.nama_perusahaan}`}

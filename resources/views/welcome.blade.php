@@ -12,7 +12,7 @@
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 </head>
-<body class="bg-[#F3EDE6] antialiased">
+<body class="bg-gray-50 text-gray-900 antialiased">
     <div id="root"></div>
 </body>
 </html>

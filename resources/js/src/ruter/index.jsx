@@ -84,7 +84,7 @@ const ruter = createBrowserRouter([
     // Halaman Tanpa Layout Sidebar/Topbar
     { path: '/auth/portal-pusat/login', element: <LoginSuperAdmin /> },
     { path: '/super-admin/kelola-akun/lowongan/:id', element: <HalamanDetailLowonganSuperAdmin /> },
-    { path: '/tinjau-verifikasi/:id', element: <DetailVerifikasiSuperAdmin /> }, // Rute independen murni tanpa prefix super-admin
+    { path: '/super-admin/verifikasi/:id', element: <DetailVerifikasiSuperAdmin /> }, // Rute detail verifikasi super admin
 
     // Panel terproteksi — dengan layout sidebar Super Admin
     {
