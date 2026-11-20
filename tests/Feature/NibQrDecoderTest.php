@@ -35,13 +35,19 @@ class NibQrDecoderTest extends TestCase
 
     private function popplerAvailable(): bool
     {
-        $cmd = PHP_OS_FAMILY === 'Windows' ? 'where' : 'which';
-        $null = PHP_OS_FAMILY === 'Windows' ? '2>nul' : '2>/dev/null';
+        $binaries = [
+            config('nib.pdftoppm_path', 'pdftoppm'),
+            config('nib.pdfinfo_path', 'pdfinfo'),
+        ];
 
-        foreach (['pdftoppm', 'pdfinfo'] as $binary) {
-            $output = shell_exec("$cmd $binary $null");
-            if (!is_string($output) || trim($output) === '') {
-                return false;
+        foreach ($binaries as $binary) {
+            if (!(file_exists($binary) && is_file($binary))) {
+                $cmd = PHP_OS_FAMILY === 'Windows' ? 'where' : 'which';
+                $null = PHP_OS_FAMILY === 'Windows' ? '2>nul' : '2>/dev/null';
+                $output = shell_exec("$cmd " . escapeshellarg($binary) . " $null");
+                if (!is_string($output) || trim($output) === '') {
+                    return false;
+                }
             }
         }
 

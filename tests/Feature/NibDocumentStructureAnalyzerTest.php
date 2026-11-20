@@ -51,8 +51,8 @@ class NibDocumentStructureAnalyzerTest extends TestCase
 
         $profil = \App\Models\ProfilPerusahaan::create([
             'id_pengguna' => $pengguna->id_pengguna,
-            'nama_perusahaan' => 'PT Kafe Contoh',
-            'alamat_perusahaan' => 'Jl. Contoh No. 1, Indramayu',
+            'nama_usaha' => 'PT Kafe Contoh',
+            'alamat_lengkap' => 'Jl. Contoh No. 1, Indramayu',
             'status_verifikasi' => 'Pending',
         ]);
 
@@ -91,7 +91,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'PT Kafe Contoh',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -102,7 +102,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'Jl. Contoh No. 1, Indramayu',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -120,7 +120,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                 'url_validasi' => null,
             ],
             'perbandingan' => [
-                'field_dibandingkan' => ['nomor_nib', 'nama_perusahaan', 'alamat_perusahaan'],
+                'field_dibandingkan' => ['nomor_nib', 'nama_usaha', 'alamat_lengkap'],
                 'indikator_kemiripan' => null,
                 'ketidaksesuaian' => [],
                 'field_tidak_dapat_dibandingkan' => [],
@@ -170,7 +170,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'PT Kafe Contoh',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -179,7 +179,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'Jl. Contoh No. 1',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -241,7 +241,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_NOT_FOUND',
                     'normalized_value' => null,
                     'validasi' => ['status' => 'UNKNOWN', 'reason' => null],
@@ -250,7 +250,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'Jl. Contoh No. 1',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -309,7 +309,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'PT Kafe Contoh',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -318,7 +318,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_NOT_FOUND',
                     'normalized_value' => null,
                     'validasi' => ['status' => 'UNKNOWN', 'reason' => null],
@@ -378,7 +378,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => 'Format nomor NIB tidak valid.',
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'PT Kafe Contoh',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -387,7 +387,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'Jl. Contoh No. 1',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -450,7 +450,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => 'Nilai ambigu antara sumber berbeda.',
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'PT Kafe Contoh',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -459,7 +459,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'Jl. Contoh No. 1',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -521,7 +521,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_UNREADABLE',
                     'normalized_value' => null,
                     'validasi' => ['status' => 'UNKNOWN', 'reason' => 'Tidak dapat dibaca.'],
@@ -530,7 +530,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => 'Halaman 2 tidak dapat dibaca.',
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'Jl. Contoh No. 1',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -588,7 +588,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'PT Kafe Contoh',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -597,7 +597,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'Jl. Contoh No. 1',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -694,7 +694,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_NOT_FOUND',
                     'normalized_value' => null,
                     'validasi' => ['status' => 'UNKNOWN', 'reason' => null],
@@ -703,7 +703,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_NOT_FOUND',
                     'normalized_value' => null,
                     'validasi' => ['status' => 'UNKNOWN', 'reason' => null],
@@ -764,7 +764,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'PT Kafe Contoh',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -773,7 +773,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'Jl. Contoh No. 1',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -850,7 +850,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'nama_perusahaan',
+                    'nama_field' => 'nama_usaha',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'PT Kafe Contoh',
                     'validasi' => ['status' => 'VALID', 'reason' => null],
@@ -859,7 +859,7 @@ class NibDocumentStructureAnalyzerTest extends TestCase
                     'catatan' => null,
                 ],
                 [
-                    'nama_field' => 'alamat_perusahaan',
+                    'nama_field' => 'alamat_lengkap',
                     'status' => 'FIELD_FOUND',
                     'normalized_value' => 'Jl. Contoh No. 1',
                     'validasi' => ['status' => 'VALID', 'reason' => null],

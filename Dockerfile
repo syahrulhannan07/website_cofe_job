@@ -17,6 +17,7 @@ RUN apk add --no-cache \
     libxml2-dev \
     tesseract-ocr \
     tesseract-ocr-data-ind \
+    tesseract-ocr-data-eng \
     poppler-utils
 
 # Install ekstensi PHP

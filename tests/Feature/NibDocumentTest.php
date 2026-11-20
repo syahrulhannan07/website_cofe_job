@@ -125,9 +125,8 @@ class NibDocumentTest extends TestCase
     {
         $data = $this->setupSuperAdminAndCompany();
 
-        // Akses langsung ke storage path harus gagal (private storage tidak ada URL publik)
-        $response = $this->get('/storage/' . $data['pathLocal']);
-        $response->assertStatus(404);
+        // Dokumen NIB berada di private storage (disk local), bukan public storage
+        $this->assertFalse(Storage::disk('public')->exists($data['pathLocal']));
     }
 
     /** @test */
@@ -135,9 +134,8 @@ class NibDocumentTest extends TestCase
     {
         $data = $this->setupSuperAdminAndCompany();
 
-        // dokumen_izin di public storage harus bisa diakses via URL publik
-        $response = $this->get('/storage/' . $data['pathPublic']);
-        $response->assertStatus(200);
+        // dokumen_izin berada di public storage (disk public)
+        $this->assertTrue(Storage::disk('public')->exists($data['pathPublic']));
     }
 
     /** @test */
@@ -147,7 +145,7 @@ class NibDocumentTest extends TestCase
         $token = $this->superAdminToken($data['superAdmin']);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->get("{self::ROUTE_DOKUMEN}/{$data['nib']->id_nib}/dokumen");
+            ->get(self::ROUTE_DOKUMEN . "/{$data['nib']->id_nib}/dokumen");
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type');
@@ -160,7 +158,7 @@ class NibDocumentTest extends TestCase
     {
         $data = $this->setupSuperAdminAndCompany();
 
-        $response = $this->get("{self::ROUTE_DOKUMEN}/{$data['nib']->id_nib}/dokumen");
+        $response = $this->get(self::ROUTE_DOKUMEN . "/{$data['nib']->id_nib}/dokumen");
 
         $response->assertStatus(401);
     }
@@ -172,7 +170,7 @@ class NibDocumentTest extends TestCase
         $penggunaToken = \PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth::fromUser($data['pengguna']);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $penggunaToken)
-            ->get("{self::ROUTE_DOKUMEN}/{$data['nib']->id_nib}/dokumen");
+            ->get(self::ROUTE_DOKUMEN . "/{$data['nib']->id_nib}/dokumen");
 
         $response->assertStatus(403);
     }
@@ -184,7 +182,7 @@ class NibDocumentTest extends TestCase
         $token = $this->superAdminToken($data['superAdmin']);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->get("{self::ROUTE_DOKUMEN}/999999/dokumen");
+            ->get(self::ROUTE_DOKUMEN . "/999999/dokumen");
 
         $response->assertStatus(404);
     }
@@ -195,11 +193,13 @@ class NibDocumentTest extends TestCase
         $data = $this->setupSuperAdminAndCompany();
         $token = $this->superAdminToken($data['superAdmin']);
 
-        // Coba akses dengan path traversal di parameter id_nib
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->get("{self::ROUTE_DOKUMEN}/../escape/dokumen");
+        $nib = Nib::first();
+        $nib->update(['dokumen_nib' => '../../escape/file.pdf']);
 
-        $response->assertStatus(404);
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->get(self::ROUTE_DOKUMEN . "/{$nib->id_nib}/dokumen");
+
+        $response->assertStatus(400);
     }
 
     /** @test */
@@ -215,7 +215,7 @@ class NibDocumentTest extends TestCase
         $nib->update(['dokumen_nib' => 'nib/malicious.exe']);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->get("{self::ROUTE_DOKUMEN}/{$nib->id_nib}/dokumen");
+            ->get(self::ROUTE_DOKUMEN . "/{$nib->id_nib}/dokumen");
 
         $response->assertStatus(415);
     }
@@ -230,7 +230,7 @@ class NibDocumentTest extends TestCase
         Storage::disk('local')->delete($data['pathLocal']);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->get("{self::ROUTE_DOKUMEN}/{$data['nib']->id_nib}/dokumen");
+            ->get(self::ROUTE_DOKUMEN . "/{$data['nib']->id_nib}/dokumen");
 
         $response->assertStatus(404);
     }

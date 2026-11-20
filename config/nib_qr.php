@@ -32,6 +32,7 @@ return [
 
     'allowed_hosts' => [
         'oss.go.id',
+        'ui-login.oss.go.id',
     ],
 
 ];

@@ -90,7 +90,7 @@ class SuperAdminController extends Controller
 
     public function tolakVerifikasi(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), ['alasan' => 'required|string|min:10']);
+        $validator = Validator::make($request->all(), ['alasan' => 'required|string|min:5']);
         if ($validator->fails()) return $this->errorResponse('Validasi gagal', 422, $validator->errors());
 
         $p = $this->perusahaanRepo->findById($id, ['pengguna']);

@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\Nib;
 use App\Services\Nib\NibScreeningResultService;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -24,7 +23,7 @@ use Illuminate\Support\Carbon;
  * Tidak mengubah status_verifikasi perusahaan.
  * Ditolak hanya boleh ditetapkan melalui keputusan manual Super Admin.
  */
-class ProcessNibScreeningJob implements ShouldQueue, ShouldBeUnique
+class ProcessNibScreeningJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, SerializesModels;
 
@@ -51,15 +50,24 @@ class ProcessNibScreeningJob implements ShouldQueue, ShouldBeUnique
      */
     public function handle(NibScreeningResultService $screeningService): void
     {
+        $runId = uniqid('run_', true);
+
         $nib = Nib::where('id_nib', $this->id_nib)->first();
 
         if (!$nib) {
             Log::warning('NIB tidak ditemukan untuk screening.', [
                 'id_nib' => $this->id_nib,
+                'run_id' => $runId,
             ]);
 
             return;
         }
+
+        Log::info('Screening NIB dimulai.', [
+            'id_nib' => $this->id_nib,
+            'run_id' => $runId,
+            'waktu_mulai' => now()->toIso8601String(),
+        ]);
 
         // 7. Ketika job mulai dijalankan, ubah status menjadi Sedang_Diproses
         $nib->update([
@@ -73,10 +81,25 @@ class ProcessNibScreeningJob implements ShouldQueue, ShouldBeUnique
         if ($result['status_proses'] === NibScreeningResultService::STATUS_PROSES_GAGAL) {
             $this->handleFailedResult($nib, $result);
 
+            Log::warning('Screening NIB selesai dengan kegagalan.', [
+                'id_nib' => $this->id_nib,
+                'run_id' => $runId,
+                'waktu_selesai' => now()->toIso8601String(),
+                'status_proses' => $result['status_proses'],
+            ]);
+
             return;
         }
 
         $this->saveSuccessfulResult($nib, $result);
+
+        Log::info('Screening NIB selesai berhasil.', [
+            'id_nib' => $this->id_nib,
+            'run_id' => $runId,
+            'waktu_selesai' => now()->toIso8601String(),
+            'status_proses' => $result['status_proses'],
+            'status_screening' => $nib->fresh()->status_screening?->value,
+        ]);
     }
 
     /**
@@ -139,13 +162,13 @@ class ProcessNibScreeningJob implements ShouldQueue, ShouldBeUnique
         }
 
         // Default: pertahankan status yang ada
-        return $this->getExistingStatusScreening($nib);
+        return $this->getExistingStatusScreening();
     }
 
     /**
      * Ambil status_screening yang ada dari database.
      */
-    private function getExistingStatusScreening(Nib $nib): string
+    private function getExistingStatusScreening(): string
     {
         $existing = Nib::where('id_nib', $this->id_nib)->value('status_screening');
 

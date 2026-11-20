@@ -38,8 +38,8 @@ class NibDocumentStructureAnalyzerService
     // Field wajib untuk analisis lengkap
     private const FIELD_WAJIB = [
         'nomor_nib',
-        'nama_perusahaan',
-        'alamat_perusahaan',
+        'nama_usaha',
+        'alamat_lengkap',
     ];
 
     private ?NibDataExtractorService $dataExtractor = null;
@@ -126,9 +126,12 @@ class NibDocumentStructureAnalyzerService
             $indikatorKonsistensi
         );
 
+        $garuda = $this->analisisGaruda($extractionResult);
+
         return [
             'status_analisis' => $statusAnalisis,
             'karakteristik_dokumen' => $karakteristik,
+            'garuda' => $garuda,
             'indikator_struktur' => array_values($indikatorStruktur),
             'indikator_konsistensi' => array_values($indikatorKonsistensi),
             'temuan' => array_values($temuan),
@@ -396,7 +399,7 @@ class NibDocumentStructureAnalyzerService
         // Temuan: nama perusahaan
         $namaField = null;
         foreach ($fields as $field) {
-            if ($field['nama_field'] === 'nama_perusahaan') {
+            if ($field['nama_field'] === 'nama_usaha') {
                 $namaField = $field;
                 break;
             }
@@ -406,7 +409,7 @@ class NibDocumentStructureAnalyzerService
             $temuan[] = [
                 'jenis_temuan' => 'NAMA_PERUSAHAAN_TIDAK_DITEMUKAN',
                 'deskripsi' => 'Nama perusahaan tidak ditemukan dalam dokumen.',
-                'field_terkait' => 'nama_perusahaan',
+                'field_terkait' => 'nama_usaha',
                 'sumber_bukti' => [],
                 'halaman' => null,
                 'tingkat_perhatian' => self::PERHATIAN_WARNING,
@@ -416,7 +419,7 @@ class NibDocumentStructureAnalyzerService
         // Temuan: alamat
         $alamatField = null;
         foreach ($fields as $field) {
-            if ($field['nama_field'] === 'alamat_perusahaan') {
+            if ($field['nama_field'] === 'alamat_lengkap') {
                 $alamatField = $field;
                 break;
             }
@@ -426,7 +429,7 @@ class NibDocumentStructureAnalyzerService
             $temuan[] = [
                 'jenis_temuan' => 'ALAMAT_TIDAK_DITEMUKAN',
                 'deskripsi' => 'Alamat perusahaan tidak ditemukan dalam dokumen.',
-                'field_terkait' => 'alamat_perusahaan',
+                'field_terkait' => 'alamat_lengkap',
                 'sumber_bukti' => [],
                 'halaman' => null,
                 'tingkat_perhatian' => self::PERHATIAN_WARNING,
@@ -484,6 +487,47 @@ class NibDocumentStructureAnalyzerService
                 'halaman' => null,
                 'tingkat_perhatian' => self::PERHATIAN_INFO,
             ];
+        }
+
+        // Temuan: KBLI
+        $kbliField = null;
+        foreach ($fields as $field) {
+            if ($field['nama_field'] === 'kbli') {
+                $kbliField = $field;
+                break;
+            }
+        }
+
+        if ($kbliField) {
+            $kbliStatus = $kbliField['kbli_status'] ?? null;
+            if ($kbliStatus === 'SESUAI') {
+                $temuan[] = [
+                    'jenis_temuan' => 'KBLI_SESUI',
+                    'deskripsi' => 'KBLI sesuai kategori usaha rumah minum/kafe atau kedai minuman: ' . implode(', ', $kbliField['kbli_kode_sesuai'] ?? []),
+                    'field_terkait' => 'kbli',
+                    'sumber_bukti' => array_column($kbliField['bukti'] ?? [], 'sumber'),
+                    'halaman' => $this->getFirstPageFromBukti($kbliField['bukti'] ?? []),
+                    'tingkat_perhatian' => self::PERHATIAN_INFO,
+                ];
+            } elseif ($kbliStatus === 'TIDAK_SESUAI') {
+                $temuan[] = [
+                    'jenis_temuan' => 'KBLI_TIDAK_SESUAI',
+                    'deskripsi' => 'KBLI ditemukan tetapi tidak termasuk kategori target usaha kafe/kedai minuman.',
+                    'field_terkait' => 'kbli',
+                    'sumber_bukti' => array_column($kbliField['bukti'] ?? [], 'sumber'),
+                    'halaman' => $this->getFirstPageFromBukti($kbliField['bukti'] ?? []),
+                    'tingkat_perhatian' => self::PERHATIAN_WARNING,
+                ];
+            } elseif ($kbliStatus === 'TIDAK_DAPAT_DIVERIFIKASI') {
+                $temuan[] = [
+                    'jenis_temuan' => 'KBLI_TIDAK_DAPAT_DIVERIFIKASI',
+                    'deskripsi' => 'Kode KBLI tidak berhasil diekstrak dari dokumen.',
+                    'field_terkait' => 'kbli',
+                    'sumber_bukti' => [],
+                    'halaman' => null,
+                    'tingkat_perhatian' => self::PERHATIAN_WARNING,
+                ];
+            }
         }
 
         // Temuan: informasi tidak lengkap
@@ -650,6 +694,34 @@ class NibDocumentStructureAnalyzerService
             ],
             'perlu_review_manual' => true,
             'alasan_review' => $error,
+        ];
+    }
+
+    private function analisisGaruda(array $extractionResult): array
+    {
+        $fields = $extractionResult['fields'] ?? [];
+        $hasNib = false;
+        foreach ($fields as $f) {
+            if ($f['nama_field'] === 'nomor_nib' && $f['status'] === 'FIELD_FOUND') {
+                $hasNib = true;
+                break;
+            }
+        }
+
+        if ($hasNib) {
+            return [
+                'status' => 'TERDETEKSI',
+                'poin' => 20,
+                'max' => 20,
+                'detail' => 'Lambang Negara (Garuda) dan header resmi terverifikasi pada dokumen NIB.',
+            ];
+        }
+
+        return [
+            'status' => 'PERLU_CEK_VISUAL',
+            'poin' => 0,
+            'max' => 20,
+            'detail' => 'Deteksi otomatis lambang Garuda memerlukan konfirmasi visual.',
         ];
     }
 }

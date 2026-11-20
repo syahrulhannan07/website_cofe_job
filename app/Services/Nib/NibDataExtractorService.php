@@ -49,17 +49,36 @@ class NibDataExtractorService
         'nomor nib',
     ];
 
+    // Kode KBLI target untuk kategori usaha rumah minum/kafe atau kedai minuman.
+    // Sumber: Klasifikasi Baku Lapangan Usaha Indonesia (KBLI) BPS.
+    private const KBLI_TARGET_COFFEE_SHOP = ['56303', '56304'];
+
+    private const LABEL_EMAIL = [
+        'email',
+        'e-mail',
+        'alamat email',
+    ];
+
     private const LABEL_NAMA_PERUSAHAAN = [
         'nama perusahaan',
         'nama pelaku usaha',
         'nama usaha',
     ];
 
+    private const LABEL_NAMA_PEMILIK_USAHA = [
+        'nama pemilik usaha',
+        'nama pemilik',
+        'pemilik usaha',
+    ];
+
     private const LABEL_ALAMAT = [
-        'alamat',
+        'alamat kantor/korespondensi',
         'alamat kantor',
+        'alamat korespondensi',
         'alamat perusahaan',
+        'alamat lengkap',
         'tempat usaha',
+        'alamat',
     ];
 
     private const LABEL_TANGGAL_BERDIRI = [
@@ -68,6 +87,11 @@ class NibDataExtractorService
 
     private const LABEL_KECAMATAN = [
         'kecamatan',
+    ];
+
+    private const LABEL_KBLI = [
+        'kbli',
+        'klasifikasi baku lapangan usaha indonesia',
     ];
 
     private ?NibPdfExtractorService $pdfExtractor = null;
@@ -204,7 +228,7 @@ class NibDataExtractorService
         $fields = $this->extractFields($mergedPages, $fullText, $qrResult);
 
         // Langkah 6: Perbandingan dengan database
-        $comparison = $this->compareWithDatabase($fields, $profilPerusahaan, $nib);
+        $comparison = $this->compareWithDatabase($fields, $profilPerusahaan, $nib, $qrResult);
 
         // Langkah 7: Tentukan status ekstraksi keseluruhan
         $extractionStatus = $this->determineExtractionStatus($fields, $hasAnyText, $mergedPages);
@@ -289,6 +313,10 @@ class NibDataExtractorService
             'konten' => null,
             'jenis' => null,
             'url_validasi' => null,
+            'halaman' => null,
+            'metode_decoding' => null,
+            'resolusi_rendering' => null,
+            'skor' => 0,
         ];
 
         if (!isset($result['status'])) {
@@ -309,6 +337,9 @@ class NibDataExtractorService
 
         $qrBase['ditemukan'] = true;
         $qrBase['konten'] = $content;
+        $qrBase['halaman'] = $result['page_number'] ?? null;
+        $qrBase['metode_decoding'] = $result['decode_method'] ?? null;
+        $qrBase['resolusi_rendering'] = $result['render_dpi'] ?? null;
 
         // Tentukan apakah konten adalah URL
         $validator = $this->urlValidator ?? new NibQrUrlValidatorService(
@@ -325,6 +356,21 @@ class NibDataExtractorService
         }
 
         $qrBase['url_validasi'] = $validation;
+
+        // Skor QR (backend sebagai sumber): deteksi 10 + baca payload 5 + format URL 5 + domain OSS 5 = 25.
+        $skor = 10; // ditemukan & dibaca
+        $isUrl = ($validation['status'] ?? '') !== NibQrUrlValidatorService::STATUS_NON_URL_CONTENT;
+        if ($isUrl) {
+            $skor += 5; // format URL valid (skema/hostname valid)
+        }
+        if (($validation['status'] ?? '') === NibQrUrlValidatorService::STATUS_OSS_URL_VALID) {
+            $skor += 10; // domain OSS resmi (5 format + 5 domain, disatukan)
+        }
+        // Pastikan tidak melebihi 25.
+        if ($skor > 25) {
+            $skor = 25;
+        }
+        $qrBase['skor'] = $skor;
 
         return $qrBase;
     }
@@ -452,17 +498,37 @@ class NibDataExtractorService
         // Nomor NIB
         $fields['nomor_nib'] = $this->extractNomorNib($pages, $fullText, $qrResult);
 
-        // Nama perusahaan
-        $fields['nama_perusahaan'] = $this->extractNamaPerusahaan($pages, $fullText);
+        // Nama pemilik usaha
+        $fields['nama_pemilik_usaha'] = $this->extractNamaPemilikUsaha($pages, $fullText);
 
-        // Alamat perusahaan
-        $fields['alamat_perusahaan'] = $this->extractAlamat($pages, $fullText);
+        // Nama usaha
+        $fields['nama_usaha'] = $this->extractNamaUsaha($pages, $fullText);
 
-        // Tanggal berdiri (opsional)
-        $fields['tanggal_berdiri'] = $this->extractTanggalBerdiri($pages, $fullText);
+        // Usaha perorangan pada NIB format baru hanya mencantumkan "Nama Pelaku
+        // Usaha" (tanpa label pemilik terpisah). Bila nilainya bukan nama entitas,
+        // turunkan sebagai nama pemilik agar tetap dapat dibandingkan.
+        if (
+            $fields['nama_pemilik_usaha']['status'] === self::FIELD_NOT_FOUND
+            && $fields['nama_usaha']['status'] === self::FIELD_FOUND
+            && !$this->looksLikeEntityName($fields['nama_usaha']['normalized_value'])
+        ) {
+            $fields['nama_pemilik_usaha'] = $this->inferNamaPemilik($fields['nama_usaha']);
+        }
 
-        // Kecamatan (opsional)
-        $fields['kecamatan'] = $this->extractKecamatan($pages, $fullText);
+        // Alamat lengkap
+        $fields['alamat_lengkap'] = $this->extractAlamatLengkap($pages, $fullText);
+
+        // Kode KBLI (seluruh kode yang ditemukan)
+        $fields['kbli'] = $this->extractKbli($pages, $fullText);
+
+        // Data QR Code
+        $fields['data_qr_code'] = $this->buildQrField($qrResult);
+
+        // Tanggal diterbitkan NIB
+        $fields['tanggal_diterbitkan'] = $this->extractTanggalDiterbitkan($pages, $fullText);
+
+        // Email (jika tersedia pada dokumen)
+        $fields['email'] = $this->extractEmail($pages, $fullText);
 
         return $fields;
     }
@@ -476,16 +542,18 @@ class NibDataExtractorService
 
         // Cari dari teks PDF/OCR
         foreach (self::LABEL_NOMOR_NIB as $label) {
+            // Regex fleksibel: mengizinkan (NIB), whitespace, dan newline sebelum angka
             $pattern = '/'
                 . preg_quote($label, '/')
-                . '\s*:?\s*([A-Za-z0-9.\-\/ ]{6,30})/i';
+                . '(?:\s*\(NIB\))?' // Mengizinkan (NIB) opsional
+                . '[\s\:]+'        // Harus ada pemisah (spasi, tab, newline, atau titik dua)
+                . '([0-9]{13}|[0-9\.\-\s\/]{13,30})' // Angka NIB (utamakan 13 digit bersih)
+                . '/is';
 
             if (preg_match_all($pattern, $fullText, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     $rawValue = trim($match[1] ?? '');
-                    if ($rawValue === '') {
-                        continue;
-                    }
+                    if ($rawValue === '') continue;
 
                     $pageNumber = $this->findPageNumberForText($pages, $rawValue, $fullText);
                     $context = $this->extractContextAroundText($fullText, $match[0] ?? '');
@@ -501,20 +569,22 @@ class NibDataExtractorService
             }
         }
 
-        // Cari dari QR
+        // Cari dari QR (hanya jika isinya benar-benar nomor NIB 13 digit)
         if ($qrResult['ditemukan'] && $qrResult['jenis'] === 'teks') {
             $qrContent = trim($qrResult['konten'] ?? '');
 
             if ($qrContent !== '') {
                 $normalized = $this->normalizeNomorNib($qrContent);
 
-                $candidates[] = [
-                    'sumber' => 'qr',
-                    'raw_value' => $qrContent,
-                    'normalized_value' => $normalized,
-                    'halaman' => null,
-                    'bukti_teks' => $qrContent,
-                ];
+                if ($normalized !== null && $this->validateNomorNibFormat($normalized)) {
+                    $candidates[] = [
+                        'sumber' => 'qr',
+                        'raw_value' => $qrContent,
+                        'normalized_value' => $normalized,
+                        'halaman' => $qrResult['halaman'] ?? null,
+                        'bukti_teks' => $qrContent,
+                    ];
+                }
             }
         }
 
@@ -524,21 +594,127 @@ class NibDataExtractorService
     /**
      * Ekstraksi nama perusahaan dari teks.
      */
-    private function extractNamaPerusahaan(array $pages, string $fullText): array
+    private function extractNamaUsaha(array $pages, string $fullText): array
+    {
+        return $this->extractNamaBersama(
+            $pages,
+            $fullText,
+            'nama_usaha',
+            self::LABEL_NAMA_PERUSAHAAN
+        );
+    }
+
+    private function extractNamaPemilikUsaha(array $pages, string $fullText): array
+    {
+        return $this->extractNamaBersama(
+            $pages,
+            $fullText,
+            'nama_pemilik_usaha',
+            self::LABEL_NAMA_PEMILIK_USAHA
+        );
+    }
+
+    /**
+     * Ekstraksi nama dengan satu pola alternasi label terurut panjang menurun.
+     * Tujuannya mencegah label pendek (mis. "nama pemilik") menangkap teks dari
+     * label yang lebih panjang (mis. "nama pemilik usaha").
+     */
+    private function extractNamaBersama(array $pages, string $fullText, string $namaField, array $labels): array
     {
         $candidates = [];
 
-        foreach (self::LABEL_NAMA_PERUSAHAAN as $label) {
+        $labels = array_values(array_unique(array_map('strtolower', $labels)));
+        usort($labels, fn (string $a, string $b) => strlen($b) <=> strlen($a));
+
+        $alternation = implode('|', array_map(
+            fn (string $label) => preg_quote($label, '/'),
+            $labels
+        ));
+
+        // Label batas akhir nilai, termasuk varian bernomor seperti "2.Alamat".
+        $stopLabels = 'Alamat|NPWP|Nomor\\s*Telepon|Nomor\\s*Fax|Nomor\\s*KTP|Email|Kode\\s*Pos|Kode\\s*dan\\s*Nama|Status\\s*Penanaman|Diterbitkan|Dicetak|Telepon|Fax';
+
+        $pattern = '/(?<![A-Za-z0-9])'
+            . '(?:' . $alternation . ')'
+            . '[ \\t]*[\\:\\-]?[ \\t]*'
+            . '([A-Z][^\\n]*(?:\\r?\\n(?!\\s*(?:\\d+[\\.\\)]?\\s*)?(?:' . $stopLabels . '))[ \\t]*[A-Za-z0-9][^\\n]*)?)'
+            . '(?=\\s*(?:\\d+[\\.\\)]?\\s*)?(?:' . $stopLabels . '|\\z))'
+            . '/i';
+
+        if (preg_match_all($pattern, $fullText, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $rawValue = trim($match[1] ?? '');
+                if ($rawValue === '') continue;
+
+                $rawValue = preg_replace('/\\s+/', ' ', $rawValue);
+                $rawValue = trim($rawValue);
+
+                if ($rawValue === '') continue;
+
+                $pageNumber = $this->findPageNumberForText($pages, $rawValue, $fullText);
+                $context = $this->extractContextAroundText($fullText, $match[0] ?? '');
+
+                $candidates[] = [
+                    'sumber' => 'teks',
+                    'raw_value' => $rawValue,
+                    'normalized_value' => $this->normalizeNama($rawValue),
+                    'halaman' => $pageNumber,
+                    'bukti_teks' => $context,
+                ];
+            }
+        }
+
+        return $this->buildFieldResult($namaField, $candidates);
+    }
+
+    /**
+     * Susun field nama pemilik dari nilai nama usaha yang telah tervalidasi.
+     */
+    private function inferNamaPemilik(array $namaUsahaField): array
+    {
+        $nilai = $namaUsahaField['normalized_value'] ?? null;
+
+        $buktiAwal = $namaUsahaField['bukti'][0] ?? [];
+
+        return $this->buildFieldResult('nama_pemilik_usaha', [[
+            'sumber' => 'inferensi',
+            'raw_value' => $nilai,
+            'normalized_value' => $nilai,
+            'halaman' => $buktiAwal['halaman'] ?? null,
+            'bukti_teks' => 'Nama pemilik disimpulkan dari Nama Pelaku Usaha karena dokumen tidak memuat label pemilik terpisah.',
+        ]]);
+    }
+
+    /**
+     * Deteksi apakah nilai berupa nama badan usaha, bukan nama orang.
+     */
+    private function looksLikeEntityName(?string $value): bool
+    {
+        if ($value === null || trim($value) === '') {
+            return false;
+        }
+
+        return (bool) preg_match(
+            '/^(PT|CV|UD|PD|FA|Firma|Koperasi|Perkumpulan|Yayasan)\b/iu',
+            trim($value)
+        );
+    }
+
+    private function extractEmail(array $pages, string $fullText): array
+    {
+        $candidates = [];
+
+        foreach (self::LABEL_EMAIL as $label) {
             $pattern = '/'
                 . preg_quote($label, '/')
-                . '\s*:?\s*([^\n]{3,100})/i';
+                . '\\s*[\\:\\-]?\\s*'
+                . '([A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,})'
+                . '/i';
 
             if (preg_match_all($pattern, $fullText, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     $rawValue = trim($match[1] ?? '');
-                    if ($rawValue === '') {
-                        continue;
-                    }
+                    if ($rawValue === '') continue;
 
                     $pageNumber = $this->findPageNumberForText($pages, $rawValue, $fullText);
                     $context = $this->extractContextAroundText($fullText, $match[0] ?? '');
@@ -546,7 +722,7 @@ class NibDataExtractorService
                     $candidates[] = [
                         'sumber' => 'teks',
                         'raw_value' => $rawValue,
-                        'normalized_value' => $this->normalizeNama($rawValue),
+                        'normalized_value' => strtolower($rawValue),
                         'halaman' => $pageNumber,
                         'bukti_teks' => $context,
                     ];
@@ -554,27 +730,122 @@ class NibDataExtractorService
             }
         }
 
-        return $this->buildFieldResult('nama_perusahaan', $candidates);
+        // Fallback: cari email tanpa label
+        if (empty($candidates)) {
+            if (preg_match_all('/[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}/', $fullText, $matches)) {
+                foreach ($matches[0] as $m) {
+                    $candidates[] = [
+                        'sumber' => 'teks_generic',
+                        'raw_value' => $m,
+                        'normalized_value' => strtolower($m),
+                        'halaman' => $this->findPageNumberForText($pages, $m, $fullText),
+                        'bukti_teks' => $this->extractContextAroundText($fullText, $m),
+                    ];
+                }
+            }
+        }
+
+        return $this->buildFieldResult('email', $candidates);
+    }
+
+    private function extractTanggalDiterbitkan(array $pages, string $fullText): array
+    {
+        $candidates = [];
+
+        $datePattern = '([0-9]{1,2}\\s+[A-Za-z]+\\s+[0-9]{4}|[0-9]{1,2}[\\/\\-][0-9]{1,2}[\\/\\-][0-9]{4}|[0-9]{4}-[0-9]{2}-[0-9]{2})';
+
+        // Mendukung varian: "Diterbitkan tanggal : ...", "Tanggal Diterbitkan : ...",
+        // serta "Diterbitkan di Jakarta, tanggal: 14 Mei 2025".
+        $patterns = [
+            '/diterbitkan\\s+(?:di\\s+[A-Za-z ]+,?\\s*)?tanggal\\s*[:\\-]?\\s*' . $datePattern . '/i',
+            '/tanggal\\s+diterbitkan\\s*[:\\-]?\\s*' . $datePattern . '/i',
+            '/tanggal\\s+terbit\\s*[:\\-]?\\s*' . $datePattern . '/i',
+            '/diterbitkan\\s+pada\\s*[:\\-]?\\s*' . $datePattern . '/i',
+        ];
+
+        foreach ($patterns as $pattern) {
+
+            if (preg_match_all($pattern, $fullText, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    $rawValue = trim($match[1] ?? '');
+                    if ($rawValue === '') continue;
+
+                    $pageNumber = $this->findPageNumberForText($pages, $rawValue, $fullText);
+                    $context = $this->extractContextAroundText($fullText, $match[0] ?? '');
+
+                    $candidates[] = [
+                        'sumber' => 'teks',
+                        'raw_value' => $rawValue,
+                        'normalized_value' => $rawValue,
+                        'halaman' => $pageNumber,
+                        'bukti_teks' => $context,
+                    ];
+                }
+            }
+        }
+
+        return $this->buildFieldResult('tanggal_diterbitkan', $candidates);
     }
 
     /**
      * Ekstraksi alamat perusahaan dari teks.
      */
-    private function extractAlamat(array $pages, string $fullText): array
+    private function buildQrField(array $qrResult): array
+    {
+        if (!empty($qrResult['ditemukan']) && $qrResult['ditemukan'] === true) {
+            return [
+                'nama_field' => 'data_qr_code',
+                'status' => self::FIELD_FOUND,
+                'normalized_value' => $qrResult['konten'] ?? null,
+                'validasi' => [
+                    'status' => self::VALIDATION_VALID,
+                    'reason' => null,
+                ],
+                'bukti' => [],
+                'nilai_alternatif' => [],
+                'catatan' => null,
+            ];
+        }
+
+        return [
+            'nama_field' => 'data_qr_code',
+            'status' => self::FIELD_NOT_FOUND,
+            'normalized_value' => null,
+            'validasi' => [
+                'status' => self::VALIDATION_UNKNOWN,
+                'reason' => null,
+            ],
+            'bukti' => [],
+            'nilai_alternatif' => [],
+            'catatan' => 'QR Code tidak ditemukan.',
+        ];
+    }
+
+    private function extractAlamatLengkap(array $pages, string $fullText): array
     {
         $candidates = [];
 
         foreach (self::LABEL_ALAMAT as $label) {
             $pattern = '/'
                 . preg_quote($label, '/')
-                . '\s*:?\s*([^\n]{3,200})/i';
+                . '\\s*[\\:\\-]?\\s*'
+                . '(.+?)'
+                . '(?=(?:\\d+[\\.\\)]?\\s*)?(?:NPWP|Nomor\\s*Telepon|Nomor\\s*Fax|Email|Kode\\s*Pos|Kode\\s*dan\\s*Nama|Status\\s*Penanaman|Diterbitkan|Dicetak|Telepon|Fax|$))'
+                . '/is';
 
             if (preg_match_all($pattern, $fullText, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     $rawValue = trim($match[1] ?? '');
-                    if ($rawValue === '') {
-                        continue;
-                    }
+                    if ($rawValue === '') continue;
+
+                    // Bersihkan awalan "Kantor/Korespondensi" yang ikut terbawa
+                    $rawValue = preg_replace('/^(?:Kantor\\s*\\/\\s*Korespondensi|Korespondensi)\\s*[:\\-]?\\s*/i', '', $rawValue);
+                    $rawValue = preg_replace('/\\s+/', ' ', $rawValue);
+                    // Buang sisa nomor urut label berikutnya yang ikut tertangkap (mis. " 3.").
+                    $rawValue = preg_replace('/\\s+\\d+[\\.\\)]\\s*$/', '', $rawValue);
+                    $rawValue = trim($rawValue, " \t\n\r\0\x0B:/");
+
+                    if ($rawValue === '') continue;
 
                     $pageNumber = $this->findPageNumberForText($pages, $rawValue, $fullText);
                     $context = $this->extractContextAroundText($fullText, $match[0] ?? '');
@@ -587,10 +858,14 @@ class NibDataExtractorService
                         'bukti_teks' => $context,
                     ];
                 }
+
+                if (!empty($candidates)) {
+                    break; // gunakan label paling spesifik yang berhasil
+                }
             }
         }
 
-        return $this->buildFieldResult('alamat_perusahaan', $candidates);
+        return $this->buildFieldResult('alamat_lengkap', $candidates);
     }
 
     /**
@@ -636,29 +911,43 @@ class NibDataExtractorService
     {
         $candidates = [];
 
+        // Pola 1: Berdasarkan label "Kecamatan"
         foreach (self::LABEL_KECAMATAN as $label) {
             $pattern = '/'
                 . preg_quote($label, '/')
-                . '\s*:?\s*([^\n]{3,50})/i';
+                . '\s*[\:\-]?\s*'
+                . '([A-Z\s]{3,50})'
+                . '/i';
 
             if (preg_match_all($pattern, $fullText, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     $rawValue = trim($match[1] ?? '');
-                    if ($rawValue === '') {
-                        continue;
-                    }
-
-                    $pageNumber = $this->findPageNumberForText($pages, $rawValue, $fullText);
-                    $context = $this->extractContextAroundText($fullText, $match[0] ?? '');
+                    if ($rawValue === '') continue;
 
                     $candidates[] = [
-                        'sumber' => 'teks',
+                        'sumber' => 'teks_label',
                         'raw_value' => $rawValue,
                         'normalized_value' => $this->normalizeKecamatan($rawValue),
-                        'halaman' => $pageNumber,
-                        'bukti_teks' => $context,
+                        'halaman' => $this->findPageNumberForText($pages, $rawValue, $fullText),
+                        'bukti_teks' => $this->extractContextAroundText($fullText, $match[0]),
                     ];
                 }
+            }
+        }
+
+        // Pola 2: Berdasarkan pola alamat "Kec. [NAMA]" atau "Kecamatan [NAMA]"
+        if (preg_match_all('/(?:Kec\.|Kecamatan)\s+([A-Z\s]{3,50})(?:,|$|\n)/i', $fullText, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $rawValue = trim($match[1] ?? '');
+                if ($rawValue === '') continue;
+
+                $candidates[] = [
+                    'sumber' => 'teks_pola_alamat',
+                    'raw_value' => $rawValue,
+                    'normalized_value' => $this->normalizeKecamatan($rawValue),
+                    'halaman' => $this->findPageNumberForText($pages, $rawValue, $fullText),
+                    'bukti_teks' => $this->extractContextAroundText($fullText, $match[0]),
+                ];
             }
         }
 
@@ -764,7 +1053,7 @@ class NibDataExtractorService
         $normalized = preg_replace(self::NIB_PREFIX_PATTERN, '', $normalized);
 
         // Hapus titik, spasi, strip, slash di antara digit
-        $normalized = preg_replace('/[\.\s\-\/]+/', '', $normalized);
+        $normalized = preg_replace('/[^0-9]/', '', $normalized);
 
         if ($normalized === '') {
             return null;
@@ -788,6 +1077,9 @@ class NibDataExtractorService
     {
         $normalized = trim($value);
         $normalized = preg_replace('/\s+/', ' ', $normalized);
+        // Hapus pengulangan token awal yang identik (mis. "Koperasi KOPERASI ...").
+        $normalized = preg_replace('/^(\S+)\s+(?=\1\b)/iu', '', $normalized);
+        $normalized = trim($normalized);
 
         return $normalized === '' ? null : $normalized;
     }
@@ -885,7 +1177,7 @@ class NibDataExtractorService
     /**
      * Bandingkan field yang diekstrak dengan data profil perusahaan di database.
      */
-    private function compareWithDatabase(array $fields, ?ProfilPerusahaan $profilPerusahaan, Nib $nib): array
+    private function compareWithDatabase(array $fields, ?ProfilPerusahaan $profilPerusahaan, Nib $nib, array $qrResult = []): array
     {
         $fieldDibandingkan = [];
         $ketidaksesuaian = [];
@@ -893,10 +1185,11 @@ class NibDataExtractorService
 
         $pemetaan = [
             'nomor_nib' => $nib->nomor_nib,
-            'nama_perusahaan' => $profilPerusahaan?->nama_perusahaan,
-            'alamat_perusahaan' => $profilPerusahaan?->alamat_perusahaan,
-            'tanggal_berdiri' => $profilPerusahaan?->tanggal_berdiri,
-            'kecamatan' => $profilPerusahaan?->kecamatan,
+            'nama_usaha' => $profilPerusahaan?->nama_perusahaan,
+            'nama_pemilik_usaha' => $profilPerusahaan?->pengguna?->nama_pengguna,
+            'alamat_lengkap' => $profilPerusahaan?->alamat_perusahaan,
+            'email' => $profilPerusahaan?->pengguna?->email,
+            'kbli' => null,
         ];
 
         foreach ($pemetaan as $namaField => $nilaiDatabase) {
@@ -911,11 +1204,7 @@ class NibDataExtractorService
             $nilaiDokumen = $fieldData['normalized_value'] ?? null;
 
             if ($nilaiDokumen === null) {
-                $ketidaksesuaian[] = [
-                    'nama_field' => $namaField,
-                    'nilai_dokumen' => null,
-                    'nilai_database' => $nilaiDatabase,
-                ];
+                $fieldTidakDapatDibandingkan[] = $namaField;
 
                 continue;
             }
@@ -934,6 +1223,10 @@ class NibDataExtractorService
             'indikator_kemiripan' => null,
             'ketidaksesuaian' => array_values($ketidaksesuaian),
             'field_tidak_dapat_dibandingkan' => array_values($fieldTidakDapatDibandingkan),
+            'qr' => [
+                'status' => $qrResult['url_validasi']['status'] ?? ($qrResult['ditemukan'] ? 'TIDAK_DAPAT_DIVERIFIKASI' : 'TIDAK_DITEMUKAN'),
+                'payload' => $qrResult['konten'] ?? null,
+            ],
         ];
     }
 
@@ -1083,4 +1376,124 @@ class NibDataExtractorService
             'alasan_review' => $error,
         ];
     }
+
+    /**
+     * Ekstraksi KBLI dari teks dokumen.
+     */
+    private function extractKbli(array $pages, string $fullText): array
+    {
+        $candidates = [];
+
+        // Pola tabel lampiran KBLI: kode 5 digit + nama kegiatan.
+        // Nomor urut boleh terpisah spasi ("1   08999") atau menempel pada kode ("156303").
+        $tablePattern = '/^\\s*\\d{1,2}?\\s*(\\d{5})\\b\\s+([A-Za-z][^\\n]{2,120})/m';
+        if (preg_match_all($tablePattern, $fullText, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $code = trim($match[1] ?? '');
+                $desc = trim($match[2] ?? '');
+                if (strlen($code) !== 5) continue;
+
+                // Abaikan baris yang jelas bukan KBLI (mis. kode pos, nomor telepon).
+                if (preg_match('/pos|telepon|fax|npwp|email/i', $desc) === 1) continue;
+                if (preg_match('/pos|telepon|fax|npwp|email/i', $raw ?? '') === 1) continue;
+                if (!preg_match('/[A-Za-z]/', $desc)) continue;
+
+                $raw = $code . ' - ' . $desc;
+                $pageNumber = $this->findPageNumberForText($pages, $code, $fullText);
+
+                $candidates[] = [
+                    'sumber' => 'teks_tabel',
+                    'raw_value' => $raw,
+                    'normalized_value' => $code,
+                    'deskripsi' => $desc,
+                    'halaman' => $pageNumber,
+                    'bukti_teks' => $this->extractContextAroundText($fullText, $match[0]),
+                ];
+            }
+        }
+
+        // Pola KBLI: 5 digit angka, diikuti oleh nama kegiatan usaha (label)
+        $pattern = '/(?:kbli|klasifikasi)\\s*[:\\-]?\\s*([0-9]{5})\\s*[\\-\\:\\.]?\\s*([^\\n]{3,150})/i';
+
+        if (preg_match_all($pattern, $fullText, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $code = trim($match[1] ?? '');
+                $desc = trim($match[2] ?? '');
+                if ($code === '' || strlen($code) !== 5) continue;
+
+                $raw = $code . ' - ' . $desc;
+                $pageNumber = $this->findPageNumberForText($pages, $code, $fullText);
+                $context = $this->extractContextAroundText($fullText, $match[0]);
+
+                $candidates[] = [
+                    'sumber' => 'teks',
+                    'raw_value' => $raw,
+                    'normalized_value' => $code,
+                    'deskripsi' => $desc,
+                    'halaman' => $pageNumber,
+                    'bukti_teks' => $context,
+                ];
+            }
+        }
+
+        // Fallback generik dinonaktifkan agar angka 5 digit (kode pos, telepon)
+        // tidak salah dianggap KBLI. Hanya tabel KBLI bernomor yang digunakan.
+
+        if (empty($candidates)) {
+            return [
+                'nama_field' => 'kbli',
+                'status' => self::FIELD_NOT_FOUND,
+                'normalized_value' => null,
+                'kbli_status' => 'TIDAK_DAPAT_DIVERIFIKASI',
+                'kbli_kode_sesuai' => [],
+                'kbli_keterangan' => 'Kode KBLI tidak berhasil diekstrak dari dokumen.',
+                'validasi' => [
+                    'status' => self::VALIDATION_UNKNOWN,
+                    'reason' => 'Data KBLI tidak ditemukan pada dokumen.',
+                ],
+                'bukti' => [],
+                'nilai_alternatif' => [],
+                'catatan' => 'KBLI tidak ditemukan.',
+            ];
+        }
+
+        // Kumpulkan seluruh kode KBLI unik (mendukung banyak KBLI).
+        $codes = [];
+        foreach ($candidates as $c) {
+            $code = $c['normalized_value'] ?? null;
+            if ($code !== null && !in_array($code, $codes, true)) {
+                $codes[] = $code;
+            }
+        }
+
+        $joined = implode(', ', $codes);
+
+        // Identifikasi kesesuaian kategori usaha coffee shop / kedai minuman.
+        $kodeSesuai = array_values(array_intersect($codes, self::KBLI_TARGET_COFFEE_SHOP));
+        if (!empty($kodeSesuai)) {
+            $kbliStatus = 'SESUAI';
+            $kbliKeterangan = 'NIB mencantumkan KBLI yang sesuai dengan kategori usaha rumah minum/kafe atau kedai minuman.';
+        } else {
+            $kbliStatus = 'TIDAK_SESUAI';
+            $kbliKeterangan = 'Kode KBLI ditemukan, tetapi tidak termasuk kategori target usaha kafe/kedai minuman.';
+        }
+
+        return [
+            'nama_field' => 'kbli',
+            'status' => self::FIELD_FOUND,
+            'normalized_value' => $joined,
+            'deskripsi' => $candidates[0]['deskripsi'] ?? null,
+            'kbli_status' => $kbliStatus,
+            'kbli_kode_sesuai' => $kodeSesuai,
+            'kbli_keterangan' => $kbliKeterangan,
+            'validasi' => [
+                'status' => self::VALIDATION_VALID,
+                'reason' => null,
+            ],
+            'bukti' => array_values($candidates),
+            'nilai_alternatif' => array_values(array_slice($candidates, 1)),
+            'catatan' => null,
+        ];
+    }
 }
+

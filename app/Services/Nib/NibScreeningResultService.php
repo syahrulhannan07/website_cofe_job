@@ -195,6 +195,12 @@ class NibScreeningResultService
             'persentase_kelengkapan' => $persentaseLengkap,
             'qr_ditemukan' => $qr['ditemukan'] ?? false,
             'qr_jenis' => $qr['jenis'] ?? null,
+            'qr_halaman' => $qr['halaman'] ?? null,
+            'qr_metode' => $qr['metode_decoding'] ?? null,
+            'qr_resolusi' => $qr['resolusi_rendering'] ?? null,
+            'qr_skor' => $qr['skor'] ?? 0,
+            'kbli_status' => $this->findFieldValue($fields, 'kbli', 'kbli_status'),
+            'kbli_kode_sesuai' => $this->findFieldValue($fields, 'kbli', 'kbli_kode_sesuai'),
             'total_temuan' => count($analysisResult['temuan'] ?? []),
             'temuan_critical' => count(array_filter($analysisResult['temuan'] ?? [], fn($t) => ($t['tingkat_perhatian'] ?? '') === 'CRITICAL')),
             'temuan_warning' => count(array_filter($analysisResult['temuan'] ?? [], fn($t) => ($t['tingkat_perhatian'] ?? '') === 'WARNING')),
@@ -215,6 +221,10 @@ class NibScreeningResultService
                 'nama_field' => $field['nama_field'],
                 'status' => $field['status'],
                 'normalized_value' => $field['normalized_value'],
+                'deskripsi' => $field['deskripsi'] ?? null,
+                'kbli_status' => $field['kbli_status'] ?? null,
+                'kbli_kode_sesuai' => $field['kbli_kode_sesuai'] ?? [],
+                'kbli_keterangan' => $field['kbli_keterangan'] ?? null,
                 'validasi' => $field['validasi'],
                 'bukti' => $field['bukti'],
                 'nilai_alternatif' => $field['nilai_alternatif'],
@@ -236,6 +246,7 @@ class NibScreeningResultService
     {
         return [
             'karakteristik_dokumen' => $analysisResult['karakteristik_dokumen'] ?? [],
+            'garuda' => $analysisResult['garuda'] ?? null,
             'indikator_struktur' => array_values($analysisResult['indikator_struktur'] ?? []),
             'indikator_konsistensi' => array_values($analysisResult['indikator_konsistensi'] ?? []),
             'temuan' => array_values($analysisResult['temuan'] ?? []),
@@ -284,7 +295,7 @@ class NibScreeningResultService
                     'sumber' => 'qr',
                     'raw_value' => $qr['konten'],
                     'normalized_value' => $qr['konten'],
-                    'halaman' => null,
+                    'halaman' => $qr['halaman'] ?? null,
                     'bukti_teks' => $qr['konten'],
                     'field_terkait' => null,
                 ];
@@ -314,6 +325,17 @@ class NibScreeningResultService
         }
 
         return $bukti;
+    }
+
+    private function findFieldValue(array $fields, string $fieldName, string $key): mixed
+    {
+        foreach ($fields as $field) {
+            if (($field['nama_field'] ?? null) === $fieldName) {
+                return $field[$key] ?? null;
+            }
+        }
+
+        return null;
     }
 
     /**

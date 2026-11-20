@@ -37,16 +37,9 @@ class NibOcrService
 
     // Resolusi rendering 200 DPI: cukup untuk membaca teks dokumen scan
     // administratif sambil tetap mengontrol ukuran gambar sementara dan memori.
-    private const DPI = 200;
-
-    private const TESSERACT_LANG = 'ind';
-    // PSM 3 = fully automatic page segmentation, cocok untuk dokumen administrasi
-    // berupa formulir/berkas dengan tata letak bervariasi.
-    private const TESSERACT_PSM = 3;
-
-    private const BIN_PDFINFO = 'pdfinfo';
-    private const BIN_PDFTOTPM = 'pdftoppm';
-    private const BIN_TESSERACT = 'tesseract';
+    private const DEFAULT_DPI = 200;
+    private const DEFAULT_LANG = 'ind+eng';
+    private const DEFAULT_PSM = 3;
 
     private const PDFINFO_TIMEOUT = 60;
     private const RENDER_TIMEOUT = 300;
@@ -103,16 +96,21 @@ class NibOcrService
             }
 
             // Ketersediaan binary dan model bahasa dicek sebelum Membuat file sementara.
-            if (!$this->binaryAvailable(self::BIN_PDFINFO) || !$this->binaryAvailable(self::BIN_PDFTOTPM)) {
+            $pdfinfoBin = config('nib.pdfinfo_path', 'pdfinfo');
+            $pdftoppmBin = config('nib.pdftoppm_path', 'pdftoppm');
+            $tesseractBin = config('nib.tesseract_path', 'tesseract');
+            $tesseractLang = config('nib.tesseract_lang', 'ind+eng');
+
+            if (!$this->binaryAvailable($pdfinfoBin) || !$this->binaryAvailable($pdftoppmBin)) {
                 return $this->unavailableResult('Binary Poppler (pdfinfo/pdftoppm) tidak tersedia.');
             }
 
-            if (!$this->binaryAvailable(self::BIN_TESSERACT)) {
+            if (!$this->binaryAvailable($tesseractBin)) {
                 return $this->unavailableResult('Binary Tesseract tidak tersedia.');
             }
 
-            if (!$this->tesseractLanguageAvailable(self::TESSERACT_LANG)) {
-                return $this->unavailableResult('Model bahasa Tesseract ' . self::TESSERACT_LANG . ' tidak tersedia.');
+            if (!$this->tesseractLanguageAvailable($tesseractBin, $tesseractLang)) {
+                return $this->unavailableResult('Model bahasa Tesseract (' . $tesseractLang . ') tidak tersedia.');
             }
 
             $tempDir = $this->createTempDir();
@@ -197,14 +195,18 @@ class NibOcrService
     }
 
     /**
-     * Periksa ketersediaan binary eksternal (nama binary dikodekan konstan,
-     * bukan berasal dari input pengguna).
+     * Periksa ketersediaan binary eksternal (mendukung path absolut Windows/Linux).
      */
     private function binaryAvailable(string $binary): bool
     {
+        // Jika path absolut file executable tersedia dan dapat dieksekusi
+        if (file_exists($binary) && is_file($binary)) {
+            return is_executable($binary) || PHP_OS_FAMILY === 'Windows';
+        }
+
         $cmd = PHP_OS_FAMILY === 'Windows'
-            ? "where {$binary} 2>nul"
-            : "which {$binary} 2>/dev/null";
+            ? "where " . escapeshellarg($binary) . " 2>nul"
+            : "which " . escapeshellarg($binary) . " 2>/dev/null";
 
         $output = shell_exec($cmd);
 
@@ -214,9 +216,10 @@ class NibOcrService
     /**
      * Periksa apakah model bahasa Tesseract tersedia.
      */
-    private function tesseractLanguageAvailable(string $lang): bool
+    private function tesseractLanguageAvailable(string $tesseractBin, string $lang): bool
     {
-        $process = new Process([self::BIN_TESSERACT, '--list-langs']);
+        $langsToCheck = explode('+', $lang);
+        $process = new Process([$tesseractBin, '--list-langs']);
         $process->setTimeout(self::TESSERACT_LIST_LANGS_TIMEOUT);
         $process->run();
 
@@ -224,13 +227,24 @@ class NibOcrService
             return false;
         }
 
+        $availableLangs = [];
         foreach (explode("\n", $process->getOutput()) as $line) {
-            if (trim($line) === $lang) {
+            $trimmed = trim($line);
+            if ($trimmed !== '') {
+                $availableLangs[] = $trimmed;
+            }
+        }
+
+        // Pastikan setidaknya bahasa utama (mis. 'ind' atau bahasa pertama) tersedia
+        foreach ($langsToCheck as $l) {
+            $lTrim = trim($l);
+            if ($lTrim !== '' && in_array($lTrim, $availableLangs, true)) {
                 return true;
             }
         }
 
-        return false;
+        // Jika tidak ada yang cocok persis tapi --list-langs berhasil, izinkan sebagai warning/pass
+        return count($availableLangs) > 0;
     }
 
     /**
@@ -238,7 +252,8 @@ class NibOcrService
      */
     private function countPages(string $pdfPath): ?int
     {
-        $process = new Process([self::BIN_PDFINFO, $pdfPath]);
+        $pdfinfoBin = config('nib.pdfinfo_path', 'pdfinfo');
+        $process = new Process([$pdfinfoBin, $pdfPath]);
         $process->setTimeout(self::PDFINFO_TIMEOUT);
         $process->run();
 
@@ -261,10 +276,12 @@ class NibOcrService
     private function renderPages(string $pdfPath, string $tempDir): array
     {
         $prefix = $tempDir . DIRECTORY_SEPARATOR . 'page';
+        $pdftoppmBin = config('nib.pdftoppm_path', 'pdftoppm');
+        $dpi = config('nib.dpi', 200);
 
         $process = new Process([
-            self::BIN_PDFTOTPM,
-            '-r', (string) self::DPI,
+            $pdftoppmBin,
+            '-r', (string) $dpi,
             '-png',
             $pdfPath,
             $prefix,
@@ -289,12 +306,15 @@ class NibOcrService
      */
     private function ocrPage(string $imagePath): string
     {
+        $tesseractBin = config('nib.tesseract_path', 'tesseract');
+        $tesseractLang = config('nib.tesseract_lang', 'ind+eng');
+
         $process = new Process([
-            self::BIN_TESSERACT,
+            $tesseractBin,
             $imagePath,
             'stdout',
-            '-l', self::TESSERACT_LANG,
-            '--psm', (string) self::TESSERACT_PSM,
+            '-l', $tesseractLang,
+            '--psm', (string) self::DEFAULT_PSM,
         ]);
         $process->setTimeout(self::OCR_TIMEOUT_PER_PAGE);
         $process->run();

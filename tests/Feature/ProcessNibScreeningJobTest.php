@@ -458,7 +458,6 @@ class ProcessNibScreeningJobTest extends TestCase
         $job = new ProcessNibScreeningJob('test-id');
 
         $this->assertInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class, $job);
-        $this->assertInstanceOf(\Illuminate\Contracts\Queue\ShouldBeUnique::class, $job);
     }
 
     /**

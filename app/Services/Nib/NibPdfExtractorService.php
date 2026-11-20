@@ -110,7 +110,9 @@ class NibPdfExtractorService
             $hasExtractableText = false;
 
             foreach ($pages as $page) {
-                $pageNumber = $page->getPageNumber();
+                // Smalot getPageNumber() bersifat 0-based; normalisasi ke 1-based
+                // agar konsisten dengan nomor halaman Poppler/OCR.
+                $pageNumber = $page->getPageNumber() + 1;
                 $text = $page->getText() ?? '';
 
                 $extractedPages[] = [

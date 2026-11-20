@@ -3,6 +3,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../../layanan/api';
 import MapLokasi from '../../../komponen/umum/MapLokasi';
 
+const getSafeHostname = (urlStr) => {
+    if (!urlStr || typeof urlStr !== 'string') return 'N/A';
+    try {
+        const fullUrl = /^https?:\/\//i.test(urlStr) ? urlStr : `http://${urlStr}`;
+        return new URL(fullUrl).hostname || urlStr;
+    } catch {
+        return urlStr;
+    }
+};
+
+const KBLI_TARGET_KODE = ['56303', '56304'];
+
 const DetailVerifikasi = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -10,6 +22,7 @@ const DetailVerifikasi = () => {
     const [screening, setScreening] = useState(null);
     const [sedangMemuat, setSedangMemuat] = useState(true);
     const [sedangMemuatScreening, setSedangMemuatScreening] = useState(false);
+    const [pesanErrorScreening, setPesanErrorScreening] = useState('');
     const [sedangProsesKeputusan, setSedangProsesKeputusan] = useState(false);
     const [catatanKeputusan, setCatatanKeputusan] = useState('');
     const [keputusanTerpilih, setKeputusanTerpilih] = useState(null);
@@ -33,10 +46,10 @@ const DetailVerifikasi = () => {
                 if (perusahaan?.nib?.id_nib) {
                     await muatScreening(perusahaan.nib.id_nib);
 
-                    // Auto-start screening jika belum ada hasil dan belum berjalan
+                    // Auto-start screening setiap kali detail dibuka, kecuali sedang berjalan.
+                    // Ini memastikan data diperbarui baik untuk pertama maupun penekanan berikutnya.
                     const statusProses = perusahaan.nib.status_proses_screening;
-                    const hasHasil = perusahaan.nib.hasil_screening;
-                    if (!hasHasil && statusProses === 'Belum_Dimulai') {
+                    if (statusProses !== 'Menunggu' && statusProses !== 'Sedang_Diproses') {
                         await mulaiScreening(perusahaan.nib.id_nib);
                     } else if (statusProses === 'Menunggu' || statusProses === 'Sedang_Diproses') {
                         // Mulai polling jika proses masih berjalan
@@ -118,6 +131,34 @@ const DetailVerifikasi = () => {
                 // Sudah berjalan, mulai polling
                 mulaiPolling(idNib);
             }
+        }
+    };
+
+    const jalankanScreeningUlang = async () => {
+        if (!data?.nib?.id_nib) return;
+        const idNib = data.nib.id_nib;
+        setSedangMemuatScreening(true);
+        setPesanErrorScreening('');
+        try {
+            const statusProses = statusProsesScreening;
+            if (statusProses === 'Belum_Dimulai') {
+                await api.post(`/super-admin/nib/${idNib}/screening`);
+            } else {
+                await api.post(`/super-admin/nib/${idNib}/screening/ulang`);
+            }
+            setScreening(prev => ({
+                ...prev,
+                status_proses_screening: 'Menunggu',
+            }));
+            mulaiPolling(idNib);
+        } catch (err) {
+            console.error('Gagal menjalankan screening ulang:', err);
+            setPesanErrorScreening(err.response?.data?.message || 'Gagal menjalankan screening. Coba lagi.');
+            if (err.response?.status === 409) {
+                mulaiPolling(idNib);
+            }
+        } finally {
+            setSedangMemuatScreening(false);
         }
     };
 
@@ -214,7 +255,7 @@ const DetailVerifikasi = () => {
         if (!confirm('Yakin ingin menyetujui verifikasi perusahaan ini?')) return;
         setSedangProsesKeputusan(true);
         try {
-            await api.put(`/superadmin/${id}/setujui`);
+            await api.post(`/superadmin/verifikasi/${id}/setujui`);
             window.location.reload();
         } catch (err) {
             console.error('Gagal menyetujui:', err);
@@ -232,7 +273,7 @@ const DetailVerifikasi = () => {
         if (!confirm('Yakin ingin menolak verifikasi perusahaan ini?')) return;
         setSedangProsesKeputusan(true);
         try {
-            await api.post(`/superadmin/${id}/tolak`, { alasan: catatanKeputusan });
+            await api.post(`/superadmin/verifikasi/${id}/tolak`, { alasan: catatanKeputusan });
             window.location.reload();
         } catch (err) {
             console.error('Gagal menolak:', err);
@@ -260,18 +301,27 @@ const DetailVerifikasi = () => {
         const hasil = screening.hasil_screening;
         const fields = hasil.data_terekstraksi?.fields || [];
         const qr = hasil.data_terekstraksi?.qr || {};
+        const struktur = hasil.analisis_struktur || {};
 
-        // 1. Garuda (System Limitation)
-        res.garuda = { status: 'Perlu Cek Visual', detail: 'Deteksi otomatis lambang Garuda tidak tersedia. Harap validasi secara manual di dokumen.', poin: 0, max: 20 };
+        // 1. Garuda
+        if (struktur.garuda) {
+            res.garuda = {
+                status: struktur.garuda.status === 'TERDETEKSI' ? 'Terdeteksi' : (struktur.garuda.status === 'TIDAK_TERDETEKSI' ? 'Tidak Terdeteksi' : 'Perlu Cek Visual'),
+                detail: struktur.garuda.detail,
+                poin: struktur.garuda.poin,
+                max: struktur.garuda.max
+            };
+        }
 
         // 2. QR Code
         if (qr.ditemukan) {
+            const skorBackend = (typeof qr.skor === 'number') ? qr.skor : null;
             if (qr.url_validasi?.status === 'OSS_URL_VALID') {
-                res.qr = { status: 'Resmi OSS', detail: `QR Code valid dan mengarah ke domain resmi OSS.`, poin: 25, max: 25 };
+                res.qr = { status: 'Resmi OSS', detail: `QR Code valid dan mengarah ke domain resmi OSS.`, poin: skorBackend !== null ? skorBackend : 25, max: 25 };
             } else if (qr.url_validasi?.status === 'UNTRUSTED_URL') {
-                res.qr = { status: 'URL Tidak Resmi', detail: `Domain tidak terverifikasi: ${qr.konten ? new URL(qr.konten).hostname : 'N/A'}`, poin: 0, max: 25 };
+                res.qr = { status: 'URL Tidak Resmi', detail: `Domain tidak terverifikasi: ${qr.konten ? getSafeHostname(qr.konten) : 'N/A'}`, poin: skorBackend !== null ? skorBackend : 15, max: 25 };
             } else {
-                res.qr = { status: 'Terbaca', detail: 'QR Code ditemukan tetapi validasi domain tidak tersedia.', poin: 10, max: 25 };
+                res.qr = { status: 'Terbaca', detail: 'QR Code ditemukan tetapi validasi domain tidak tersedia.', poin: skorBackend !== null ? skorBackend : 10, max: 25 };
             }
         } else {
             res.qr = { status: 'Tidak Ditemukan', detail: 'Dokumen tidak memiliki QR Code.', poin: 0, max: 25 };
@@ -289,15 +339,130 @@ const DetailVerifikasi = () => {
         }
 
         // 4. KBLI
-        // Karena hasil_screening tidak secara eksplisit menyertakan list KBLI dalam JSON contoh, 
-        // kita akan menandai ini sebagai "Tidak Dapat Diverifikasi" sampai integrasi data KBLI ditambahkan.
-        res.kbli = { status: 'Tidak Dapat Diverifikasi', detail: 'Data KBLI belum tersedia pada hasil ekstraksi otomatis.', poin: 0, max: 35 };
+        const KBLI_TARGET = KBLI_TARGET_KODE;
+        const kbliField = fields.find(f => f.nama_field === 'kbli');
+        if (kbliField && kbliField.status === 'FIELD_FOUND') {
+            // Gunakan metadata backend bila tersedia; untuk hasil screening lama yang belum
+            // menyimpan kbli_status, turunkan dari normalized_value agar konsisten dengan tabel.
+            const kodeDariMetadata = Array.isArray(kbliField.kbli_kode_sesuai)
+                ? kbliField.kbli_kode_sesuai.filter(Boolean)
+                : [];
+            const semuaKode = kodeDariMetadata.length > 0
+                ? kodeDariMetadata
+                : String(kbliField.normalized_value || '')
+                    .split(/[,\s]+/)
+                    .map((kode) => kode.trim())
+                    .filter(Boolean);
+            const kodeSesuai = semuaKode.filter((kode) => KBLI_TARGET.includes(kode));
+            if (kodeSesuai.length > 0) {
+                res.kbli = { 
+                    status: 'Sesuai', 
+                    detail: `KBLI sesuai kategori usaha kafe/kedai minuman: ${kodeSesuai.join(', ')}.`, 
+                    poin: 35, 
+                    max: 35 
+                };
+            } else {
+                res.kbli = { 
+                    status: 'Tidak Sesuai', 
+                    detail: 'KBLI ditemukan, namun tidak sesuai dengan kode 56303 atau 56304.', 
+                    poin: 10, 
+                    max: 35 
+                };
+            }
+        } else if (kbliField && kbliField.status === 'FIELD_NOT_FOUND') {
+            res.kbli = { status: 'Tidak Ditemukan', detail: 'Data KBLI tidak ditemukan pada dokumen.', poin: 0, max: 35 };
+        }
 
         return res;
     };
 
     const indikator = identifikasiIndikator();
     const totalSkor = Object.values(indikator).reduce((acc, curr) => acc + curr.poin, 0);
+
+    const fieldEkstraksi = screening?.hasil_screening?.data_terekstraksi?.fields || [];
+    const petaFieldEkstraksi = Object.fromEntries(
+        fieldEkstraksi.map((field) => [field.nama_field, field])
+    );
+    const nilaiEkstraksi = (namaField) => {
+        const field = petaFieldEkstraksi[namaField];
+        return field && field.status === 'FIELD_FOUND' ? (field.normalized_value || '') : '';
+    };
+
+    const tampilanNilaiField = (field) => {
+        if (field?.nama_field === 'kbli' && field.status === 'FIELD_FOUND') {
+            const kodeMetadata = Array.isArray(field.kbli_kode_sesuai) ? field.kbli_kode_sesuai.filter(Boolean) : [];
+            const semuaKode = kodeMetadata.length > 0
+                ? kodeMetadata
+                : String(field.normalized_value || '')
+                    .split(/[,\s]+/)
+                    .map((kode) => kode.trim())
+                    .filter(Boolean);
+            const kodeSesuai = semuaKode.filter((kode) => KBLI_TARGET_KODE.includes(kode));
+            if (kodeSesuai.length > 0) return kodeSesuai.join(', ');
+            return 'KBLI ditemukan, namun tidak sesuai dengan kode 56303 atau 56304.';
+        }
+        return field?.normalized_value || '-';
+    };
+
+    const normalisasiBanding = (nilai) => String(nilai ?? '')
+        .toLowerCase()
+        .replace(/[.,]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const barisPerbandingan = () => {
+        const pasangan = [
+            { label: 'Nama Kafe dan Nama Usaha', profil: data?.nama_perusahaan, ekstraksi: nilaiEkstraksi('nama_usaha') },
+            { label: 'Nama Pengelola dan Nama Pemilik', profil: data?.pengguna?.nama_pengguna, ekstraksi: nilaiEkstraksi('nama_pemilik_usaha') },
+            { label: 'Alamat', profil: data?.alamat_perusahaan, ekstraksi: nilaiEkstraksi('alamat_lengkap') },
+            { label: 'Email', profil: data?.pengguna?.email, ekstraksi: nilaiEkstraksi('email') },
+        ];
+
+        return pasangan.map((item) => {
+            const profil = String(item.profil ?? '').trim();
+            const ekstraksi = String(item.ekstraksi ?? '').trim();
+            let hasil = 'Tidak Dapat Dibandingkan';
+            if (profil && ekstraksi) {
+                hasil = normalisasiBanding(profil) === normalisasiBanding(ekstraksi) ? 'Sesuai' : 'Tidak Sesuai';
+            } else if (profil && !ekstraksi) {
+                hasil = 'Tidak Ditemukan';
+            }
+            return { ...item, profil: profil || '-', ekstraksi: ekstraksi || '-', hasil };
+        });
+    };
+
+    const catatanSistem = () => {
+        const catatan = [];
+        const qr = screening?.hasil_screening?.data_terekstraksi?.qr || {};
+
+        if (statusProsesScreening === 'Gagal' || statusProsesScreening === 'Belum_Dimulai' || !screening?.hasil_screening) {
+            catatan.push('Jalankan screening ulang agar dokumen NIB dapat dianalisis oleh sistem.');
+        }
+        if (!qr.ditemukan) {
+            catatan.push('Lakukan validasi manual untuk QR Code karena tidak terdeteksi pada dokumen.');
+        } else if (qr.url_validasi?.status && qr.url_validasi.status !== 'OSS_URL_VALID') {
+            catatan.push('Lakukan validasi manual QR Code karena tautannya belum terverifikasi sebagai domain resmi OSS.');
+        }
+        if (!petaFieldEkstraksi['kbli'] || petaFieldEkstraksi['kbli'].status !== 'FIELD_FOUND') {
+            catatan.push('Lakukan validasi manual Kode KBLI (target 56303 atau 56304).');
+        } else if (indikator.kbli.status === 'Tidak Sesuai') {
+            catatan.push('Pastikan KBLI dokumen memang tidak termasuk 56303/56304, atau minta perusahaan memperbarui NIB.');
+        }
+        if (!petaFieldEkstraksi['nama_pemilik_usaha'] || petaFieldEkstraksi['nama_pemilik_usaha'].status !== 'FIELD_FOUND') {
+            catatan.push('Lakukan verifikasi manual nama pemilik usaha.');
+        }
+        if (!petaFieldEkstraksi['email'] || petaFieldEkstraksi['email'].status !== 'FIELD_FOUND') {
+            catatan.push('Periksa email perusahaan secara manual.');
+        }
+        if (!petaFieldEkstraksi['nomor_nib'] || petaFieldEkstraksi['nomor_nib'].status !== 'FIELD_FOUND') {
+            catatan.push('Validasi manual nomor NIB (harus 13 digit angka).');
+        }
+        if (catatan.length === 0) {
+            catatan.push('Semua indikator utama terpenuhi. Lakukan peninjauan akhir sebelum mengambil keputusan.');
+        }
+
+        return catatan;
+    };
 
     if (sedangMemuat) return <div className="p-8 font-poppins text-[#4B2E2B] flex items-center justify-center min-h-screen">Memuat data...</div>;
     if (!data) return <div className="p-8 font-poppins text-[#4B2E2B] text-center">Data tidak ditemukan.</div>;
@@ -660,17 +825,28 @@ const DetailVerifikasi = () => {
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="border-b border-[#E2E8F0] bg-[#F7F8FA]">
-                                            <th className="pb-3 text-[12px] font-bold text-[#64748B] uppercase tracking-wider">Field</th>
-                                            <th className="pb-3 text-[12px] font-bold text-[#64748B] uppercase tracking-wider">Nilai Diekstrak</th>
+                                            <th className="pb-3 text-[12px] font-bold text-[#64748B] uppercase tracking-wider">Informasi</th>
+                                            <th className="pb-3 text-[12px] font-bold text-[#64748B] uppercase tracking-wider">Nilai Hasil Ekstraksi</th>
                                             <th className="pb-3 text-[12px] font-bold text-[#64748B] uppercase tracking-wider">Status</th>
-                                            <th className="pb-3 text-[12px] font-bold text-[#64748B] uppercase tracking-wider">Validasi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {screening.hasil_screening.data_terekstraksi.fields?.map((field, idx) => (
+                                        {screening.hasil_screening.data_terekstraksi.fields?.map((field, idx) => {
+                                            const labelMap = {
+                                                nomor_nib: 'Nomor NIB',
+                                                nama_pemilik_usaha: 'Nama Pemilik Usaha',
+                                                nama_usaha: 'Nama Usaha',
+                                                alamat_lengkap: 'Alamat',
+                                                kbli: 'KBLI',
+                                                data_qr_code: 'Data QR Code',
+                                                tanggal_diterbitkan: 'Tanggal Diterbitkan NIB',
+                                                email: 'Email',
+                                            };
+                                            const label = labelMap[field.nama_field] || field.nama_field || '—';
+                                            return (
                                             <tr key={idx} className="border-b border-[#E2E8F0]">
-                                                <td className="py-3 text-[14px] text-[#1E293B] font-medium">{field.nama_field || '—'}</td>
-                                                <td className="py-3 text-[14px] text-[#1E293B]">{field.normalized_value || '—'}</td>
+                                                <td className="py-3 text-[14px] text-[#1E293B] font-medium">{label}</td>
+                                                <td className="py-3 text-[14px] text-[#1E293B] break-words max-w-[400px]">{tampilanNilaiField(field)}</td>
                                                 <td className="py-3">
                                                     <span className={`px-2 py-1 rounded text-[11px] font-bold uppercase ${
                                                         field.status === 'FIELD_FOUND' ? 'bg-[#92E3A9] text-[#15803D]' :
@@ -683,12 +859,12 @@ const DetailVerifikasi = () => {
                                                         field.status === 'FIELD_AMBIGUOUS' ? 'Netral' : 'Tidak Valid'}
                                                     </span>
                                                 </td>
-                                                <td className="py-3 text-[14px] text-[#64748B]">{field.validasi?.status || '—'}</td>
                                             </tr>
-                                        ))}
+                                            );
+                                        })}
                                         {(!screening.hasil_screening.data_terekstraksi.fields || screening.hasil_screening.data_terekstraksi.fields.length === 0) && (
                                             <tr>
-                                                <td colSpan={4} className="py-4 text-center text-[#64748B]">Tidak ada field yang diekstrak.</td>
+                                                <td colSpan={3} className="py-4 text-center text-[#64748B]">Tidak ada field yang diekstrak.</td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -721,7 +897,16 @@ const DetailVerifikasi = () => {
                         Perbandingan antara data profil perusahaan dan data hasil ekstraksi dokumen NIB.
                     </p>
 
-                    {screening && screening.hasil_screening?.data_terekstraksi?.perbandingan?.ketidaksesuaian ? (
+                    {screeningAktif && !screening?.hasil_screening ? (
+                        <div className="bg-[#F7F8FA] border border-[#E2E8F0] rounded-lg p-6">
+                            <div className="space-y-4">
+                                <div className="skeleton-row" style={{ width: '100%' }}></div>
+                                <div className="skeleton-row" style={{ width: '85%' }}></div>
+                                <div className="skeleton-row" style={{ width: '85%' }}></div>
+                                <div className="skeleton-badge" style={{ width: '60%' }}></div>
+                            </div>
+                        </div>
+                    ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
@@ -733,148 +918,104 @@ const DetailVerifikasi = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {screening.hasil_screening.data_terekstraksi.perbandingan.ketidaksesuaian.map((item, idx) => (
-                                        <tr key={idx} className="border-b border-[#E2E8F0]">
-                                            <td className="py-3 text-[14px] text-[#1E293B] font-medium">{item.nama_field || '—'}</td>
-                                            <td className="py-3 text-[14px] text-[#1E293B]">{item.nilai_database || '—'}</td>
-                                            <td className="py-3 text-[14px] text-[#1E293B]">{item.nilai_dokumen || '—'}</td>
-                                            <td className="py-3">
-                                                <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase bg-[#FEE2E2] text-[#B91C1C]`}>
-                                                    Tidak Sesuai
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {(screening.hasil_screening.data_terekstraksi.perbandingan.ketidaksesuaian?.length === 0) && (
-                                        <tr>
-                                            <td colSpan={4} className="py-4 text-center text-[#64748B]">Tidak ada ketidaksesuaian yang ditemukan.</td>
-                                        </tr>
-                                    )}
+                                    {barisPerbandingan().map((item, idx) => {
+                                        const badgeClass = item.hasil === 'Sesuai'
+                                            ? 'bg-[#DCFCE7] text-[#15803D]'
+                                            : item.hasil === 'Tidak Sesuai'
+                                                ? 'bg-[#FEE2E2] text-[#B91C1C]'
+                                                : item.hasil === 'Tidak Ditemukan'
+                                                    ? 'bg-[#FEF3C7] text-[#92400E]'
+                                                    : 'bg-[#E5E7EB] text-[#6B7280]';
+                                        return (
+                                            <tr key={idx} className="border-b border-[#E2E8F0]">
+                                                <td className="py-3 text-[14px] text-[#1E293B] font-medium">{item.label}</td>
+                                                <td className="py-3 text-[14px] text-[#1E293B]">{item.profil}</td>
+                                                <td className="py-3 text-[14px] text-[#1E293B]">{item.ekstraksi}</td>
+                                                <td className="py-3">
+                                                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase ${badgeClass}`}>
+                                                        {item.hasil}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
-                    ) : (
-                        <div className="bg-[#F7F8FA] border border-[#E2E8F0] rounded-lg p-6">
-                            {screeningAktif ? (
-                                <div className="space-y-4">
-                                    <div className="skeleton-row" style={{ width: '100%' }}></div>
-                                    <div className="skeleton-row" style={{ width: '85%' }}></div>
-                                    <div className="skeleton-row" style={{ width: '85%' }}></div>
-                                    <div className="skeleton-badge" style={{ width: '60%' }}></div>
-                                </div>
-                            ) : (
-                                <p className="text-[15px] font-medium text-[#64748B] text-center">Hasil perbandingan belum tersedia.</p>
-                            )}
-                        </div>
                     )}
                 </div>
 
-                {/* ── F. VALIDASI QR CODE ── */}
-                <div className="bg-white rounded-xl border border-[#E2E8F0] p-8 shadow-sm">
-                    <h2 className="text-[18px] font-bold text-[#1E293B] mb-6">Validasi QR Code</h2>
-
-                    {screening && screening.hasil_screening?.data_terekstraksi?.qr ? (
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-1">QR Ditemukan</p>
-                                    <p className={`text-[15px] font-medium ${screening.hasil_screening.data_terekstraksi.qr.ditemukan ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
-                                        {screening.hasil_screening.data_terekstraksi.qr.ditemukan ? 'Ya' : 'Tidak'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Jenis QR</p>
-                                    <p className="text-[15px] font-medium text-[#1E293B]">{screening.hasil_screening.data_terekstraksi.qr.jenis || '—'}</p>
-                                </div>
-                            </div>
-
-                            {screening.hasil_screening.data_terekstraksi.qr.ditemukan && screening.hasil_screening.data_terekstraksi.qr.konten ? (
-                                <div className="bg-[#F7F8FA] border border-[#E2E8F0] rounded-lg p-4">
-                                    <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Isi QR Code</p>
-                                    <p className="text-[14px] font-mono text-[#1E293B] break-all mb-2">
-                                        {screening.hasil_screening.data_terekstraksi.qr.konten}
-                                    </p>
-                                    <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Host/Domain</p>
-                                    <p className="text-[14px] font-medium text-[#1E293B]">
-                                        {screening.hasil_screening.data_terekstraksi.qr.konten ? new URL(screening.hasil_screening.data_terekstraksi.qr.konten).hostname : '—'}
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className="bg-[#F7F8FA] border border-[#E2E8F0] rounded-lg p-4 text-center">
-                                    <p className="text-[14px] text-[#64748B]">QR Code tidak ditemukan dalam dokumen NIB.</p>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="bg-[#F7F8FA] border border-[#E2E8F0] rounded-lg p-6">
-                            {screeningAktif ? (
-                                <div className="space-y-4">
-                                    <div className="skeleton-row" style={{ width: '100%' }}></div>
-                                    <div className="skeleton-row" style={{ width: '80%' }}></div>
-                                    <div className="skeleton-text" style={{ width: '90%' }}></div>
-                                    <div className="skeleton-text" style={{ width: '70%' }}></div>
-                                </div>
-                            ) : (
-                                <p className="text-[15px] font-medium text-[#64748B] text-center">Data validasi QR belum tersedia.</p>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                {/* ── F-2. STATUS PROSES SCREENING ── */}
-                {data.nib && (
-                    <div className="bg-white rounded-xl border border-[#E2E8F0] p-8 shadow-sm">
-                        <h2 className="text-[18px] font-bold text-[#1E293B] mb-6">Status Proses Screening</h2>
-                        <div className="flex items-center gap-4">
-                            <div className="flex-1">
-                                <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Status Proses</p>
-                                <p className={`text-[16px] font-bold ${
-                                    statusProsesScreening === 'Selesai' ? 'text-[#16A34A]' :
-                                    statusProsesScreening === 'Gagal' ? 'text-[#DC2626]' :
-                                    statusProsesScreening === 'Menunggu' || statusProsesScreening === 'Sedang_Diproses' ? 'text-[#D97706]' :
-                                    'text-[#64748B]'
-                                }`}>
-                                    {statusProsesScreening === 'Selesai' ? 'Screening Selesai' :
-                                    statusProsesScreening === 'Gagal' ? 'Screening Gagal' :
-                                    statusProsesScreening === 'Menunggu' ? 'Memulai Screening' :
-                                    statusProsesScreening === 'Sedang_Diproses' ? 'Sedang Menganalisis Dokumen' :
-                                    statusProsesScreening === 'Belum_Dimulai' ? 'Belum Dimulai' :
-                                    '—'}
-                                </p>
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Hasil Screening</p>
-                                <p className={`text-[16px] font-bold ${
-                                    statusScreening === 'Lulus' ? 'text-[#16A34A]' :
-                                    statusScreening === 'Ditolak' ? 'text-[#DC2626]' :
-                                    statusScreening === 'Perlu_Review' ? 'text-[#D97706]' :
-                                    'text-[#64748B]'
-                                }`}>
-                                    {statusScreening === 'Lulus' ? 'Lulus' :
-                                    statusScreening === 'Ditolak' ? 'Ditolak' :
-                                    statusScreening === 'Perlu_Review' ? 'Perlu Review' :
-                                    statusScreening === 'Belum_Diperiksa' ? 'Belum Diperiksa' :
-                                    '—'}
-                                </p>
-                            </div>
-                        </div>
-                        {statusProsesScreening === 'Sedang_Diproses' && (
-                            <p className="mt-3 text-[13px] text-[#64748B]">Sistem sedang menganalisis dokumen NIB. Halaman akan diperbarui otomatis saat selesai.</p>
-                        )}
-                        {statusProsesScreening === 'Menunggu' && (
-                            <p className="mt-3 text-[13px] text-[#64748B]">Permintaan screening telah diterima dan menunggu antrean pemrosesan.</p>
-                        )}
-                    </div>
-                )}
 
                 {/* ── G. KEPUTUSAN SUPER ADMIN ── */}
                 <div className="bg-white rounded-xl border border-[#E2E8F0] p-8 shadow-sm">
                     <h2 className="text-[18px] font-bold text-[#1E293B] mb-6">Keputusan Super Admin</h2>
 
+                    {data.nib && (
+                        <div className="mb-6 pb-6 border-b border-[#E2E8F0]">
+                            <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Status Proses Screening</p>
+                            <div className="flex items-center gap-4">
+                                <div className="flex-1">
+                                    <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Status Proses</p>
+                                    <p className={`text-[16px] font-bold ${
+                                        statusProsesScreening === 'Selesai' ? 'text-[#16A34A]' :
+                                        statusProsesScreening === 'Gagal' ? 'text-[#DC2626]' :
+                                        statusProsesScreening === 'Menunggu' || statusProsesScreening === 'Sedang_Diproses' ? 'text-[#D97706]' :
+                                        'text-[#64748B]'
+                                    }`}>
+                                        {statusProsesScreening === 'Selesai' ? 'Screening Selesai' :
+                                        statusProsesScreening === 'Gagal' ? 'Screening Gagal' :
+                                        statusProsesScreening === 'Menunggu' ? 'Memulai Screening' :
+                                        statusProsesScreening === 'Sedang_Diproses' ? 'Sedang Menganalisis Dokumen' :
+                                        statusProsesScreening === 'Belum_Dimulai' ? 'Belum Dimulai' :
+                                        '—'}
+                                    </p>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Hasil Screening</p>
+                                    <p className={`text-[16px] font-bold ${
+                                        statusScreening === 'Lulus' ? 'text-[#16A34A]' :
+                                        statusScreening === 'Ditolak' ? 'text-[#DC2626]' :
+                                        statusScreening === 'Perlu_Review' ? 'text-[#D97706]' :
+                                        'text-[#64748B]'
+                                    }`}>
+                                        {statusScreening === 'Lulus' ? 'Lulus' :
+                                        statusScreening === 'Ditolak' ? 'Ditolak' :
+                                        statusScreening === 'Perlu_Review' ? 'Perlu Review' :
+                                        statusScreening === 'Belum_Diperiksa' ? 'Belum Diperiksa' :
+                                        '—'}
+                                    </p>
+                                </div>
+                            </div>
+                            {statusProsesScreening === 'Sedang_Diproses' && (
+                                <p className="mt-3 text-[13px] text-[#64748B]">Sistem sedang menganalisis dokumen NIB. Halaman akan diperbarui otomatis saat selesai.</p>
+                            )}
+                            {statusProsesScreening === 'Menunggu' && (
+                                <p className="mt-3 text-[13px] text-[#64748B]">Permintaan screening telah diterima dan menunggu antrean pemrosesan.</p>
+                            )}
+                            <div className="mt-4">
+                                <button
+                                    onClick={jalankanScreeningUlang}
+                                    disabled={sedangMemuatScreening || statusProsesScreening === 'Menunggu' || statusProsesScreening === 'Sedang_Diproses'}
+                                    className={`px-5 py-2.5 rounded-lg text-[14px] font-semibold transition-all flex items-center gap-2 ${
+                                        sedangMemuatScreening || statusProsesScreening === 'Menunggu' || statusProsesScreening === 'Sedang_Diproses'
+                                            ? 'bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed'
+                                            : 'bg-[#4B2E2B] text-white hover:bg-[#382220] shadow-sm'
+                                    }`}
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    {sedangMemuatScreening ? 'Memproses...' : 'Jalankan Screening Ulang'}
+                                </button>
+                                {pesanErrorScreening && (
+                                    <p className="mt-2 text-[13px] text-[#DC2626]">{pesanErrorScreening}</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="mb-6">
                         <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Ringkasan Temuan Screening</p>
-                        {screening?.hasil_screening?.ringkasan && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {screening?.hasil_screening?.ringkasan ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Status Ekstraksi</p>
                                     <p className="text-[15px] font-medium text-[#1E293B]">{screening.hasil_screening.ringkasan.status_ekstraksi || '—'}</p>
@@ -889,21 +1030,24 @@ const DetailVerifikasi = () => {
                                         {screening.hasil_screening.ringkasan.temuan_critical || 0}
                                     </p>
                                 </div>
-                                <div>
-                                    <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Perlu Review Manual</p>
-                                    <p className={`text-[15px] font-medium ${screening.hasil_screening.perlu_review_manual ? 'text-[#D97706]' : 'text-[#16A34A]'}`}>
-                                        {screening.hasil_screening.perlu_review_manual ? 'Ya' : 'Tidak'}
-                                    </p>
-                                </div>
                             </div>
-                        )} else {
-                            <p className="text-[14px] text-[#64748B]">Data ringkasan screening belum tersedia.</p>
-                        }
+                        ) : (
+                            <p className="text-[14px] text-[#64748B]">Ringkasan screening belum tersedia. Ikuti catatan tindakan sistem di bawah ini.</p>
+                        )}
+
+                        <div className="mt-4 bg-[#FFFBEB] border border-[#FDE68A] rounded-lg p-4">
+                            <p className="text-[12px] font-bold text-[#92400E] uppercase tracking-wider mb-2">Catatan Sistem untuk Super Admin</p>
+                            <ul className="list-disc pl-5 space-y-1 text-[14px] text-[#78350F]">
+                                {catatanSistem().map((catatan, idx) => (
+                                    <li key={idx}>{catatan}</li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
 
                     <div className="space-y-4">
                         <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Pilihan Keputusan</p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <button
                                 onClick={tanganiSetujui}
                                 disabled={sedangProsesKeputusan || keputusanTerpilih !== null}
@@ -927,18 +1071,6 @@ const DetailVerifikasi = () => {
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                 Tolak Perusahaan
-                            </button>
-                            <button
-                                onClick={() => setKeputusanTerpilih('review')}
-                                disabled={sedangProsesKeputusan || keputusanTerpilih !== null}
-                                className={`px-6 py-3 rounded-lg text-[14px] font-semibold transition-all flex items-center justify-center gap-2 ${
-                                    sedangProsesKeputusan || keputusanTerpilih !== null
-                                        ? 'bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed'
-                                        : 'bg-[#D97706] text-white hover:bg-[#B45309] shadow-sm'
-                                }`}
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                Perlu Review
                             </button>
                         </div>
 
